@@ -15,3 +15,4 @@ path.append({'x':0, 'y':0})
 path.append({'z':1})
 gcoder.g1(path=path)
 
+gcoder.g83(x=1, y=2, z=-3, retract=0.1, delta=0.2)
