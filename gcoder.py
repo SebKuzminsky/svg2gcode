@@ -26,6 +26,10 @@ def cancel_cutter_comp():
     print "G40"
 
 
+def spindle_on():
+    print "M3"
+
+
 def spindle_off():
     print "M5"
 
