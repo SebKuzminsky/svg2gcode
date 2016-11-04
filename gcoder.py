@@ -11,8 +11,11 @@ def speed(spindle_rpm):
 
 def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None, w=None):
     if path is not None:
+        print
+        print "; g0 path"
         for waypoint in path:
             g0(**waypoint)
+        print
     else:
         print "G0",
         if x is not None: print "X%.4f" % x,
@@ -29,8 +32,11 @@ def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
 
 def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None, w=None):
     if path is not None:
+        print
+        print "; g1 path"
         for waypoint in path:
             g1(**waypoint)
+        print
     else:
         print "G1",
         if x is not None: print "X%.4f" % x,
@@ -57,10 +63,13 @@ def g83(retract, delta, x=None, y=None, z=None):
 
 def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allowance=None):
 
-    """Drills as many holes as will fit in a rectangular grid, within the
-    rectangle defined by (x0, y0) and (x1, y1).  If finishing_tolerance
-    is specified, all the holes will stay at least that far away from
-    the edges of the specified rectangle."""
+    """Drills as many evenly spaced holes as will fit in a rectangular
+    grid, within the rectangle defined by (x0, y0) and (x1, y1).
+    If finishing_tolerance is specified, all the holes will stay at
+    least that far away from the edges of the specified rectangle."""
+
+    print
+    print "; drill hog"
 
     radius = diameter/2.0
 
@@ -110,4 +119,6 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allow
             print "R%.4f" % retract,
             print "Q%.4f" % delta,
             print
+
+    print
 
