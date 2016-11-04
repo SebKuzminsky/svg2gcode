@@ -1,6 +1,62 @@
 import math
 
 
+def init():
+    print
+    print "; init"
+    print "G20          (inch)"
+    print "G17          (xy plane)"
+    print "G90          (absolute)"
+    print "G91.1        (arc centers are relative to arc starting point)"
+    print "G40          (disable cutter comp)"
+    print "G54          (switch to coordinate system 1)"
+    print "G94          (units/minute feed mode)"
+    print "G99          (in canned cycles, retract to the Z coordinate specified by the R word)"
+    print "G64 P0.0005  (enable path blending, but stay withing 0.0005 of the programmed path)"
+    print "G49          (turn off tool length compensation)"
+    print "G80          (turn off canned cycles)"
+    print
+
+
+def absolute():
+    print "G90"
+
+
+def cancel_cutter_comp():
+    print "G40"
+
+
+def spindle_off():
+    print "M5"
+
+
+def quill_up():
+    absolute()
+    cancel_cutter_comp()
+    print "G53 G0 Z0"
+    spindle_off()
+
+
+def presentation_position():
+    imperial()
+    quill_up()
+
+    # rapid to presentation position
+    # table centered in X, all the way forward towards the user
+    print "G53 G0 X9 Y12"
+
+
+def done():
+    print
+    print "; done"
+    presentation_position()
+    print "M2"
+
+
+def imperial():
+    print "G20"
+
+
 def feed(feed_rate_units_per_minute):
     print "F %.4f" % feed_rate_units_per_minute
 
