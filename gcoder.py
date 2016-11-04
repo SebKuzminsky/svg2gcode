@@ -121,8 +121,12 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allow
 
     """Drills as many evenly spaced holes as will fit in a rectangular
     grid, within the rectangle defined by (x0, y0) and (x1, y1).
-    If finishing_tolerance is specified, all the holes will stay at
-    least that far away from the edges of the specified rectangle."""
+    The specified rectangle describes the material contour, the holes
+    will be inset from the edges by the drill's radius.
+
+    If finishing_tolerance is specified, all the holes will stay at least
+    that far away from the material contour the specified rectangle,
+    and will end that far above the specified drill depth."""
 
     print
     print "; drill hog"
