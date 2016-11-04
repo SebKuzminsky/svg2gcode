@@ -140,6 +140,7 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allow
         max_x = max_x - finishing_allowance
         min_y = min_y + finishing_allowance
         max_y = max_y - finishing_allowance
+        z_drill = z_drill + finishing_allowance
 
     x_range = max_x - min_x
     y_range = max_y - min_y
