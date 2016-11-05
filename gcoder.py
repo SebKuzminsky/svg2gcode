@@ -18,6 +18,13 @@ def init():
     print
 
 
+def comment(msg):
+    if msg:
+        print ";", msg
+    else:
+        print
+
+
 def absolute():
     print "G90"
 
