@@ -133,7 +133,7 @@ def g83(retract, delta, x=None, y=None, z=None):
     print
 
 
-def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allowance=None):
+def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, xy_finishing_allowance=None, z_finishing_allowance=None):
 
     """Drills as many evenly spaced holes as will fit in a rectangular
     grid, within the rectangle defined by (x0, y0) and (x1, y1).
@@ -155,12 +155,14 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, finishing_allow
     min_y = min(y0, y1)
     max_y = max(y0, y1)
 
-    if finishing_allowance != None:
-        min_x = min_x + finishing_allowance
-        max_x = max_x - finishing_allowance
-        min_y = min_y + finishing_allowance
-        max_y = max_y - finishing_allowance
-        z_drill = z_drill + finishing_allowance
+    if xy_finishing_allowance != None:
+        min_x = min_x + xy_finishing_allowance
+        max_x = max_x - xy_finishing_allowance
+        min_y = min_y + xy_finishing_allowance
+        max_y = max_y - xy_finishing_allowance
+
+    if z_finishing_allowance != None:
+        z_drill = z_drill + z_finishing_allowance
 
     x_range = max_x - min_x
     y_range = max_y - min_y
