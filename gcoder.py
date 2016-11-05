@@ -57,6 +57,11 @@ def presentation_position():
     print "G53 G0 X9 Y12"
 
 
+def m2():
+    print
+    print "M2"
+
+
 def done():
     print
     print "; done"
