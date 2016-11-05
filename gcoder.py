@@ -66,7 +66,7 @@ def feed(feed_rate_units_per_minute):
 
 
 def speed(spindle_rpm):
-    print "S %.4f" % spindle_rpm
+    print "S %d" % spindle_rpm
 
 
 def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None, w=None):
