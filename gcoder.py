@@ -141,8 +141,9 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, xy_finishing_al
     will be inset from the edges by the drill's radius.
 
     If finishing_tolerance is specified, all the holes will stay at least
-    that far away from the material contour the specified rectangle,
-    and will end that far above the specified drill depth."""
+    that far away from the material contour the specified rectangle.
+    If z_finishing_allowance is specified the holes will end that far
+    above the specified drill depth."""
 
     print
     print "; drill hog"
