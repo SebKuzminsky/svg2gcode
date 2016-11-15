@@ -29,6 +29,14 @@ def absolute():
     print "G90"
 
 
+def absolute_arc_centers():
+    print "G90.1"
+
+
+def relative_arc_centers():
+    print "G91.1"
+
+
 def cancel_cutter_comp():
     g40()
 
