@@ -30,7 +30,7 @@ def absolute():
 
 
 def cancel_cutter_comp():
-    print "G40"
+    g40()
 
 
 def spindle_on():
@@ -121,6 +121,14 @@ def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
         if v is not None: print "V%.4f" % v,
         if w is not None: print "W%.4f" % w,
         print
+
+
+def g40():
+    print "G40"
+
+
+def g42_1(comp_diameter):
+    print "G42.1 D%.4f" % comp_diameter
 
 
 def g83(retract, delta, x=None, y=None, z=None):
