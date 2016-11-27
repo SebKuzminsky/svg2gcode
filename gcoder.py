@@ -236,7 +236,7 @@ def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
 
     if z > z_top_of_work:
         z = z_top_of_work
-        gcoder.g1(z = z)
+        g1(z = z)
 
     while z > z_target:
         z = z - depth_of_cut
@@ -244,7 +244,7 @@ def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
             z = z_target
 
         for waypoint in path:
-            gcoder.g1(x=waypoint['x'], y=waypoint['y'], z=z)
+            g1(x=waypoint['x'], y=waypoint['y'], z=z)
 
     # Cut away the last ramp we left behind.
-    gcoder.g1(**path[0])
+    g1(**path[0])
