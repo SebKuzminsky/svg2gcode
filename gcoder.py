@@ -131,6 +131,28 @@ def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
         print
 
 
+def g2(x=None, y=None, z=None, i=None, j=None, p=None):
+    print "G2",
+    if x is not None: print "X%.4f" % x,
+    if y is not None: print "Y%.4f" % y,
+    if z is not None: print "Z%.4f" % z,
+    if i is not None: print "I%.4f" % i,
+    if j is not None: print "J%.4f" % j,
+    if p is not None: print "P%.4f" % p,
+    print
+
+
+def g3(x=None, y=None, z=None, i=None, j=None, p=None):
+    print "G3",
+    if x is not None: print "X%.4f" % x,
+    if y is not None: print "Y%.4f" % y,
+    if z is not None: print "Z%.4f" % z,
+    if i is not None: print "I%.4f" % i,
+    if j is not None: print "J%.4f" % j,
+    if p is not None: print "P%.4f" % p,
+    print
+
+
 def g40():
     print "G40"
 
