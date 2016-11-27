@@ -218,3 +218,33 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, xy_finishing_al
 
     print
 
+
+def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
+
+    """This function traverses a path (a list of waypoints), cutting a
+    little deeper on each pass.  The waypoints are (X, Y) coordinates.
+
+    This function ramps down on the first of these cuts (to our depth
+    of cut), then goes around at that depth.  Repeat until we're reach
+    the bottom, then cut away the final ramp.
+
+    The first move of this function is to the first waypoint in the path.
+    When the function returns the controlled point is once again at the
+    first waypoint in the path, all the way down at Z=z_target."""
+
+    z = z_start
+
+    if z > z_top_of_work:
+        z = z_top_of_work
+        gcoder.g1(z = z)
+
+    while z > z_target:
+        z = z - depth_of_cut
+        if z < z_target:
+            z = z_target
+
+        for waypoint in path:
+            gcoder.g1(x=waypoint['x'], y=waypoint['y'], z=z)
+
+    # Cut away the last ramp we left behind.
+    gcoder.g1(**path[0])
