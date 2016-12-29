@@ -12,7 +12,7 @@ def init():
     print "G54          (switch to coordinate system 1)"
     print "G94          (units/minute feed mode)"
     print "G99          (in canned cycles, retract to the Z coordinate specified by the R word)"
-    print "G64 P0.0005  (enable path blending, but stay withing 0.0005 of the programmed path)"
+    print "G64 P0.0005  (enable path blending, but stay within 0.0005 of the programmed path)"
     print "G49          (turn off tool length compensation)"
     print "G80          (turn off canned cycles)"
     print
