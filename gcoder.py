@@ -276,3 +276,45 @@ def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
 
     # Cut away the last ramp we left behind.
     g1(**path[0])
+
+
+def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
+
+    """This function helix-mills a hole.  The motion is this:
+
+        1. Rapid to Z=z_retract.
+
+        2. Rapid to the vincinity of (X, Y).
+
+        3. Rapid to Z=z_start.
+
+        4. Helix down to Z=z_bottom, descending not more than Z=doc
+           per revolution.
+
+        5. One more full circle at Z=z_bottom, to flatten the floor.
+
+        6. Feed to the center of the hole and up off the floor a
+           little bit.
+
+        7. Rapid up to Z=z_retract."""
+
+    r = diameter / 2.0
+
+    z_range = z_start - z_bottom
+    full_circles = math.ceil(z_range / doc)
+
+    absolute_arc_centers()
+
+    # get in position for the cut
+    g0(z=z_retract)
+    g0(x=x+r, y=y)
+    g0(z=z_start)
+
+    # helix down, then flatten the bottom
+    g2(x=x+r, y=y, z=z_bottom, p=full_circles, i=x, j=y)
+    g2(x=x+r, y=y, z=z_bottom, i=x, j=y)
+
+    # extract the tool from the work
+    g1(x=x, y=y, z=z_bottom + 0.025)
+    g0(z=z_retract)
+
