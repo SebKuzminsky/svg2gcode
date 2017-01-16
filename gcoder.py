@@ -132,6 +132,9 @@ def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
 
 
 def g2(x=None, y=None, z=None, i=None, j=None, p=None):
+    """Clockwise arc feed."""
+    if i is None and j is None:
+        raise TypeError, "gcoder.g2() without i or j"
     print "G2",
     if x is not None: print "X%.4f" % x,
     if y is not None: print "Y%.4f" % y,
@@ -143,6 +146,9 @@ def g2(x=None, y=None, z=None, i=None, j=None, p=None):
 
 
 def g3(x=None, y=None, z=None, i=None, j=None, p=None):
+    """Counter-clockwise arc feed."""
+    if i is None and j is None:
+        raise TypeError, "gcoder.g3() without i or j"
     print "G3",
     if x is not None: print "X%.4f" % x,
     if y is not None: print "Y%.4f" % y,
