@@ -167,6 +167,15 @@ def g42_1(comp_diameter):
     print "G42.1 D%.4f" % comp_diameter
 
 
+def g81(retract, x=None, y=None, z=None):
+    print "G81",
+    if x is not None: print "X%.4f" % x,
+    if y is not None: print "Y%.4f" % y,
+    if z is not None: print "Z%.4f" % z,
+    print "R%.4f" % retract,
+    print
+
+
 def g83(retract, delta, x=None, y=None, z=None):
     print "G83",
     if x is not None: print "X%.4f" % x,
