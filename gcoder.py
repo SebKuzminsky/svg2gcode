@@ -327,3 +327,73 @@ def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
     g1(x=x, y=y, z=z_bottom + 0.025)
     g0(z=z_retract)
 
+
+def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc):
+
+    """Cuts back and forth between (X=x_start, Y=y_start) and (X=x_end,
+    Y=y_end), moving Z down (rapid) at the end of each pass.
+
+    The actual depth of cut may be reduced a little from max_doc to
+    achieve equal depth of cut on each pass, while minimizing the number
+    of passes.
+
+    Upon return the tool will be positioned at either (X=x_start,
+    Y=y_start) or at (X=x_end, Y=y_end), but always at Z=z_start.
+
+    Motion:
+
+        Initial Motion:
+
+            Rapid to X=x_start, Y=y_start.
+
+            Spindle on.
+
+            Rapid to Z=z_start.
+
+        Cycle:
+
+            Rapid Z down by actual_doc, but not below z_end.
+
+            Feed to X=x_end, Y=y_end.
+
+            If Z is at z_end, goto Done.
+
+            Rapid Z down by actual_doc, but not below z_end.
+
+            Feed to X=x_start, Y=y_start.
+
+            If Z is at z_end, goto Done.
+
+            Goto Cycle.
+
+        Done:
+
+            Rapid to Z=z_start."""
+
+    z_range = z_start - z_end
+    num_passes = math.ceil(z_range / max_doc)
+    doc = z_range / num_passes
+
+    g0(x=x_start, y=y_start)
+
+    spindle_on();
+
+    z = z_start
+    g0(z=z)
+
+    while z > z_end:
+        z = z - doc
+        if z < z_end:
+            z = z_end
+        g0(z=z)
+        g1(x=x_end, y=y_end)
+
+        if z > z_end:
+            z = z - doc
+            if z < z_end:
+                z = z_end
+            g0(z=z)
+            g1(x=x_start, y=y_start)
+
+    g0(z=z_start)
+
