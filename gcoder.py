@@ -171,8 +171,52 @@ def g40():
     cutter_comp_off()
 
 
+def cutter_comp_left(**kwargs):
+
+    """Enable cutter diameter compensation on the left side of the
+    programmed path.
+
+    When called with no argument, uses the diameter of the currently
+    loaded tool (from the tool table).
+
+    When called with the `diameter` argument, uses the specified diameter.
+
+    When called with the `tool` argument (and without the `diameter`
+    argument), uses the diameter of the specified tool number (from the
+    tool table)."""
+
+    if 'diameter' in kwargs:
+        print "G41.1 D%.4f   (cutter comp left, diameter mode)" % kwargs['diameter']
+    elif 'tool' in kwargs:
+        print "G41 D%d   (cutter comp left, tool-number mode)" % kwargs['tool']
+    else:
+        print "G41   (cutter comp left, current tool)"
+
+
+def cutter_comp_right(**kwargs):
+
+    """Enable cutter diameter compensation on the right side of the
+    programmed path.
+
+    When called with no argument, uses the diameter of the currently
+    loaded tool (from the tool table).
+
+    When called with the `diameter` argument, uses the specified diameter.
+
+    When called with the `tool` argument (and without the `diameter`
+    argument), uses the diameter of the specified tool number (from the
+    tool table)."""
+
+    if 'diameter' in kwargs:
+        print "G42.1 D%.4f   (cutter comp right, diameter mode)" % kwargs['diameter']
+    elif 'tool' in kwargs:
+        print "G42 D%d   (cutter comp right, tool-number mode)" % kwargs['tool']
+    else:
+        print "G42   (cutter comp right, current tool)"
+
 def g42_1(comp_diameter):
-    print "G42.1 D%.4f" % comp_diameter
+    print "; gcoder: calling program used obsolete g42_1() function, use cutter_comp_right() instead"
+    cutter_comp_right(diameter=comp_diameter)
 
 
 def g81(retract, x=None, y=None, z=None):
