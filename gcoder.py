@@ -8,7 +8,7 @@ def init():
     print "G17          (xy plane)"
     print "G90          (absolute)"
     print "G91.1        (arc centers are relative to arc starting point)"
-    print "G40          (disable cutter comp)"
+    cutter_comp_off()
     print "G54          (switch to coordinate system 1)"
     print "G94          (units/minute feed mode)"
     print "G99          (in canned cycles, retract to the Z coordinate specified by the R word)"
@@ -37,10 +37,6 @@ def relative_arc_centers():
     print "G91.1"
 
 
-def cancel_cutter_comp():
-    g40()
-
-
 def spindle_on():
     print "M3"
 
@@ -51,7 +47,7 @@ def spindle_off():
 
 def quill_up():
     absolute()
-    cancel_cutter_comp()
+    cutter_comp_off()
     print "G53 G0 Z0"
     spindle_off()
 
@@ -159,8 +155,20 @@ def g3(x=None, y=None, z=None, i=None, j=None, p=None):
     print
 
 
+#
+# Cutter compensation handling.
+#
+
+def cutter_comp_off():
+    print "G40          (cutter comp off)"
+
+def cancel_cutter_comp():
+    print "; gcoder: calling program used obsolete cancel_cutter_comp() function, use cutter_comp_off() instead"
+    cutter_comp_off()
+
 def g40():
-    print "G40"
+    print "; gcoder: calling program used obsolete g40() function, use cutter_comp_off() instead"
+    cutter_comp_off()
 
 
 def g42_1(comp_diameter):
