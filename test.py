@@ -31,4 +31,21 @@ path.append({'x':2, 'y':2})
 path.append({'x':0, 'y':2})
 gcoder.z_path(path, 0.1, 1.0, 0.0, -0.250)
 
+
+gcoder.comment('z_path2')
+path = []
+path.append(gcoder.line(x=2, y=0))
+path.append(gcoder.arc_ccw(x=3, y=1, i=2, j=1))
+path.append(gcoder.line(x=3, y=2))
+path.append(gcoder.arc_ccw(x=2, y=3, i=2, j=2))
+path.append(gcoder.line(x=1, y=3))
+path.append(gcoder.arc_ccw(x=0, y=2, i=1, j=2))
+path.append(gcoder.line(x=0, y=1))
+path.append(gcoder.arc_ccw(x=1, y=0, i=1, j=1))
+
+gcoder.absolute_arc_centers()
+gcoder.feed(10)
+gcoder.z_path2(path, 0.1, 1.0, 0.0, -0.250)
+
+
 gcoder.done()

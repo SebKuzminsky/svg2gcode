@@ -1,6 +1,114 @@
 import math
 
 
+class line(object):
+
+    """The Line class represents a linear feed move (g1) to the specified
+    endpoint.
+
+    It can be used as an element in the list of moves passed to
+    z_path2()."""
+
+    def __init__(self, x=None, y=None, z=None):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __str__(self):
+        have_arg = False
+        r = "Line("
+
+        if self.x is not None:
+            r += "x=%.4f" % self.x
+            have_arg = True
+
+        if self.y is not None:
+            if have_arg:
+                r += ", "
+            r += "y=%.4f" % self.y
+            have_arg = True
+
+        if self.z is not None:
+            if have_arg:
+                r += ", "
+            r += "z=%.4f" % self.z
+            have_arg = True
+
+        r += ")"
+        return r
+
+
+class arc(object):
+
+    """arc() is a base class representing a circular feed move (g2 or g3)
+    to the specified endpoint.  It is not suitable for use by itself, you
+    should use one of its subclasses, arc_cw() or arc_ccw(), instead."""
+
+    def __init__(self, x=None, y=None, z=None, i=None, j=None, p=None):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.i = i
+        self.j = j
+        self.p = p
+
+    def __str__(self):
+        have_arg = False
+        r = self.__class__.__name__ + "("
+
+        if self.x is not None:
+            r += "x=%.4f" % self.x
+            have_arg = True
+
+        if self.y is not None:
+            if have_arg:
+                r += ", "
+            r += "y=%.4f" % self.y
+            have_arg = True
+
+        if self.z is not None:
+            if have_arg:
+                r += ", "
+            r += "z=%.4f" % self.z
+            have_arg = True
+
+        if self.i is not None:
+            if have_arg:
+                r += ", "
+            r += "i=%.4f" % self.i
+            have_arg = True
+
+        if self.j is not None:
+            if have_arg:
+                r += ", "
+            r += "j=%.4f" % self.j
+            have_arg = True
+
+        if self.p is not None:
+            if have_arg:
+                r += ", "
+            r += "p=%.4f" % self.p
+            have_arg = True
+
+        r += ")"
+        return r
+
+
+class arc_cw(arc):
+    """The arc_cw() class represents a circular clockwise feed move (g2)
+    to the specified endpoint.
+
+    It can be used as an element in the list of moves passed to
+    z_path2()."""
+
+class arc_ccw(arc):
+    """The arc_ccw() class represents a circular counter-clockwise feed
+    move (g3) to the specified endpoint.
+
+    It can be used as an element in the list of moves passed to
+    z_path2()."""
+
+
 def init():
     print
     print "; init"
@@ -359,6 +467,35 @@ def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
 
     # Cut away the last ramp we left behind.
     g1(**path[0])
+
+
+def z_path2(path, depth_of_cut, z_start, z_top_of_work, z_target):
+    def handle_item(item):
+        if type(item) is line:
+            g1(x=item.x, y=item.y, z=z)
+        elif type(item) is arc_cw:
+            g2(x=item.x, y=item.y, z=z, i=item.i, j=item.j, p=item.p)
+        elif type(item) is arc_ccw:
+            g3(x=item.x, y=item.y, z=z, i=item.i, j=item.j, p=item.p)
+        else:
+            raise TypeError('z_path2() only accepts line(), arc_cw(), and arc_ccw() objects')
+
+    z = z_start
+
+    if z > z_top_of_work:
+        z = z_top_of_work
+        g1(z = z)
+
+    while z > z_target:
+        z = z - depth_of_cut
+        if z < z_target:
+            z = z_target
+
+        for item in path:
+            handle_item(item)
+
+    # Cut away the last ramp we left behind.
+    handle_item(path[0])
 
 
 def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
