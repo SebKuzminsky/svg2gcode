@@ -6,7 +6,7 @@ import gcoder
 gcoder.init()
 
 gcoder.feed(1.23)
-gcoder.g1(x=1, a=123)
+gcoder.g1(x=1)
 
 path = []
 path.append({'x':0, 'y':0})
