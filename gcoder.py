@@ -470,6 +470,39 @@ def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
 
 
 def z_path2(path, depth_of_cut, z_start, z_top_of_work, z_target):
+
+    """This function traverses a path (a list of Line, ArcCW, and ArcCCW
+    objects), cutting a little deeper on each pass.  The motion is this:
+
+        1. Set Z to z_start.
+
+        2. If z_top_of_work is below z_start, set Z level to z_top_of_work
+           and feed down to Z (otherwise don't move the controlled point).
+
+        3. Reduce Z by depth_of_cut, but not below z_target.
+
+        4. Feed to each waypoint in path, in order starting with the
+           first and ending with the last.
+
+        5. After arriving at the last waypoint, if Z is not yet down to
+           z_target: feed to the first waypoint while ramping down by
+           depth_of_cut (but not below z_target), then go back to step
+           4 for another trip around the path at this Z level.
+
+        6. After reaching step 5 with Z at z_target, feed back to the
+           first waypoint while keeping Z at the z_target level, thereby
+           cutting away the ramp left by the previous iteration.
+
+
+    The first move of this function is to the first waypoint in the
+    path, at a Z level that's depth-of-cut below the lower of z_start
+    and z_top_of_material (but not below z_target).  If you position
+    the cutter above the *last* waypoint in the path, you'll get a nice
+    consistent ramp down to the first waypoint each time around the path.
+
+    When the function returns the controlled point is once again at the
+    first waypoint in the path, all the way down at Z=z_target."""
+
     def handle_item(item):
         if type(item) is line:
             g1(x=item.x, y=item.y, z=z)
