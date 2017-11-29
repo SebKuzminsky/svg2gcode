@@ -572,7 +572,7 @@ def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
     g0(z=z_retract)
 
 
-def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_plunge=True):
+def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_plunge=True, final_retract=True):
 
     """Cuts back and forth between (X=x_start, Y=y_start) and (X=x_end,
     Y=y_end), plunging Z down (rapid or feed) at the end of each pass.
@@ -582,7 +582,8 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
     of passes.
 
     Upon return the tool will be positioned at either (X=x_start,
-    Y=y_start) or at (X=x_end, Y=y_end), but always at Z=z_start.
+    Y=y_start) or at (X=x_end, Y=y_end), and at either Z=z_start (if
+    final_retract is True) or Z=z_end (if final_retract is False).
 
     Motion:
 
@@ -614,7 +615,7 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
 
         Done:
 
-            Rapid to Z=z_start."""
+            If final_retract is True, rapid to Z=z_start."""
 
     z_range = z_start - z_end
     num_passes = math.ceil(z_range / max_doc)
@@ -647,5 +648,6 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
                 g1(z=z)
             g1(x=x_start, y=y_start)
 
-    g0(z=z_start)
+    if final_retract:
+        g0(z=z_start)
 

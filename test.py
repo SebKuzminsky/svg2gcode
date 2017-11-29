@@ -46,6 +46,19 @@ gcoder.saw_square(
     rapid_plunge = False
 )
 
+gcoder.comment('saw_square, with rapid_plunge False and final_retract False')
+gcoder.saw_square(
+    x_start = 0,
+    y_start = 0,
+    z_start = 0,
+    x_end = 1,
+    y_end = 0,
+    z_end = -1,
+    max_doc = 0.260,
+    rapid_plunge = False,
+    final_retract = False
+)
+
 gcoder.comment('z_path')
 path = []
 path.append({'x':0, 'y':0})
