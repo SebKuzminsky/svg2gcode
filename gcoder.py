@@ -121,6 +121,10 @@ current_u = None
 current_v = None
 current_w = None
 
+# When comparing floats, a difference of less than epsilon counts as no
+# difference at all.
+epsilon = 0.000000001
+
 
 def init():
     print
@@ -726,6 +730,8 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
 
             If final_retract is True, rapid to Z=z_start."""
 
+    global epsilon
+
     z_range = z_start - z_end
     num_passes = math.ceil(z_range / max_doc)
     doc = z_range / num_passes
@@ -737,7 +743,7 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
     z = z_start
     g0(z=z)
 
-    while z > z_end:
+    while math.fabs(z - z_end) > epsilon:
         z = z - doc
         if z < z_end:
             z = z_end
@@ -747,7 +753,7 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
             g1(z=z)
         g1(x=x_end, y=y_end)
 
-        if z > z_end:
+        if math.fabs(z - z_end) > epsilon:
             z = z - doc
             if z < z_end:
                 z = z_end
