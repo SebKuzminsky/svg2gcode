@@ -121,9 +121,13 @@ current_u = None
 current_v = None
 current_w = None
 
+
 # When comparing floats, a difference of less than epsilon counts as no
 # difference at all.
 epsilon = 0.000000001
+
+def close_enough(first, second):
+    return math.fabs(first - second) < epsilon
 
 
 def init():
@@ -743,7 +747,7 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
     z = z_start
     g0(z=z)
 
-    while math.fabs(z - z_end) > epsilon:
+    while not close_enough(z, z_end):
         z = z - doc
         if z < z_end:
             z = z_end
@@ -753,7 +757,7 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_pl
             g1(z=z)
         g1(x=x_end, y=y_end)
 
-        if math.fabs(z - z_end) > epsilon:
+        if not close_enough(z, z_end):
             z = z - doc
             if z < z_end:
                 z = z_end
