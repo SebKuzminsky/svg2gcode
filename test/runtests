@@ -1,0 +1,21 @@
+#!/bin/bash
+
+export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
+
+TEST=./test.py
+
+echo "running ${TEST}"
+${TEST}  > result.ngc
+if [ $? -ne 0 ]; then
+    echo "${TEST} FAILED: non-zero exit code"
+    exit 1
+fi
+
+diff -u expected.ngc result.ngc
+if [ $? -ne 0 ]; then
+    echo "${TEST} FAILED: unexpected result"
+    exit 1
+fi
+
+echo "${TEST} PASSED"
+
