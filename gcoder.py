@@ -572,10 +572,10 @@ def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
     g0(z=z_retract)
 
 
-def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc):
+def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc, rapid_plunge=True):
 
     """Cuts back and forth between (X=x_start, Y=y_start) and (X=x_end,
-    Y=y_end), moving Z down (rapid) at the end of each pass.
+    Y=y_end), plunging Z down (rapid or feed) at the end of each pass.
 
     The actual depth of cut may be reduced a little from max_doc to
     achieve equal depth of cut on each pass, while minimizing the number
@@ -596,13 +596,15 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc):
 
         Cycle:
 
-            Rapid Z down by actual_doc, but not below z_end.
+            Plunge Z down by actual_doc, but not below z_end (rapid or
+            feed, determined by rapid_plunge).
 
             Feed to X=x_end, Y=y_end.
 
             If Z is at z_end, goto Done.
 
-            Rapid Z down by actual_doc, but not below z_end.
+            Plunge Z down by actual_doc, but not below z_end (rapid or
+            feed, determined by rapid_plunge).
 
             Feed to X=x_start, Y=y_start.
 
@@ -629,14 +631,20 @@ def saw_square(x_start, y_start, z_start, x_end, y_end, z_end, max_doc):
         z = z - doc
         if z < z_end:
             z = z_end
-        g0(z=z)
+        if rapid_plunge:
+            g0(z=z)
+        else:
+            g1(z=z)
         g1(x=x_end, y=y_end)
 
         if z > z_end:
             z = z - doc
             if z < z_end:
                 z = z_end
-            g0(z=z)
+            if rapid_plunge:
+                g0(z=z)
+            else:
+                g1(z=z)
             g1(x=x_start, y=y_start)
 
     g0(z=z_start)
