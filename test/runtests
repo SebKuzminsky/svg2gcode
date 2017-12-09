@@ -2,20 +2,48 @@
 
 export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
 
-TEST=./test.py
+do_test() {
+    ./test.py > result.ngc
+    if [ $? -ne 0 ]; then
+        echo "FAILED: non-zero exit code"
+        return 1
+    fi
 
-echo "running ${TEST}"
-${TEST}  > result.ngc
-if [ $? -ne 0 ]; then
-    echo "${TEST} FAILED: non-zero exit code"
+    diff -u expected.ngc result.ngc
+    if [ $? -ne 0 ]; then
+        echo "FAILED: unexpected result"
+        return 1
+    fi
+
+    return 0
+}
+
+
+FAILED=""
+for TEST in $(find . -name 'test.py'); do
+    TEST_DIR=$(dirname ${TEST})
+    TEST_NAME=$(realpath --relative-to=${PWD} ${TEST_DIR})
+    ORIG_DIR=${PWD}
+
+    echo "running ${TEST_NAME}"
+    cd ${TEST_DIR}
+    do_test
+    if [ $? -ne 0 ]; then
+        FAILED="${FAILED} ${TEST_NAME}"
+    else
+        echo "${TEST_NAME} PASSED"
+    fi
+    cd ${ORIG_DIR}
+done
+
+
+if [ -n "${FAILED}" ]; then
+    echo "failed tests:"
+    for TEST in ${FAILED}; do
+        echo "    ${TEST}"
+    done
     exit 1
 fi
 
-diff -u expected.ngc result.ngc
-if [ $? -ne 0 ]; then
-    echo "${TEST} FAILED: unexpected result"
-    exit 1
-fi
-
-echo "${TEST} PASSED"
-
+echo "all tests passed!"
+exit 0
