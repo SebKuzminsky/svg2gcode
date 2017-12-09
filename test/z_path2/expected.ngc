@@ -1,17 +1,36 @@
+
+; init
+G20          (inch)
+G17          (xy plane)
+G90          (absolute)
+G91.1        (arc centers are relative to arc starting point)
+G40          (cutter comp off)
+G54          (switch to coordinate system 1)
+G94          (units/minute feed mode)
+G99          (in canned cycles, retract to the Z coordinate specified by the R word)
+G64 P0.0005  (enable path blending, but stay within 0.0005 of the programmed path)
+G49          (turn off tool length compensation)
+G80          (turn off canned cycles)
+
 G91.1
-G0 Z1.0000
-G0 X1.0000 Y0.0000
 S 1000
 F 10.0000
+M3
+; first
+; first: getting into position
+G0 Z1.0000
+G0 X1.0000 Y0.0000
+G0 Z0.1000
 G1 Z0.0000
-G1 X4.0000 Z-0.7500
-G3 X5.0000 Y1.0000 Z-0.7500 I0.0000 J1.0000
-G1 Y4.0000 Z-0.7500
-G3 X4.0000 Y5.0000 Z-0.7500 I-1.0000 J0.0000
-G1 X1.0000 Z-0.7500
-G3 X0.0000 Y4.0000 Z-0.7500 I0.0000 J-1.0000
-G1 Y1.0000 Z-0.7500
-G3 X1.0000 Y0.0000 Z-0.7500 I1.0000 J0.0000
+; first: z_path2
+G1 X4.0000 Z-0.5000
+G3 X5.0000 Y1.0000 Z-0.5000 I0.0000 J1.0000
+G1 Y4.0000 Z-0.5000
+G3 X4.0000 Y5.0000 Z-0.5000 I-1.0000 J0.0000
+G1 X1.0000 Z-0.5000
+G3 X0.0000 Y4.0000 Z-0.5000 I0.0000 J-1.0000
+G1 Y1.0000 Z-0.5000
+G3 X1.0000 Y0.0000 Z-0.5000 I1.0000 J0.0000
 G1 X4.0000 Z-1.0000
 G3 X5.0000 Y1.0000 Z-1.0000 I0.0000 J1.0000
 G1 Y4.0000 Z-1.0000
@@ -21,7 +40,27 @@ G3 X0.0000 Y4.0000 Z-1.0000 I0.0000 J-1.0000
 G1 Y1.0000 Z-1.0000
 G3 X1.0000 Y0.0000 Z-1.0000 I1.0000 J0.0000
 G1 X4.0000 Z-1.0000
+; first: getting out of the cut
 G1 X4.0000 Y0.0250 Z-0.9750
+G0 Z1.0000
+; second
+; second: getting into position
+G0 Z1.0000
+G0 X1.0000 Y0.0000
+G0 Z0.1000
+G1 Z0.0000
+; second: z_path2
+G1 X4.0000 Z-2.0000
+G3 X5.0000 Y1.0000 Z-2.0000 I0.0000 J1.0000
+G1 Y4.0000 Z-2.0000
+G3 X4.0000 Y5.0000 Z-2.0000 I-1.0000 J0.0000
+G1 X1.0000 Z-2.0000
+G3 X0.0000 Y4.0000 Z-2.0000 I0.0000 J-1.0000
+G1 Y1.0000 Z-2.0000
+G3 X1.0000 Y0.0000 Z-2.0000 I1.0000 J0.0000
+G1 X4.0000 Z-2.0000
+; second: getting out of the cut
+G1 X4.0000 Y0.0250 Z-1.9750
 G0 Z1.0000
 
 M2
