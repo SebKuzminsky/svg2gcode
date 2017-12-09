@@ -32,6 +32,7 @@ for TEST in $(find . -name 'test.py'); do
         FAILED="${FAILED} ${TEST_NAME}"
     else
         echo "${TEST_NAME} PASSED"
+        rm -f result.ngc
     fi
     cd ${ORIG_DIR}
 done
