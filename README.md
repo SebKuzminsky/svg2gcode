@@ -5,3 +5,15 @@ called from a program that has an idea of some cuts it wants to make.
 G-coder functions write g-code to an output file.  Some G-coder
 functions correspond directly to specific G-codes, and some to more
 complex operations consisting of longer sequences of g-codes.
+
+
+# Requirements
+
+Install dependencies:
+
+    `sudo apt-get install pyton-cairosvg python-svgwrite`
+
+Check out the svgpathtools submodule:
+
+    `git submodule init`
+    `git submodule update`
