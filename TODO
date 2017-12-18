@@ -1,0 +1,21 @@
+What I want for the first step is a simple CAM program that reads an
+SVG and makes a pocketing toolpath from the interior of the path.
+
+It must be scriptable.
+
+A future version might have an optional GUI.  This GUI should display
+the input SVG and the computed tool path, and let you export the toolpath
+as g-code.
+
+I'm planning to use svgpathtools to compute the offset paths needed,
+so it would be most convenient if i could render its Path objects.
+
+
+# Future embellishments
+
+* Leave behind some finishing allowance.
+
+* Cut along the path (outside, inside, or right on top, optionally with
+  work-holding tabs.
+
+* Pockets with islands.
