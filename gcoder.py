@@ -1,6 +1,13 @@
 from __future__ import print_function
 
+import cairosvg.parser
 import math
+import os
+import re
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
+import svgpathtools
 
 
 class line(object):
@@ -109,6 +116,176 @@ class arc_ccw(arc):
 
     It can be used as an element in the list of moves passed to
     z_path2()."""
+
+
+class svg():
+    def __init__(self, svg_file):
+        self.svg_file = svg_file
+        self.height = 0.0
+
+        self.cairo = cairosvg.parser.Tree(url=self.svg_file)
+
+        m = re.match('([0-9.]+)([a-zA-Z]*)', self.cairo['height'])
+        if m == None:
+            raise SystemExit, "failed to parse SVG height: %s" % c['height']
+
+        if len(m.groups()) == 1:
+            self.height = float(m.group(1))
+        elif len(m.groups()) == 2:
+            print("FIXME: there's a string here ('%s') specifying the units, i hope it's 1:1 with the SVG user units, and i hope it's mm" % m.group(2), file=sys.stderr)
+            self.height = float(m.group(1))
+        else:
+            raise SystemExit, "weird result from re"
+
+        self.paths, self.attributes = svgpathtools.svg2paths(self.svg_file)
+
+
+    def to_mm_x(self, x_mm):
+        if type(x_mm) != float:
+            raise SystemExit, 'non-float input'
+        return x_mm
+
+
+    def to_mm_y(self, y_mm):
+        if type(y_mm) != float:
+            raise SystemExit, 'non-float input'
+        return self.height - y_mm
+
+
+    def to_mm(self, xy):
+        if type(xy) != complex:
+            raise SystemExit, 'non-complex input'
+        x = self.to_mm_x(xy.real)
+        y = self.to_mm_y(xy.imag)
+        return (x, y)
+
+
+def offset_path(path, offset_distance, steps=1000):
+    """Takes in a Path object, `path`, and a distance, `offset_distance`,
+    and returns the 'parallel' offset curve."""
+
+    # FIXME: Look for intersections, prune.
+
+    # FIXME: Join adjacent non-intersecting line segments with arcs.
+
+    #
+    # First generate a list of Path elements (Lines and Arcs),
+    # corresponding to the offset versions of the Path elements in the
+    # input path.
+    #
+    offset_path_list = []
+    for seg in path:
+        if type(seg) == svgpathtools.path.Line:
+            start = seg.point(0) + (offset_distance * seg.normal(0))
+            end = seg.point(1) + (offset_distance * seg.normal(1))
+            offset_path_list.append(svgpathtools.Line(start, end))
+
+        elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
+            # Circular arcs remain arcs, elliptical arcs become linear
+            # approximations below.
+            if seg.radius.real > offset_distance:
+                start = seg.point(0) + (offset_distance * seg.normal(0))
+                end = seg.point(1) + (offset_distance * seg.normal(1))
+                radius = complex(seg.radius.real - offset_distance, seg.radius.imag - offset_distance)
+                offset_arc = svgpathtools.path.Arc(
+                    start = start,
+                    end = end,
+                    radius = radius,
+                    rotation = seg.rotation,
+                    large_arc = seg.large_arc,
+                    sweep = seg.sweep
+                )
+                offset_path_list.append(offset_arc)
+
+        else:
+            # Here we deal with any segment that's not a line or a
+            # circular arc.  This includes elliptic arcs and bezier
+            # curves.  We use linear approximation.
+            #
+            # FIXME: Steps should probably be computed as a function
+            #     of the length of the segment (or maybe dynamically
+            #     adjusted to make the length of the *offset* line
+            #     segments manageable.
+            points = []
+            for k in range(steps):
+                t = k / float(steps)
+                normal = seg.normal(t)
+                offset_vector = offset_distance * normal
+                points.append(seg.point(t) + offset_vector)
+            for k in range(len(points)-1):
+                start = points[k]
+                end = points[k+1]
+                offset_path_list.append(svgpathtools.Line(start, end))
+
+    #
+    # Find all the places where one segment intersects the next, and
+    # trim to the intersection.
+    #
+
+    # This is a list of coordinates where the offset path segments
+    # intersect themselves.
+    intersection_list = []
+
+    print("intersections:", file=sys.stderr)
+    for i in range(len(offset_path_list)):
+        this_seg = offset_path_list[i]
+        if (i+1) < len(offset_path_list):
+            next_seg = offset_path_list[i+1]
+        else:
+            next_seg = offset_path_list[0]
+        intersections = this_seg.intersect(next_seg)
+        if len(intersections) > 0:
+            print("    ", this_seg, file=sys.stderr)
+            print("    ", next_seg, file=sys.stderr)
+            for intersection in intersections:
+                point = this_seg.point(intersection[0])
+                print("        t0=%.4f, t1=%.4f" % (intersection[0], intersection[1]), file=sys.stderr)
+                print("        intersection point:", point, file=sys.stderr)
+                print("        end point:", this_seg.end, file=sys.stderr)
+                print("        distance:", point - this_seg.end, file=sys.stderr)
+                if complex_close_enough(point, this_seg.end):
+                    print("        touching at endpoint, ignore this intersection", file=sys.stderr)
+                else:
+                    print("        touching *not* at endpoint, this is a real intersection", file=sys.stderr)
+                    intersection_list.append(this_seg.point(intersection[0]))
+
+    print("all intersections:", intersection_list, file=sys.stderr)
+
+    if path.isclosed():
+        # FIXME: this fails if start or end is not a line
+        start = offset_path_list[-1].end
+        end = offset_path_list[0].start
+        offset_path_list.append(svgpathtools.Line(start, end))
+    offset_path = svgpathtools.Path(*offset_path_list)
+    return offset_path, intersection_list
+
+
+def path_to_gcode(svg, path):
+    (x, y) = svg.to_mm(path[0].start)
+    g0(z=10.000)
+    g0(x=x, y=y)
+
+    spindle_on()
+    g1(z=0.000)
+
+    for element in path:
+        if type(element) == svgpathtools.path.Line:
+            (start_x, start_y) = svg.to_mm(element.start)
+            (end_x, end_y) = svg.to_mm(element.end)
+            g1(x=end_x, y=end_y)
+        elif type(element) == svgpathtools.path.Arc:
+            # FIXME: g90.1 or g91.1?
+            if element.radius.real != element.radius.imag:
+                raise ValueError, "arc radii differ: %s", element
+            (end_x, end_y) = svg.to_mm(element.end)
+            if element.sweep:
+                g2(x=end_x, y=end_y, i=element.center.real, j=element.center.imag)
+            else:
+                g3(x=end_x, y=end_y, i=element.center.real, j=element.center.imag)
+        else:
+            raise ValueError, "unhandled element: %s" % element
+
+    g0(z=10.000)
 
 
 # These keep track of where the most recent move left the controlled
