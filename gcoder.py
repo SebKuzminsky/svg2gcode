@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import math
 
 
@@ -142,53 +144,53 @@ def complex_close_enough(a, b):
 
 
 def init():
-    print
-    print "; init"
-    print "G20          (inch)"
-    print "G17          (xy plane)"
-    print "G90          (absolute)"
-    print "G91.1        (arc centers are relative to arc starting point)"
+    print()
+    print("; init")
+    print("G20          (inch)")
+    print("G17          (xy plane)")
+    print("G90          (absolute)")
+    print("G91.1        (arc centers are relative to arc starting point)")
     cutter_comp_off()
-    print "G54          (switch to coordinate system 1)"
-    print "G94          (units/minute feed mode)"
-    print "G99          (in canned cycles, retract to the Z coordinate specified by the R word)"
-    print "G64 P0.0005  (enable path blending, but stay within 0.0005 of the programmed path)"
-    print "G49          (turn off tool length compensation)"
-    print "G80          (turn off canned cycles)"
-    print
+    print("G54          (switch to coordinate system 1)")
+    print("G94          (units/minute feed mode)")
+    print("G99          (in canned cycles, retract to the Z coordinate specified by the R word)")
+    print("G64 P0.0005  (enable path blending, but stay within 0.0005 of the programmed path)")
+    print("G49          (turn off tool length compensation)")
+    print("G80          (turn off canned cycles)")
+    print()
 
 
 def comment(msg):
     if msg:
-        print ";", msg
+        print(";", msg)
     else:
-        print
+        print()
 
 
 def absolute():
-    print "G90"
+    print("G90")
 
 
 def absolute_arc_centers():
-    print "G90.1"
+    print("G90.1")
 
 
 def relative_arc_centers():
-    print "G91.1"
+    print("G91.1")
 
 
 def spindle_on():
-    print "M3"
+    print("M3")
 
 
 def spindle_off():
-    print "M5"
+    print("M5")
 
 
 def quill_up():
     absolute()
     cutter_comp_off()
-    print "G53 G0 Z0"
+    print("G53 G0 Z0")
     current_z = None
     spindle_off()
 
@@ -199,33 +201,33 @@ def presentation_position():
 
     # rapid to presentation position
     # table centered in X, all the way forward towards the user
-    print "G53 G0 X9 Y12"
+    print("G53 G0 X9 Y12")
     current_x = None
     current_y = None
 
 
 def m2():
-    print
-    print "M2"
+    print()
+    print("M2")
 
 
 def done():
-    print
-    print "; done"
+    print()
+    print("; done")
     presentation_position()
-    print "M2"
+    print("M2")
 
 
 def imperial():
-    print "G20"
+    print("G20")
 
 
 def feed(feed_rate_units_per_minute):
-    print "F %.4f" % feed_rate_units_per_minute
+    print("F %.4f" % feed_rate_units_per_minute)
 
 
 def speed(spindle_rpm):
-    print "S %d" % spindle_rpm
+    print("S %d" % spindle_rpm)
 
 
 # FIXME: g0(path) should be merged or replaced by z_path() somehow
@@ -241,41 +243,41 @@ def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
     global current_w
 
     if path is not None:
-        print
-        print "; g0 path"
+        print()
+        print("; g0 path")
         for waypoint in path:
             g0(**waypoint)
-        print
+        print()
     else:
-        print "G0",
+        print("G0", end='')
         if x is not None:
             current_x = x
-            print "X%.4f" % x,
+            print(" X%.4f" % x, end='')
         if y is not None:
             current_y = y
-            print "Y%.4f" % y,
+            print(" Y%.4f" % y, end='')
         if z is not None:
             current_z = z
-            print "Z%.4f" % z,
+            print(" Z%.4f" % z, end='')
         if a is not None:
             current_a = a
-            print "A%.4f" % a,
+            print(" A%.4f" % a, end='')
         if b is not None:
             current_b = b
-            print "B%.4f" % b,
+            print(" B%.4f" % b, end='')
         if c is not None:
             current_c = c
-            print "C%.4f" % c,
+            print(" C%.4f" % c, end='')
         if u is not None:
             current_u = u
-            print "U%.4f" % u,
+            print(" U%.4f" % u, end='')
         if v is not None:
             current_v = v
-            print "V%.4f" % v,
+            print(" V%.4f" % v, end='')
         if w is not None:
             current_w = w
-            print "W%.4f" % w,
-        print
+            print(" W%.4f" % w, end='')
+        print()
 
 
 def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None, w=None):
@@ -290,41 +292,41 @@ def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
     global current_w
 
     if path is not None:
-        print
-        print "; g1 path"
+        print()
+        print("; g1 path")
         for waypoint in path:
             g1(**waypoint)
-        print
+        print()
     else:
-        print "G1",
+        print("G1", end='')
         if x is not None:
             current_x = x
-            print "X%.4f" % x,
+            print(" X%.4f" % x, end='')
         if y is not None:
             current_y = y
-            print "Y%.4f" % y,
+            print(" Y%.4f" % y, end='')
         if z is not None:
             current_z = z
-            print "Z%.4f" % z,
+            print(" Z%.4f" % z, end='')
         if a is not None:
             current_a = a
-            print "A%.4f" % a,
+            print(" A%.4f" % a, end='')
         if b is not None:
             current_b = b
-            print "B%.4f" % b,
+            print(" B%.4f" % b, end='')
         if c is not None:
             current_c = c
-            print "C%.4f" % c,
+            print(" C%.4f" % c, end='')
         if u is not None:
             current_u = u
-            print "U%.4f" % u,
+            print(" U%.4f" % u, end='')
         if v is not None:
             current_v = v
-            print "V%.4f" % v,
+            print(" V%.4f" % v, end='')
         if w is not None:
             current_w = w
-            print "W%.4f" % w,
-        print
+            print(" W%.4f" % w, end='')
+        print()
 
 
 def g2(x=None, y=None, z=None, i=None, j=None, p=None):
@@ -335,20 +337,20 @@ def g2(x=None, y=None, z=None, i=None, j=None, p=None):
     """Clockwise arc feed."""
     if i is None and j is None:
         raise TypeError, "gcoder.g2() without i or j"
-    print "G2",
+    print("G2", end='')
     if x is not None:
         current_x = x
-        print "X%.4f" % x,
+        print(" X%.4f" % x, end='')
     if y is not None:
         current_y = y
-        print "Y%.4f" % y,
+        print(" Y%.4f" % y, end='')
     if z is not None:
         current_z = z
-        print "Z%.4f" % z,
-    if i is not None: print "I%.4f" % i,
-    if j is not None: print "J%.4f" % j,
-    if p is not None: print "P%.4f" % p,
-    print
+        print(" Z%.4f" % z, end='')
+    if i is not None: print(" I%.4f" % i, end='')
+    if j is not None: print(" J%.4f" % j, end='')
+    if p is not None: print(" P%.4f" % p, end='')
+    print()
 
 
 def g3(x=None, y=None, z=None, i=None, j=None, p=None):
@@ -359,20 +361,20 @@ def g3(x=None, y=None, z=None, i=None, j=None, p=None):
     """Counter-clockwise arc feed."""
     if i is None and j is None:
         raise TypeError, "gcoder.g3() without i or j"
-    print "G3",
+    print("G3", end='')
     if x is not None:
         current_x = x
-        print "X%.4f" % x,
+        print(" X%.4f" % x, end='')
     if y is not None:
         current_y = y
-        print "Y%.4f" % y,
+        print(" Y%.4f" % y, end='')
     if z is not None:
         current_z = z
-        print "Z%.4f" % z,
-    if i is not None: print "I%.4f" % i,
-    if j is not None: print "J%.4f" % j,
-    if p is not None: print "P%.4f" % p,
-    print
+        print(" Z%.4f" % z, end='')
+    if i is not None: print(" I%.4f" % i, end='')
+    if j is not None: print(" J%.4f" % j, end='')
+    if p is not None: print(" P%.4f" % p, end='')
+    print()
 
 
 #
@@ -380,14 +382,14 @@ def g3(x=None, y=None, z=None, i=None, j=None, p=None):
 #
 
 def cutter_comp_off():
-    print "G40          (cutter comp off)"
+    print("G40          (cutter comp off)")
 
 def cancel_cutter_comp():
-    print "; gcoder: calling program used obsolete cancel_cutter_comp() function, use cutter_comp_off() instead"
+    print("; gcoder: calling program used obsolete cancel_cutter_comp() function, use cutter_comp_off() instead")
     cutter_comp_off()
 
 def g40():
-    print "; gcoder: calling program used obsolete g40() function, use cutter_comp_off() instead"
+    print("; gcoder: calling program used obsolete g40() function, use cutter_comp_off() instead")
     cutter_comp_off()
 
 
@@ -406,11 +408,11 @@ def cutter_comp_left(**kwargs):
     tool table)."""
 
     if 'diameter' in kwargs:
-        print "G41.1 D%.4f   (cutter comp left, diameter mode)" % kwargs['diameter']
+        print("G41.1 D%.4f   (cutter comp left, diameter mode)" % kwargs['diameter'])
     elif 'tool' in kwargs:
-        print "G41 D%d   (cutter comp left, tool-number mode)" % kwargs['tool']
+        print("G41 D%d   (cutter comp left, tool-number mode)" % kwargs['tool'])
     else:
-        print "G41   (cutter comp left, current tool)"
+        print("G41   (cutter comp left, current tool)")
 
 
 def cutter_comp_right(**kwargs):
@@ -428,14 +430,14 @@ def cutter_comp_right(**kwargs):
     tool table)."""
 
     if 'diameter' in kwargs:
-        print "G42.1 D%.4f   (cutter comp right, diameter mode)" % kwargs['diameter']
+        print("G42.1 D%.4f   (cutter comp right, diameter mode)" % kwargs['diameter'])
     elif 'tool' in kwargs:
-        print "G42 D%d   (cutter comp right, tool-number mode)" % kwargs['tool']
+        print("G42 D%d   (cutter comp right, tool-number mode)" % kwargs['tool'])
     else:
-        print "G42   (cutter comp right, current tool)"
+        print("G42   (cutter comp right, current tool)")
 
 def g42_1(comp_diameter):
-    print "; gcoder: calling program used obsolete g42_1() function, use cutter_comp_right() instead"
+    print("; gcoder: calling program used obsolete g42_1() function, use cutter_comp_right() instead")
     cutter_comp_right(diameter=comp_diameter)
 
 
@@ -444,17 +446,17 @@ def g81(retract, x=None, y=None, z=None):
     global current_y
     global current_z
 
-    print "G81",
+    print("G81", end='')
     if x is not None:
         current_x = x
-        print "X%.4f" % x,
+        print(" X%.4f" % x, end='')
     if y is not None:
         current_y = y
-        print "Y%.4f" % y,
+        print(" Y%.4f" % y, end='')
     if z is not None:
-        print "Z%.4f" % z,
-    print "R%.4f" % retract,
-    print
+        print(" Z%.4f" % z, end='')
+    print(" R%.4f" % retract, end='')
+    print()
     # FIXME: keep track of retract mode, set Z correctly here
     current_z = None
 
@@ -464,18 +466,18 @@ def g83(retract, delta, x=None, y=None, z=None):
     global current_y
     global current_z
 
-    print "G83",
+    print("G83", end='')
     if x is not None:
         current_x = x
-        print "X%.4f" % x,
+        print(" X%.4f" % x, end='')
     if y is not None:
         current_y = y
-        print "Y%.4f" % y,
+        print(" Y%.4f" % y, end='')
     if z is not None:
-        print "Z%.4f" % z,
-    print "R%.4f" % retract,
-    print "Q%.4f" % delta,
-    print
+        print(" Z%.4f" % z, end='')
+    print(" R%.4f" % retract, end='')
+    print(" Q%.4f" % delta, end='')
+    print()
     # FIXME: keep track of retract mode, set Z correctly here
     current_z = None
 
@@ -492,8 +494,8 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, xy_finishing_al
     If z_finishing_allowance is specified the holes will end that far
     above the specified drill depth."""
 
-    print
-    print "; drill hog"
+    print()
+    print("; drill hog")
 
     radius = diameter/2.0
 
@@ -541,7 +543,7 @@ def drill_hog(diameter, retract, delta, z_drill, x0, y0, x1, y1, xy_finishing_al
 
             g83(x=x, y=y, z=z_drill, delta=delta, retract=retract)
 
-    print
+    print()
 
 
 def z_path(path, depth_of_cut, z_start, z_top_of_work, z_target):
