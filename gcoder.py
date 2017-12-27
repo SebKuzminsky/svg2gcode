@@ -131,6 +131,15 @@ def close_enough(a, b):
     (1e-9) of each other, False if they're farther apart."""
     return abs(a - b) < epsilon
 
+def complex_close_enough(a, b):
+    """Returns True if the two complex numbers `a` and `b` are within
+    `epsilon` (1e-9) of each other, False if they're farther apart."""
+    diff = complex(a.real - b.real, a.imag - b.imag)
+    mag = math.sqrt(pow(diff.real, 2) + pow(diff.imag, 2))
+    if mag < epsilon:
+        return True
+    return False
+
 
 def init():
     print
