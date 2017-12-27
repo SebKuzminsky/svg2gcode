@@ -126,8 +126,10 @@ current_w = None
 # difference at all.
 epsilon = 0.000000001
 
-def close_enough(first, second):
-    return math.fabs(first - second) < epsilon
+def close_enough(a, b):
+    """Returns True if the two numbers `a` and `b` are within `epsilon`
+    (1e-9) of each other, False if they're farther apart."""
+    return abs(a - b) < epsilon
 
 
 def init():
