@@ -1,0 +1,66 @@
+#!/usr/bin/env python2
+from __future__ import print_function
+
+import argparse
+import math
+import os
+import sys
+
+import gcoder
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
+import svgpathtools
+
+
+parser = argparse.ArgumentParser(description="Compute an offset path from the path in an SVG file.")
+parser.add_argument("SVG", help="The name of the SVG file to read.")
+parser.add_argument("-o", "--offset", type=int, help="The offset to use.")
+parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
+parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 1000)", default=1000)
+parser.add_argument("-b", "--bare", action="store_true", help="Emit bare path only, no preamble/postamble.")
+parser.add_argument("--include-input", action="store_true", help="Emit g-code for input path too (in addition to emitting g-code for the offset path).")
+args = parser.parse_args()
+
+svg = gcoder.svg(args.SVG)
+
+path = svg.paths[0]
+if not path.isclosed():
+    raise ValueError, "path is not closed"
+
+offset_paths = []
+offset_path, intersections = gcoder.offset_path(path, args.offset)
+offset_paths.append(offset_path)
+
+intersection_paths = []
+for i in intersections:
+    print("intersection at x=%.6f, y=%.6f" % (i.real, i.imag), file=sys.stderr)
+    radius = complex(5,5)
+    mark = svgpathtools.path.Arc(
+        start = i + complex(radius, 0),
+        end = i + complex(-radius, 0),
+        radius = radius,
+        rotation = 0,
+        large_arc = True,
+        sweep = True
+    )
+
+    intersection_paths.append(mark)
+
+svgpathtools.paths2svg.wsvg(paths=[path] + offset_paths + intersection_paths)
+
+if not args.bare:
+    gcoder.init()
+    gcoder.metric()
+    gcoder.speed(args.speed)
+    gcoder.feed(args.feed)
+
+if args.include_input:
+    gcoder.comment("input path")
+    gcoder.path_to_gcode(svg, path)
+
+for offset_path in offset_paths:
+    gcoder.comment("offset path (%.4f offset)" % args.offset)
+    gcoder.path_to_gcode(svg, offset_path)
+
+if not args.bare:
+    gcoder.done()
