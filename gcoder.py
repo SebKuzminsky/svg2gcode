@@ -222,6 +222,10 @@ def imperial():
     print("G20")
 
 
+def metric():
+    print("G21")
+
+
 def feed(feed_rate_units_per_minute):
     print("F %.4f" % feed_rate_units_per_minute)
 
