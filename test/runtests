@@ -3,7 +3,8 @@
 export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
 
 do_test() {
-    ./test.py > result.ngc
+    TEST_FILE=$(basename "$1")
+    ./${TEST_FILE} > result.ngc
     if [ $? -ne 0 ]; then
         echo "FAILED: non-zero exit code"
         return 1
@@ -20,14 +21,14 @@ do_test() {
 
 
 FAILED=""
-for TEST in $(find . -name 'test.py'); do
+for TEST in $(find . -name 'test.py' -o -name 'test.sh'); do
     TEST_DIR=$(dirname ${TEST})
     TEST_NAME=$(realpath --relative-to=${PWD} ${TEST_DIR})
     ORIG_DIR=${PWD}
 
     echo "running ${TEST_NAME}"
     cd ${TEST_DIR}
-    do_test
+    do_test ${TEST}
     if [ $? -ne 0 ]; then
         FAILED="${FAILED} ${TEST_NAME}"
     else
