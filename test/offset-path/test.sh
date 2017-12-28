@@ -6,7 +6,7 @@ do_test() {
 
     TEST_BASENAME=${SVG_BASENAME}.offset-${OFFSET}
 
-    echo testing ${TEST_BASENAME}
+    echo "    testing ${TEST_BASENAME}"
 
     ../../svg2gcode --offset ${OFFSET} ${SVG_BASENAME}.svg >| ${TEST_BASENAME}.result.ngc 2>> ${TEST_BASENAME}.stderr
     diff -u ${TEST_BASENAME}.expected.ngc ${TEST_BASENAME}.result.ngc || exit 1
