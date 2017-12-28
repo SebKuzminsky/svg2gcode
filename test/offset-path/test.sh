@@ -16,6 +16,7 @@ do_test() {
 
     rm ${TEST_BASENAME}.result.ngc
     rm ${TEST_BASENAME}.result.canon
+    rm ${TEST_BASENAME}.stderr
 }
 
 
