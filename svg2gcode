@@ -17,7 +17,6 @@ parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-o", "--offset", type=float, help="The offset to use.")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 1000)", default=1000)
-parser.add_argument("-b", "--bare", action="store_true", help="Emit bare path only, no preamble/postamble.")
 parser.add_argument("--include-input", action="store_true", help="Emit g-code for input path too (in addition to emitting g-code for the offset path).")
 args = parser.parse_args()
 
@@ -48,11 +47,9 @@ for i in intersections:
 
 svgpathtools.paths2svg.wsvg(paths=[path] + offset_paths + intersection_paths)
 
-if not args.bare:
-    gcoder.init()
-    gcoder.metric()
-    gcoder.speed(args.speed)
-    gcoder.feed(args.feed)
+gcoder.metric()
+gcoder.speed(args.speed)
+gcoder.feed(args.feed)
 
 if args.include_input:
     gcoder.comment("input path")
@@ -62,5 +59,4 @@ for offset_path in offset_paths:
     gcoder.comment("offset path (%.4f offset)" % args.offset)
     gcoder.path_to_gcode(svg, offset_path)
 
-if not args.bare:
-    gcoder.m2()
+gcoder.m2()
