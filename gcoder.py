@@ -203,11 +203,12 @@ def offset_path(path, offset_distance, steps=1000):
                     large_arc = seg.large_arc,
                     sweep = seg.sweep
                 )
+                offset_path_list.append(offset_arc)
             elif new_radius > 0.0:
-                # Offset Arc still exists, but radius is smaller than
+                # Offset Arc still exists but radius is smaller than
                 # the minimum that LinuxCNC accepts, replace with a Line.
                 offset_arc = svgpathtools.path.Line(start = start, end = end)
-            offset_path_list.append(offset_arc)
+                offset_path_list.append(offset_arc)
 
         else:
             # Here we deal with any segment that's not a line or a
