@@ -252,6 +252,8 @@ def offset_path(path, offset_distance, steps=1000):
                 else:
                     print("        touching *not* at endpoint, this is a real intersection", file=sys.stderr)
                     intersection_list.append(this_seg.point(intersection[0]))
+                    this_seg.end = this_seg.point(intersection[0])
+                    next_seg.start = next_seg.point(intersection[1])
 
     print("all intersections:", intersection_list, file=sys.stderr)
 
