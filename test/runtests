@@ -4,16 +4,22 @@ export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
 
 do_test() {
     TEST_FILE=$(basename "$1")
-    ./${TEST_FILE} > result.ngc
+    if [ -f expected.ngc ]; then
+        ./${TEST_FILE} > result.ngc
+    else
+        ./${TEST_FILE}
+    fi
     if [ $? -ne 0 ]; then
         echo "FAILED: non-zero exit code"
         return 1
     fi
 
-    diff -u expected.ngc result.ngc
-    if [ $? -ne 0 ]; then
-        echo "FAILED: unexpected result"
-        return 1
+    if [ -f expected.ngc ]; then
+        diff -u expected.ngc result.ngc
+        if [ $? -ne 0 ]; then
+            echo "FAILED: unexpected result"
+            return 1
+        fi
     fi
 
     return 0
