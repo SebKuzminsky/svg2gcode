@@ -189,9 +189,11 @@ def offset_path(path, offset_distance, steps=1000):
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
             # Circular arcs remain arcs, elliptical arcs become linear
             # approximations below.
-            if seg.radius.real > offset_distance:
-                start = seg.point(0) + (offset_distance * seg.normal(0))
-                end = seg.point(1) + (offset_distance * seg.normal(1))
+            # FIXME: this only works for concave arcs
+            new_radius = seg.radius.real - offset_distance
+            start = seg.point(0) + (offset_distance * seg.normal(0))
+            end = seg.point(1) + (offset_distance * seg.normal(1))
+            if new_radius > 0.002:
                 radius = complex(seg.radius.real - offset_distance, seg.radius.imag - offset_distance)
                 offset_arc = svgpathtools.path.Arc(
                     start = start,
@@ -201,7 +203,11 @@ def offset_path(path, offset_distance, steps=1000):
                     large_arc = seg.large_arc,
                     sweep = seg.sweep
                 )
-                offset_path_list.append(offset_arc)
+            elif new_radius > 0.0:
+                # Offset Arc still exists, but radius is smaller than
+                # the minimum that LinuxCNC accepts, replace with a Line.
+                offset_arc = svgpathtools.path.Line(start = start, end = end)
+            offset_path_list.append(offset_arc)
 
         else:
             # Here we deal with any segment that's not a line or a
