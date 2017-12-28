@@ -14,7 +14,7 @@ import svgpathtools
 
 parser = argparse.ArgumentParser(description="Compute an offset path from the path in an SVG file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
-parser.add_argument("-o", "--offset", type=int, help="The offset to use.")
+parser.add_argument("-o", "--offset", type=float, help="The offset to use.")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 1000)", default=1000)
 parser.add_argument("-b", "--bare", action="store_true", help="Emit bare path only, no preamble/postamble.")
