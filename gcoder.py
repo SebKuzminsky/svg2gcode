@@ -169,6 +169,9 @@ def offset_path(path, offset_distance, steps=1000):
 
     # FIXME: Join adjacent non-intersecting line segments with arcs.
 
+    # This only works on closed paths.
+    assert(path.isclosed())
+
     #
     # First generate a list of Path elements (Lines and Arcs),
     # corresponding to the offset versions of the Path elements in the
@@ -252,11 +255,6 @@ def offset_path(path, offset_distance, steps=1000):
 
     print("all intersections:", intersection_list, file=sys.stderr)
 
-    if path.isclosed():
-        # FIXME: this fails if start or end is not a line
-        start = offset_path_list[-1].end
-        end = offset_path_list[0].start
-        offset_path_list.append(svgpathtools.Line(start, end))
     offset_path = svgpathtools.Path(*offset_path_list)
     return offset_path, intersection_list
 
