@@ -63,4 +63,4 @@ for offset_path in offset_paths:
     gcoder.path_to_gcode(svg, offset_path)
 
 if not args.bare:
-    gcoder.done()
+    gcoder.m2()
