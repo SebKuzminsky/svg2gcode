@@ -274,6 +274,7 @@ def offset_path(path, offset_distance, steps=1000):
 
 
 def path_to_gcode(svg, path):
+    absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
     g0(z=10.000)
     g0(x=x, y=y)
@@ -291,10 +292,11 @@ def path_to_gcode(svg, path):
             if element.radius.real != element.radius.imag:
                 raise ValueError, "arc radii differ: %s", element
             (end_x, end_y) = svg.to_mm(element.end)
+            (center_x, center_y) = svg.to_mm(element.center)
             if element.sweep:
-                g2(x=end_x, y=end_y, i=element.center.real, j=element.center.imag)
+                g2(x=end_x, y=end_y, i=center_x, j=center_y)
             else:
-                g3(x=end_x, y=end_y, i=element.center.real, j=element.center.imag)
+                g3(x=end_x, y=end_y, i=center_x, j=center_y)
         else:
             raise ValueError, "unhandled element: %s" % element
 
