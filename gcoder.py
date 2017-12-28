@@ -161,8 +161,9 @@ class svg():
 
 
 def offset_path(path, offset_distance, steps=1000):
-    """Takes in a Path object, `path`, and a distance, `offset_distance`,
-    and returns the 'parallel' offset curve."""
+    """Takes an svgpathtools.path.Path object, `path`, and a float
+    distance, `offset_distance`, and returns the parallel offset curve
+    (in the form of another svgpathtools.path.Path)."""
 
     # FIXME: Look for intersections, prune.
 
