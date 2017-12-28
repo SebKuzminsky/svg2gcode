@@ -165,8 +165,6 @@ def offset_path(path, offset_distance, steps=1000):
     distance, `offset_distance`, and returns the parallel offset curve
     (in the form of another svgpathtools.path.Path)."""
 
-    # FIXME: Look for intersections, prune.
-
     # FIXME: Join adjacent non-intersecting line segments with arcs.
 
     # This only works on closed paths.
