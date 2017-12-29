@@ -208,26 +208,14 @@ def split_path_at_intersections(path_list):
                 continue
             other_seg = path_list[j]
 
-            print("testing (i=%d, j=%d):" % (i, j), file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
 
             # FIXME: deal with multiple intersections here
             for intersection in intersections:
-                print("intersection (i=%d, j=%d):" % (i, j), file=sys.stderr)
-                print("    this: ", this_seg, file=sys.stderr)
-                print("    other: ", other_seg, file=sys.stderr)
-                print("    ", intersections, file=sys.stderr)
                 annotations.append(this_seg.point(intersection[0]))
 
                 this_first_seg, this_second_seg = split_seg(this_seg, intersection[0])
-                print("this segment split:", file=sys.stderr)
-                print("    this first:", this_first_seg, file=sys.stderr)
-                print("    this second:", this_second_seg, file=sys.stderr)
-
                 other_first_seg, other_second_seg = split_seg(other_seg, intersection[1])
-                print("other segment split:", file=sys.stderr)
-                print("    other first:", other_first_seg, file=sys.stderr)
-                print("    other second:", other_second_seg, file=sys.stderr)
 
                 first_path.append(this_first_seg)
                 first_path.append(other_second_seg)
