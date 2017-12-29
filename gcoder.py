@@ -195,9 +195,7 @@ def split_path_at_intersections(path_list):
     each non-self-intersecting subset of the path into a separate
     path list.  This may involve splitting segments.
 
-    Returns a list of path lists, and a list of annotation points."""
-
-    annotations = []
+    Returns a list of path lists."""
 
     first_path = []
     second_path = []
@@ -212,8 +210,6 @@ def split_path_at_intersections(path_list):
 
             # FIXME: deal with multiple intersections here
             for intersection in intersections:
-                annotations.append(this_seg.point(intersection[0]))
-
                 this_first_seg, this_second_seg = split_seg(this_seg, intersection[0])
                 other_first_seg, other_second_seg = split_seg(other_seg, intersection[1])
 
@@ -227,10 +223,10 @@ def split_path_at_intersections(path_list):
                     second_path.append(path_list[k])
                 second_path.append(other_first_seg)
 
-                first_paths, first_annotations = split_path_at_intersections(first_path)
-                second_paths, second_annotations = split_path_at_intersections(second_path)
+                first_paths = split_path_at_intersections(first_path)
+                second_paths = split_path_at_intersections(second_path)
 
-                return first_paths + second_paths, first_annotations + second_annotations
+                return first_paths + second_paths
 
         # This_seg did not intersect any of the other segments in the
         # path list, so it goes in the first path.
@@ -238,7 +234,7 @@ def split_path_at_intersections(path_list):
 
     # This path list did not intersect itself, so we return a list
     # containing just the input path.
-    return [first_path], annotations
+    return [first_path]
 
 
 def offset_path(path, offset_distance, steps=1000):
@@ -375,7 +371,7 @@ def offset_path(path, offset_distance, steps=1000):
     # multiple separate paths in those places.
     #
 
-    offset_paths_list, annotations = split_path_at_intersections(offset_path_list)
+    offset_paths_list = split_path_at_intersections(offset_path_list)
 
 
     #
@@ -408,7 +404,7 @@ def offset_path(path, offset_distance, steps=1000):
         assert(offset_path.isclosed())
         offset_paths.append(offset_path)
 
-    return offset_paths, annotations
+    return offset_paths
 
 
 def path_to_gcode(svg, path):
