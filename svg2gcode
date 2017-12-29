@@ -22,12 +22,12 @@ args = parser.parse_args()
 
 svg = gcoder.svg(args.SVG)
 
-path = svg.paths[0]
-if not path.isclosed():
+input_path = svg.paths[0]
+if not input_path.isclosed():
     raise ValueError, "path is not closed"
 
 offset_paths = []
-offset_path, intersections = gcoder.offset_path(path, args.offset)
+offset_path, intersections = gcoder.offset_path(input_path, args.offset)
 offset_paths.append(offset_path)
 
 intersection_paths = []
@@ -45,7 +45,7 @@ for i in intersections:
 
     intersection_paths.append(mark)
 
-svgpathtools.paths2svg.wsvg(paths=[path] + offset_paths + intersection_paths)
+svgpathtools.paths2svg.wsvg(paths=[input_path] + offset_paths + intersection_paths)
 
 gcoder.metric()
 gcoder.speed(args.speed)
@@ -53,7 +53,7 @@ gcoder.feed(args.feed)
 
 if args.include_input:
     gcoder.comment("input path")
-    gcoder.path_to_gcode(svg, path)
+    gcoder.path_to_gcode(svg, input_path)
 
 for offset_path in offset_paths:
     gcoder.comment("offset path (%.4f offset)" % args.offset)
