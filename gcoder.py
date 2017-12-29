@@ -242,12 +242,16 @@ def split_path_at_intersections(path_list):
                 print("first path:", first_path, file=sys.stderr)
                 print("second path:", second_path, file=sys.stderr)
 
+                # FIXME: recurse here
+
                 return [first_path, second_path], annotations
 
         # This_seg did not intersect any of the other segments in the
         # path list, so it goes in the first path.
         first_path.append(this_seg)
 
+    # This path list did not intersect itself, so we return a list
+    # containing just the input path.
     return [first_path], annotations
 
 
