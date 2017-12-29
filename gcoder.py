@@ -172,11 +172,13 @@ def offset_path(path, offset_distance, steps=1000):
     print(path, file=sys.stderr)
     assert(path.isclosed())
 
+
     #
     # First generate a list of Path elements (Lines and Arcs),
     # corresponding to the offset versions of the Path elements in the
     # input path.
     #
+
     offset_path_list = []
     for seg in path:
         if type(seg) == svgpathtools.path.Line:
@@ -228,6 +230,7 @@ def offset_path(path, offset_distance, steps=1000):
                 end = points[k+1]
                 offset_path_list.append(svgpathtools.Line(start, end))
 
+
     #
     # Find all the places where one segment intersects the next, and
     # trim to the intersection.
@@ -263,6 +266,7 @@ def offset_path(path, offset_distance, steps=1000):
                     next_seg.start = this_seg.end
 
     print("all intersections:", intersection_list, file=sys.stderr)
+
 
     #
     # Find all the places where adjacent segments do not end/start close
