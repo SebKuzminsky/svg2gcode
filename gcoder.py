@@ -281,12 +281,13 @@ def offset_path(path, offset_distance, steps=1000):
             joined_offset_path_list.append(this_seg)
             continue
 
+        # FIXME: Choose values for `large_arc` and `sweep` correctly here.
         joining_arc = svgpathtools.path.Arc(
             start = this_seg.end,
             end = next_seg.start,
             radius = complex(offset_distance, offset_distance),
             rotation = 0,
-            large_arc = True,
+            large_arc = False,
             sweep = True
         )
         joined_offset_path_list.append(this_seg)
