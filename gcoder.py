@@ -264,6 +264,41 @@ def offset_path(path, offset_distance, steps=1000):
 
     print("all intersections:", intersection_list, file=sys.stderr)
 
+    #
+    # Find all the places where adjacent segments do not end/start close
+    # to each other, and join them with Arcs.
+    #
+
+    joined_offset_path_list = []
+    for i in range(len(offset_path_list)):
+        this_seg = offset_path_list[i]
+        if (i+1) < len(offset_path_list):
+            next_seg = offset_path_list[i+1]
+        else:
+            next_seg = offset_path_list[0]
+
+        if complex_close_enough(this_seg.end, next_seg.start):
+            joined_offset_path_list.append(this_seg)
+            continue
+
+        joining_arc = svgpathtools.path.Arc(
+            start = this_seg.end,
+            end = next_seg.start,
+            radius = complex(offset_distance, offset_distance),
+            rotation = 0,
+            large_arc = True,
+            sweep = True
+        )
+        joined_offset_path_list.append(this_seg)
+        joined_offset_path_list.append(joining_arc)
+        print("these segments don't join:", file=sys.stderr)
+        print(this_seg, file=sys.stderr)
+        print(next_seg, file=sys.stderr)
+        print("adding joining arc:", file=sys.stderr)
+        print(joining_arc, file=sys.stderr)
+
+    offset_path_list = joined_offset_path_list
+
     # Smooth the path: adjacent segments whose start/end points are
     # "close enough" to each other are adjusted so they actually touch.
     for i in range(len(offset_path_list)):
