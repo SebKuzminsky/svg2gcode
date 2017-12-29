@@ -227,12 +227,10 @@ def split_path_at_intersections(path_list):
                     second_path.append(path_list[k])
                 second_path.append(other_first_seg)
 
-                print("first path:", first_path, file=sys.stderr)
-                print("second path:", second_path, file=sys.stderr)
+                first_paths, first_annotations = split_path_at_intersections(first_path)
+                second_paths, second_annotations = split_path_at_intersections(second_path)
 
-                # FIXME: recurse here
-
-                return [first_path, second_path], annotations
+                return first_paths + second_paths, first_annotations + second_annotations
 
         # This_seg did not intersect any of the other segments in the
         # path list, so it goes in the first path.
