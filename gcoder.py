@@ -190,12 +190,12 @@ def split_seg(seg, t):
 
 def split_path_at_intersections(path_list):
 
-    """`path_list` is a closed list of connected path segments.  This
-    function identifies each place where the path intersects intself,
-    and splits each non-self-intersecting subset of the path into a
-    separate path list.  This may involve splitting segments.
+    """`path_list` is a list of connected path segments.  This function
+    identifies each place where the path intersects intself, and splits
+    each non-self-intersecting subset of the path into a separate
+    path list.  This may involve splitting segments.
 
-    Returns a list of path lists."""
+    Returns a list of path lists, and a list of annotation points."""
 
     annotations = []
 
