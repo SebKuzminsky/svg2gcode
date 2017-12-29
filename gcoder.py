@@ -304,8 +304,12 @@ def offset_path(path, offset_distance, steps=1000):
 
     offset_path_list = joined_offset_path_list
 
+
+    #
     # Smooth the path: adjacent segments whose start/end points are
     # "close enough" to each other are adjusted so they actually touch.
+    #
+
     for i in range(len(offset_path_list)):
         this_seg = offset_path_list[i]
         if (i+1) < len(offset_path_list):
@@ -314,6 +318,11 @@ def offset_path(path, offset_distance, steps=1000):
             next_seg = offset_path_list[0]
         if complex_close_enough(this_seg.end, next_seg.start):
             next_seg.start = this_seg.end
+
+
+    #
+    # Done!  Convert to a Path object and return it.
+    #
 
     offset_path = svgpathtools.Path(*offset_path_list)
     print("offset path:", file=sys.stderr)
