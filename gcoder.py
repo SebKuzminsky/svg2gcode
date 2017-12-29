@@ -160,6 +160,97 @@ class svg():
         return (x, y)
 
 
+def split_seg(seg, t):
+    if type(seg) == svgpathtools.path.Line:
+        first = svgpathtools.path.Line(start=seg.start, end=seg.point(t))
+        second = svgpathtools.path.Line(start=seg.point(t), end=seg.end)
+    elif type(seg) == svgpathtools.path.Arc:
+        # FIXME
+        first = svgpathtools.path.Arc(
+            start=seg.start,
+            radius=seg.radius,
+            rotation=seg.rotation,
+            large_arc=seg.large_arc,
+            sweep=seg.sweep,
+            end=seg.point(t)
+        )
+        second = svgpathtools.path.Arc(
+            start=seg.point(t),
+            radius=seg.radius,
+            rotation=seg.rotation,
+            large_arc=seg.large_arc,
+            sweep=seg.sweep,
+            end=seg.end
+        )
+    else:
+        raise TypeError("unhandled segment type %s in split_seg()" % type(seg))
+
+    return [first, second]
+
+
+def split_path_at_intersections(path_list):
+
+    """`path_list` is a closed list of connected path segments.  This
+    function identifies each place where the path intersects intself,
+    and splits each non-self-intersecting subset of the path into a
+    separate path list.  This may involve splitting segments.
+
+    Returns a list of path lists."""
+
+    annotations = []
+
+    first_path = []
+    second_path = []
+    for i in range(len(path_list)):
+        this_seg = path_list[i]
+        for j in range(i+2, len(path_list)):
+            if (i == 0) and (j == len(path_list) - 1):
+                continue
+            other_seg = path_list[j]
+
+            print("testing (i=%d, j=%d):" % (i, j), file=sys.stderr)
+            intersections = this_seg.intersect(other_seg)
+
+            # FIXME: deal with multiple intersections here
+            for intersection in intersections:
+                print("intersection (i=%d, j=%d):" % (i, j), file=sys.stderr)
+                print("    this: ", this_seg, file=sys.stderr)
+                print("    other: ", other_seg, file=sys.stderr)
+                print("    ", intersections, file=sys.stderr)
+                annotations.append(this_seg.point(intersection[0]))
+
+                this_first_seg, this_second_seg = split_seg(this_seg, intersection[0])
+                print("this segment split:", file=sys.stderr)
+                print("    this first:", this_first_seg, file=sys.stderr)
+                print("    this second:", this_second_seg, file=sys.stderr)
+
+                other_first_seg, other_second_seg = split_seg(other_seg, intersection[1])
+                print("other segment split:", file=sys.stderr)
+                print("    other first:", other_first_seg, file=sys.stderr)
+                print("    other second:", other_second_seg, file=sys.stderr)
+
+                first_path.append(this_first_seg)
+                first_path.append(other_second_seg)
+                for k in range(j+1, len(path_list)):
+                    first_path.append(path_list[k])
+
+                second_path.append(this_second_seg)
+                for k in range(i+1, j):
+                    second_path.append(path_list[k])
+                second_path.append(other_first_seg)
+
+                print("first path:", first_path, file=sys.stderr)
+                print("second path:", second_path, file=sys.stderr)
+
+                return [first_path, second_path], annotations
+
+        # This_seg did not intersect any of the other segments in the
+        # path list, so it goes in the first path.
+        first_path.append(this_seg)
+
+    return [first_path], annotations
+
+
 def offset_path(path, offset_distance, steps=1000):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curve
@@ -236,36 +327,20 @@ def offset_path(path, offset_distance, steps=1000):
     # trim to the intersection.
     #
 
-    # This is a list of coordinates where the offset path segments
-    # intersect themselves.
-    intersection_list = []
-
-    print("intersections:", file=sys.stderr)
     for i in range(len(offset_path_list)):
         this_seg = offset_path_list[i]
         if (i+1) < len(offset_path_list):
             next_seg = offset_path_list[i+1]
         else:
             next_seg = offset_path_list[0]
-        intersections = this_seg.intersect(next_seg)
-        if len(intersections) > 0:
-            print("    ", this_seg, file=sys.stderr)
-            print("    ", next_seg, file=sys.stderr)
-            for intersection in intersections:
-                point = this_seg.point(intersection[0])
-                print("        t0=%.4f, t1=%.4f" % (intersection[0], intersection[1]), file=sys.stderr)
-                print("        intersection point:", point, file=sys.stderr)
-                print("        end point:", this_seg.end, file=sys.stderr)
-                print("        distance:", point - this_seg.end, file=sys.stderr)
-                if complex_close_enough(point, this_seg.end):
-                    print("        touching at endpoint, ignore this intersection", file=sys.stderr)
-                else:
-                    print("        touching *not* at endpoint, this is a real intersection", file=sys.stderr)
-                    intersection_list.append(this_seg.point(intersection[0]))
-                    this_seg.end = this_seg.point(intersection[0])
-                    next_seg.start = this_seg.end
 
-    print("all intersections:", intersection_list, file=sys.stderr)
+        # FIXME: I'm not sure about this part.
+        intersections = this_seg.intersect(next_seg)
+        for intersection in intersections:
+            point = this_seg.point(intersection[0])
+            if not complex_close_enough(point, this_seg.end):
+                this_seg.end = this_seg.point(intersection[0])
+                next_seg.start = this_seg.end
 
 
     #
@@ -291,7 +366,7 @@ def offset_path(path, offset_distance, steps=1000):
             end = next_seg.start,
             radius = complex(offset_distance, offset_distance),
             rotation = 0,
-            large_arc = False,
+            large_arc = True,
             sweep = True
         )
         joined_offset_path_list.append(this_seg)
@@ -306,29 +381,44 @@ def offset_path(path, offset_distance, steps=1000):
 
 
     #
+    # Find the places where the path intersects itself, split into
+    # multiple separate paths in those places.
+    #
+
+    offset_paths_list, annotations = split_path_at_intersections(offset_path_list)
+
+
+    #
     # Smooth the path: adjacent segments whose start/end points are
     # "close enough" to each other are adjusted so they actually touch.
     #
 
-    for i in range(len(offset_path_list)):
-        this_seg = offset_path_list[i]
-        if (i+1) < len(offset_path_list):
-            next_seg = offset_path_list[i+1]
-        else:
-            next_seg = offset_path_list[0]
-        if complex_close_enough(this_seg.end, next_seg.start):
-            next_seg.start = this_seg.end
+    for path_list in offset_paths_list:
+        for i in range(len(path_list)):
+            this_seg = path_list[i]
+            if (i+1) < len(path_list):
+                next_seg = path_list[i+1]
+            else:
+                next_seg = path_list[0]
+            if complex_close_enough(this_seg.end, next_seg.start):
+                next_seg.start = this_seg.end
 
 
     #
-    # Done!  Convert to a Path object and return it.
+    # Done!  Convert each path list to a Path object, sanity check,
+    # and return them.
     #
 
-    offset_path = svgpathtools.Path(*offset_path_list)
-    print("offset path:", file=sys.stderr)
-    print(offset_path, file=sys.stderr)
-    assert(offset_path.isclosed())
-    return offset_path, intersection_list
+    offset_paths = []
+
+    for path_list in offset_paths_list:
+        offset_path = svgpathtools.Path(*path_list)
+        print("offset path:", file=sys.stderr)
+        print(offset_path, file=sys.stderr)
+        assert(offset_path.isclosed())
+        offset_paths.append(offset_path)
+
+    return offset_paths, annotations
 
 
 def path_to_gcode(svg, path):
