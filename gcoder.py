@@ -237,6 +237,25 @@ def split_path_at_intersections(path_list):
     return [first_path]
 
 
+def approximate_path_area(path):
+
+    """Approximates the path area by converting each Arc to 1,000
+    Lines."""
+
+    assert(path.isclosed())
+    tmp = svgpathtools.path.Path()
+    for seg in path:
+        if type(seg) == svgpathtools.path.Arc:
+            for i in range(0, 1000):
+                t0 = i/1000.0
+                t1 = (i+1)/1000.0
+                l = svgpathtools.path.Line(start=seg.point(t0), end=seg.point(t1))
+                tmp.append(l)
+        else:
+            tmp.append(seg)
+    return tmp.area()
+
+
 def offset_path(path, offset_distance, steps=1000):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curve
@@ -397,12 +416,17 @@ def offset_path(path, offset_distance, steps=1000):
 
     offset_paths = []
 
+    path_area = approximate_path_area(path)
+
     for path_list in offset_paths_list:
         offset_path = svgpathtools.Path(*path_list)
         print("offset path:", file=sys.stderr)
         print(offset_path, file=sys.stderr)
         assert(offset_path.isclosed())
-        offset_paths.append(offset_path)
+        offset_path_area = approximate_path_area(offset_path)
+        if path_area * offset_path_area > 0.0:
+            # input path and offset path go in the same direction
+            offset_paths.append(offset_path)
 
     return offset_paths
 
