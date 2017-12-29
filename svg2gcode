@@ -26,9 +26,7 @@ input_path = svg.paths[0]
 if not input_path.isclosed():
     raise ValueError, "path is not closed"
 
-offset_paths = []
-offset_path, intersections = gcoder.offset_path(input_path, args.offset)
-offset_paths.append(offset_path)
+offset_paths, intersections = gcoder.offset_path(input_path, args.offset)
 
 intersection_paths = []
 for i in intersections:
