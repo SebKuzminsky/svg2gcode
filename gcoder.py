@@ -462,7 +462,19 @@ def path_to_gcode(svg, path):
             else:
                 g3(x=end_x, y=end_y, i=center_x, j=center_y)
         else:
-            raise ValueError, "unhandled element: %s" % element
+            # Deal with any segment that's not a line or a circular arc,
+            # this includes elliptic arcs and bezier curves.  Use linear
+            # approximation.
+            #
+            # FIXME: The number of steps should probably be dynamically
+            #     adjusted to make the length of the *offset* line
+            #     segments manageable.
+            steps = 5
+            for k in range(steps):
+                t = k / float(steps)
+                end = element.point(t)
+                (end_x, end_y) = svg.to_mm(end)
+                g1(x=end_x, y=end_y)
 
     g0(z=10.000)
 
