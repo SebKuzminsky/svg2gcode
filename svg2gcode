@@ -41,8 +41,8 @@ if args.include_input:
     gcoder.comment("input path")
     gcoder.path_to_gcode(svg, input_path)
 
+offset_paths = []
 if args.pocket:
-    offset_paths = []
     offset = args.offset[0]
     while True:
         new_paths = gcoder.offset_path(input_path, offset)
@@ -54,9 +54,11 @@ if args.pocket:
         offset_paths += new_paths
         offset += args.offset
 else:
+
     for offset in args.offset:
-        offset_paths = gcoder.offset_path(input_path, offset)
-        for path in offset_paths:
+        new_paths = gcoder.offset_path(input_path, offset)
+        offset_paths += new_paths
+        for path in new_paths:
             gcoder.comment("offset path (%.4f offset)" % offset)
             gcoder.path_to_gcode(svg, path)
 
