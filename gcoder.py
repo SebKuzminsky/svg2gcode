@@ -185,6 +185,16 @@ def split_path_at_intersections(path_list):
                 this_first_seg, this_second_seg = this_seg.split(intersection[0])
                 other_first_seg, other_second_seg = other_seg.split(intersection[1])
 
+                # FIXME: This fixup is bogus, but the two segments'
+                # `t` parameters don't put the intersection at the
+                # same point...
+                other_first_seg.end = this_first_seg.end
+                other_second_seg.start = other_first_seg.end
+
+                assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
+                assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
+                assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
+
                 first_path.append(this_first_seg)
                 first_path.append(other_second_seg)
                 for k in range(j+1, len(path_list)):
