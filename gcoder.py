@@ -160,34 +160,6 @@ class svg():
         return (x, y)
 
 
-def split_seg(seg, t):
-    if type(seg) == svgpathtools.path.Line:
-        first = svgpathtools.path.Line(start=seg.start, end=seg.point(t))
-        second = svgpathtools.path.Line(start=seg.point(t), end=seg.end)
-    elif type(seg) == svgpathtools.path.Arc:
-        # FIXME
-        first = svgpathtools.path.Arc(
-            start=seg.start,
-            radius=seg.radius,
-            rotation=seg.rotation,
-            large_arc=seg.large_arc,
-            sweep=seg.sweep,
-            end=seg.point(t)
-        )
-        second = svgpathtools.path.Arc(
-            start=seg.point(t),
-            radius=seg.radius,
-            rotation=seg.rotation,
-            large_arc=seg.large_arc,
-            sweep=seg.sweep,
-            end=seg.end
-        )
-    else:
-        raise TypeError("unhandled segment type %s in split_seg()" % type(seg))
-
-    return [first, second]
-
-
 def split_path_at_intersections(path_list):
 
     """`path_list` is a list of connected path segments.  This function
@@ -210,8 +182,8 @@ def split_path_at_intersections(path_list):
 
             # FIXME: deal with multiple intersections here
             for intersection in intersections:
-                this_first_seg, this_second_seg = split_seg(this_seg, intersection[0])
-                other_first_seg, other_second_seg = split_seg(other_seg, intersection[1])
+                this_first_seg, this_second_seg = this_seg.split(intersection[0])
+                other_first_seg, other_second_seg = other_seg.split(intersection[1])
 
                 first_path.append(this_first_seg)
                 first_path.append(other_second_seg)
