@@ -428,9 +428,11 @@ def offset_path(path, offset_distance, steps=100):
         print("", file=sys.stderr)
         assert(offset_path.isclosed())
         offset_path_area = approximate_path_area(offset_path)
-        if path_area * offset_path_area > 0.0:
-            # input path and offset path go in the same direction
-            offset_paths.append(offset_path)
+        if path_area * offset_path_area < 0.0:
+            # Input path and offset path go in the opposite directions,
+            # drop offset path.
+            continue
+        offset_paths.append(offset_path)
 
     return offset_paths
 
