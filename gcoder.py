@@ -188,6 +188,16 @@ def split_path_at_intersections(path_list):
             for intersection in intersections:
                 this_first_seg, this_second_seg = this_seg.split(intersection[0])
                 other_first_seg, other_second_seg = other_seg.split(intersection[1])
+                if type(this_seg) == svgpathtools.path.Arc:
+                    print("split an arc:", this_seg, file=sys.stderr)
+                    print("    t:", intersection[0], file=sys.stderr)
+                    print("    ", this_first_seg, file=sys.stderr)
+                    print("    ", this_second_seg, file=sys.stderr)
+                if type(other_seg) == svgpathtools.path.Arc:
+                    print("split an arc:", other_seg, file=sys.stderr)
+                    print("    t:", intersection[1], file=sys.stderr)
+                    print("    ", other_first_seg, file=sys.stderr)
+                    print("    ", other_second_seg, file=sys.stderr)
 
                 # FIXME: This fixup is bogus, but the two segments'
                 # `t` parameters don't put the intersection at the
