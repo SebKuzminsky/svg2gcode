@@ -310,7 +310,7 @@ def offset_path(path, offset_distance, steps=100):
             # FIXME: Steps should probably be computed dynamically to make
             #     the length of the *offset* line segments manageable.
             points = []
-            for k in range(steps):
+            for k in range(steps+1):
                 t = k / float(steps)
                 normal = seg.normal(t)
                 offset_vector = offset_distance * normal
@@ -468,7 +468,7 @@ def path_to_gcode(svg, path):
             #     adjusted to make the length of the *offset* line
             #     segments manageable.
             steps = 1000
-            for k in range(steps):
+            for k in range(steps+1):
                 t = k / float(steps)
                 end = element.point(t)
                 (end_x, end_y) = svg.to_mm(end)
