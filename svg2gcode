@@ -27,6 +27,12 @@ input_path = svg.paths[0]
 if not input_path.isclosed():
     raise ValueError, "path is not closed"
 
+# positive area == clockwise path
+# negative area == counter-clockwise path
+# Make sure the input path is counter-clockwise.
+if gcoder.approximate_path_area(input_path) > 0:
+    input_path = input_path.reversed()
+
 gcoder.metric()
 gcoder.speed(args.speed)
 gcoder.feed(args.feed)
