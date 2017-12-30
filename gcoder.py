@@ -178,7 +178,11 @@ def split_path_at_intersections(path_list):
                 continue
             other_seg = path_list[j]
 
+            print("intersecting:", file=sys.stderr)
+            print("    this:", this_seg, file=sys.stderr)
+            print("    other:", other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
+            print("    intersections:", len(intersections), file=sys.stderr)
 
             # FIXME: deal with multiple intersections here
             for intersection in intersections:
@@ -408,6 +412,8 @@ def offset_path(path, offset_distance, steps=1000):
         offset_path = svgpathtools.Path(*path_list)
         print("offset path:", file=sys.stderr)
         print(offset_path, file=sys.stderr)
+        print("continuous?", offset_path.iscontinuous(), file=sys.stderr)
+        print("", file=sys.stderr)
         assert(offset_path.isclosed())
         offset_path_area = approximate_path_area(offset_path)
         if path_area * offset_path_area > 0.0:
