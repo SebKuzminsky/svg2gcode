@@ -252,7 +252,7 @@ def approximate_path_area(path):
     return tmp.area()
 
 
-def offset_path(path, offset_distance, steps=1000):
+def offset_path(path, offset_distance, steps=100):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curve
     (in the form of another svgpathtools.path.Path)."""
@@ -303,14 +303,12 @@ def offset_path(path, offset_distance, steps=1000):
                 offset_path_list.append(offset_arc)
 
         else:
-            # Here we deal with any segment that's not a line or a
-            # circular arc.  This includes elliptic arcs and bezier
-            # curves.  We use linear approximation.
+            # Deal with any segment that's not a line or a circular arc.
+            # This includes elliptic arcs and bezier curves.  Use linear
+            # approximation.
             #
-            # FIXME: Steps should probably be computed as a function
-            #     of the length of the segment (or maybe dynamically
-            #     adjusted to make the length of the *offset* line
-            #     segments manageable.
+            # FIXME: Steps should probably be computed dynamically to make
+            #     the length of the *offset* line segments manageable.
             points = []
             for k in range(steps):
                 t = k / float(steps)
@@ -469,7 +467,7 @@ def path_to_gcode(svg, path):
             # FIXME: The number of steps should probably be dynamically
             #     adjusted to make the length of the *offset* line
             #     segments manageable.
-            steps = 5
+            steps = 1000
             for k in range(steps):
                 t = k / float(steps)
                 end = element.point(t)
