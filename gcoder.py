@@ -181,7 +181,11 @@ def split_path_at_intersections(path_list):
                 continue
             other_seg = path_list[j]
 
+            print("intersecting:", file=sys.stderr)
+            print("    this:", this_seg, file=sys.stderr)
+            print("    other:", other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
+            print("    intersections:", len(intersections), file=sys.stderr)
 
             # FIXME: deal with multiple intersections here
             for intersection in intersections:
@@ -335,7 +339,11 @@ def offset_path(path, offset_distance, steps=100):
             next_seg = offset_path_list[0]
 
         # FIXME: I'm not sure about this part.
+        print("intersecting", file=sys.stderr)
+        print("    this", this_seg, file=sys.stderr)
+        print("    next", next_seg, file=sys.stderr)
         intersections = this_seg.intersect(next_seg)
+        print("    intersections:", intersections, file=sys.stderr)
         for intersection in intersections:
             point = this_seg.point(intersection[0])
             if not complex_close_enough(point, this_seg.end):
