@@ -169,6 +169,9 @@ def split_path_at_intersections(path_list):
 
     Returns a list of path lists."""
 
+    print("splitting path:", file=sys.stderr)
+    print("    ", path_list, file=sys.stderr)
+
     first_path = []
     second_path = []
     for i in range(len(path_list)):
@@ -205,9 +208,12 @@ def split_path_at_intersections(path_list):
                     second_path.append(path_list[k])
                 second_path.append(other_first_seg)
 
+                print("split!", file=sys.stderr)
+                print("    1st:", first_path, file=sys.stderr)
+                print("    2nd:", second_path, file=sys.stderr)
+
                 first_paths = split_path_at_intersections(first_path)
                 second_paths = split_path_at_intersections(second_path)
-
                 return first_paths + second_paths
 
         # This_seg did not intersect any of the other segments in the
@@ -216,6 +222,7 @@ def split_path_at_intersections(path_list):
 
     # This path list did not intersect itself, so we return a list
     # containing just the input path.
+    print("no split", file=sys.stderr)
     return [first_path]
 
 
