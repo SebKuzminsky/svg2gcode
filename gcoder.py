@@ -187,48 +187,52 @@ def split_path_at_intersections(path_list):
             intersections = this_seg.intersect(other_seg)
             print("    intersections:", len(intersections), file=sys.stderr)
 
-            # FIXME: deal with multiple intersections here
-            for intersection in intersections:
-                this_first_seg, this_second_seg = this_seg.split(intersection[0])
-                other_first_seg, other_second_seg = other_seg.split(intersection[1])
-                if type(this_seg) == svgpathtools.path.Arc:
-                    print("split an arc:", this_seg, file=sys.stderr)
-                    print("    t:", intersection[0], file=sys.stderr)
-                    print("    ", this_first_seg, file=sys.stderr)
-                    print("    ", this_second_seg, file=sys.stderr)
-                if type(other_seg) == svgpathtools.path.Arc:
-                    print("split an arc:", other_seg, file=sys.stderr)
-                    print("    t:", intersection[1], file=sys.stderr)
-                    print("    ", other_first_seg, file=sys.stderr)
-                    print("    ", other_second_seg, file=sys.stderr)
+            if not intersections:
+                continue
 
-                # FIXME: This fixup is bogus, but the two segments'
-                # `t` parameters don't put the intersection at the
-                # same point...
-                other_first_seg.end = this_first_seg.end
-                other_second_seg.start = other_first_seg.end
+            # Found an intersection, we're going to split the path here.
 
-                assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
-                assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
-                assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
+            intersection = intersections[0]
+            this_first_seg, this_second_seg = this_seg.split(intersection[0])
+            other_first_seg, other_second_seg = other_seg.split(intersection[1])
+            if type(this_seg) == svgpathtools.path.Arc:
+                print("split an arc:", this_seg, file=sys.stderr)
+                print("    t:", intersection[0], file=sys.stderr)
+                print("    ", this_first_seg, file=sys.stderr)
+                print("    ", this_second_seg, file=sys.stderr)
+            if type(other_seg) == svgpathtools.path.Arc:
+                print("split an arc:", other_seg, file=sys.stderr)
+                print("    t:", intersection[1], file=sys.stderr)
+                print("    ", other_first_seg, file=sys.stderr)
+                print("    ", other_second_seg, file=sys.stderr)
 
-                first_path.append(this_first_seg)
-                first_path.append(other_second_seg)
-                for k in range(j+1, len(path_list)):
-                    first_path.append(path_list[k])
+            # FIXME: This fixup is bogus, but the two segments'
+            # `t` parameters don't put the intersection at the
+            # same point...
+            other_first_seg.end = this_first_seg.end
+            other_second_seg.start = other_first_seg.end
 
-                second_path.append(this_second_seg)
-                for k in range(i+1, j):
-                    second_path.append(path_list[k])
-                second_path.append(other_first_seg)
+            assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
+            assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
+            assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
 
-                print("split!", file=sys.stderr)
-                print("    1st:", first_path, file=sys.stderr)
-                print("    2nd:", second_path, file=sys.stderr)
+            first_path.append(this_first_seg)
+            first_path.append(other_second_seg)
+            for k in range(j+1, len(path_list)):
+                first_path.append(path_list[k])
 
-                first_paths = split_path_at_intersections(first_path)
-                second_paths = split_path_at_intersections(second_path)
-                return first_paths + second_paths
+            second_path.append(this_second_seg)
+            for k in range(i+1, j):
+                second_path.append(path_list[k])
+            second_path.append(other_first_seg)
+
+            print("split!", file=sys.stderr)
+            print("    1st:", first_path, file=sys.stderr)
+            print("    2nd:", second_path, file=sys.stderr)
+
+            first_paths = split_path_at_intersections(first_path)
+            second_paths = split_path_at_intersections(second_path)
+            return first_paths + second_paths
 
         # This_seg did not intersect any of the other segments in the
         # path list, so it goes in the first path.
