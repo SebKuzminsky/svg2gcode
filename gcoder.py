@@ -169,6 +169,24 @@ def split_path_at_intersections(path_list):
 
     Returns a list of path lists."""
 
+
+    def filter_out_uninteresting_intersections(this_seg, other_seg, intersections):
+        interesting_intersections = []
+        for intersection in intersections:
+            this_intersection = this_seg.point(intersection[0])
+            other_intersection = other_seg.point(intersection[1])
+            if complex_close_enough(this_intersection, this_seg.start):
+                continue
+            if complex_close_enough(this_intersection, this_seg.end):
+                continue
+            if complex_close_enough(other_intersection, other_seg.start):
+                continue
+            if complex_close_enough(other_intersection, other_seg.end):
+                continue
+            interesting_intersections.append(intersection)
+        return interesting_intersections
+
+
     print("splitting path:", file=sys.stderr)
     print("    ", path_list, file=sys.stderr)
 
@@ -176,9 +194,7 @@ def split_path_at_intersections(path_list):
     second_path = []
     for i in range(len(path_list)):
         this_seg = path_list[i]
-        for j in range(i+2, len(path_list)):
-            if (i == 0) and (j == len(path_list) - 1):
-                continue
+        for j in range(i+1, len(path_list)):
             other_seg = path_list[j]
 
             print("intersecting:", file=sys.stderr)
@@ -187,24 +203,31 @@ def split_path_at_intersections(path_list):
             intersections = this_seg.intersect(other_seg)
             print("    intersections:", len(intersections), file=sys.stderr)
 
+            # Intersections at the segments' endpoints don't count;
+            # filter out un-interesting intersections.
+            #
+            # FIXME: What if the end of one segment touches the middle
+            # of another segment?  I think that's not interesting.
+            intersections = filter_out_uninteresting_intersections(this_seg, other_seg, intersections)
+
             if not intersections:
                 continue
 
-            # Found an intersection, we're going to split the path here.
+            # Found at least one interesting intersection.  Split the path at the
+            # first intersection we found and recurse on each fragment.
+
 
             intersection = intersections[0]
             this_first_seg, this_second_seg = this_seg.split(intersection[0])
             other_first_seg, other_second_seg = other_seg.split(intersection[1])
-            if type(this_seg) == svgpathtools.path.Arc:
-                print("split an arc:", this_seg, file=sys.stderr)
-                print("    t:", intersection[0], file=sys.stderr)
-                print("    ", this_first_seg, file=sys.stderr)
-                print("    ", this_second_seg, file=sys.stderr)
-            if type(other_seg) == svgpathtools.path.Arc:
-                print("split an arc:", other_seg, file=sys.stderr)
-                print("    t:", intersection[1], file=sys.stderr)
-                print("    ", other_first_seg, file=sys.stderr)
-                print("    ", other_second_seg, file=sys.stderr)
+            print("split this seg:", this_seg, file=sys.stderr)
+            print("    t:", intersection[0], file=sys.stderr)
+            print("    ", this_first_seg, file=sys.stderr)
+            print("    ", this_second_seg, file=sys.stderr)
+            print("split other seg:", other_seg, file=sys.stderr)
+            print("    t:", intersection[1], file=sys.stderr)
+            print("    ", other_first_seg, file=sys.stderr)
+            print("    ", other_second_seg, file=sys.stderr)
 
             # FIXME: This fixup is bogus, but the two segments'
             # `t` parameters don't put the intersection at the
@@ -215,6 +238,12 @@ def split_path_at_intersections(path_list):
             assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
             assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
             assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
+
+            assert(complex_close_enough(this_first_seg.start, this_seg.start))
+            assert(complex_close_enough(this_second_seg.end, this_seg.end))
+
+            assert(complex_close_enough(other_first_seg.start, other_seg.start))
+            assert(complex_close_enough(other_second_seg.end, other_seg.end))
 
             first_path.append(this_first_seg)
             first_path.append(other_second_seg)
