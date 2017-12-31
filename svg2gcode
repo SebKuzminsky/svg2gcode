@@ -52,7 +52,7 @@ if args.pocket:
             gcoder.comment("offset path (%.4f offset)" % offset)
             gcoder.path_to_gcode(svg, path)
         offset_paths += new_paths
-        offset += args.offset
+        offset += args.offset[0]
 else:
 
     for offset in args.offset:
