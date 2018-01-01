@@ -408,7 +408,7 @@ def offset_path(path, offset_distance, steps=100):
             radius = complex(offset_distance, offset_distance),
             rotation = 0,
             large_arc = False,
-            sweep = True  # sweep means "clockwise"
+            sweep = True  # sweep means "clockwise" (but +Y is down)
         )
         joined_offset_path_list.append(this_seg)
         joined_offset_path_list.append(joining_arc)
