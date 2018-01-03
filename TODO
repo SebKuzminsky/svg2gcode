@@ -15,8 +15,10 @@ so it would be most convenient if i could render its Path objects.
 
 * Leave behind some finishing allowance.
 
-* Specify depth of pocket, max depth of cut, speeds & feeds for slotting
+* Specify cut parameters (max doc, speed, feed) for plunging, slotting
     and side-milling.
+
+* Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Join adjacent offset curves smarter.  First cut a slot offset by
     finishing allowance + tool radius, then side-mill to the inside
