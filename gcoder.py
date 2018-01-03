@@ -475,14 +475,17 @@ def offset_path(path, offset_distance, steps=100):
     return offset_paths
 
 
-def path_to_gcode(svg, path):
+def path_to_gcode(svg, path, z_traverse=10, z_top_of_material=0, z_cut_depth=0):
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
-    g0(z=10.000)
+    g0(z=z_traverse)
     g0(x=x, y=y)
 
     spindle_on()
-    g1(z=0.000)
+
+    z_start = min(z_traverse, z_top_of_material + 0.5)
+    g0(z=z_start)
+    g1(z=z_cut_depth)
 
     for element in path:
         if type(element) == svgpathtools.path.Line:
@@ -514,7 +517,8 @@ def path_to_gcode(svg, path):
                 (end_x, end_y) = svg.to_mm(end)
                 g1(x=end_x, y=end_y)
 
-    g0(z=10.000)
+    g1(z=z_start)
+    g0(z=z_traverse)
 
 
 # These keep track of where the most recent move left the controlled
