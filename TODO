@@ -15,6 +15,15 @@ so it would be most convenient if i could render its Path objects.
 
 * Leave behind some finishing allowance.
 
+* Specify depth of pocket, max depth of cut, speeds & feeds for slotting
+    and side-milling.
+
+* Join adjacent offset curves smarter.  First cut a slot offset by
+    finishing allowance + tool radius, then side-mill to the inside
+    by the side-milling doc.  Or first slot the innermost path, then
+    side-mill out?  Watch how the depth of cut compares between slotting
+    and side milling.
+
 * Cut along the path (outside, inside, or right on top, optionally with
   work-holding tabs.
 
