@@ -57,7 +57,8 @@ offset_paths = []
 if args.job:
     data = json.load(open(args.job))
 
-    print("tool:", data["tool"], file=sys.stderr)
+    if "tool" in data.keys():
+        print("tool:", data["tool"], file=sys.stderr)
 
     for job in data['jobs']:
         print("job:", job, file=sys.stderr)
