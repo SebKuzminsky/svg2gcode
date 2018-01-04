@@ -75,6 +75,24 @@ if args.job:
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
+        elif job['job-type'] == 'pocket':
+            offset = job['distance']
+            while True:
+                new_paths = gcoder.offset_path(input_path, offset)
+                if not new_paths:
+                    break
+                for path in new_paths:
+                    gcoder.comment("pocket path (%.4f offset)" % offset)
+                    gcoder.path_to_gcode(
+                        svg,
+                        path,
+                        z_traverse=args.z_traverse,
+                        z_top_of_material=args.z_top_of_material,
+                        z_cut_depth=args.z_cut_depth
+                    )
+                offset_paths += new_paths
+                offset += job['distance']
+
 else:
     if args.pocket:
         offset = args.offset[0]
@@ -83,7 +101,7 @@ else:
             if not new_paths:
                 break
             for path in new_paths:
-                gcoder.comment("offset path (%.4f offset)" % offset)
+                gcoder.comment("pocket path (%.4f offset)" % offset)
                 gcoder.path_to_gcode(
                     svg,
                     path,
