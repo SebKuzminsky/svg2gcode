@@ -41,8 +41,14 @@ do_test() {
 }
 
 
+if [[ $# -gt 0 ]]; then
+    TEST_DIRS="$@"
+else
+    TEST_DIRS=$PWD
+fi
+
 FAILED=""
-for TEST in $(find . -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g'); do
+for TEST in $(find ${TEST_DIRS} -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
     TEST_DIR=$(dirname ${TEST})
     TEST_NAME=$(realpath --relative-to=${PWD}/.. ${TEST_DIR})
     ORIG_DIR=${PWD}
@@ -53,8 +59,9 @@ for TEST in $(find . -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g'); do
     if [ $? -ne 0 ]; then
         FAILED="${FAILED} ${TEST_NAME}"
     else
-        echo "${TEST_NAME} PASSED"
         rm -f result.ngc
+        rm -f result.canon
+        rm -f stderr
     fi
     cd ${ORIG_DIR}
 done
