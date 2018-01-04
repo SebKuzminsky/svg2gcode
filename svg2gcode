@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpat
 import svgpathtools
 
 
-parser = argparse.ArgumentParser(description="Compute an offset path from the path in an SVG file.")
+parser = argparse.ArgumentParser(description="Compute offset paths from the paths in an SVG file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-o", "--offset", type=float, action='append', help="The offset to use (may be specified multiple times).")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
