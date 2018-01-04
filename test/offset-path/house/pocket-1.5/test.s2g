@@ -1,0 +1,8 @@
+{
+    "jobs": [
+        {
+            "job-type": "pocket",
+            "distance": 1.5
+        }
+    ]
+}
