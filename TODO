@@ -15,8 +15,8 @@ so it would be most convenient if i could render its Path objects.
 
 * Leave behind some finishing allowance.
 
-* Specify cut parameters (max doc, speed, feed) for plunging, slotting
-    and side-milling.
+* Specify cut parameters (max doc, max woc, speed, feed) for plunging,
+    slotting and side-milling, for roughing and finishing.
 
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
