@@ -536,16 +536,16 @@ current_w = None
 
 # When comparing floats, a difference of less than epsilon counts as no
 # difference at all.
-epsilon = 0.000000001
+epsilon = 1e-6
 
 def close_enough(a, b):
     """Returns True if the two numbers `a` and `b` are within `epsilon`
-    (1e-9) of each other, False if they're farther apart."""
+    (1e-6) of each other, False if they're farther apart."""
     return abs(a - b) < epsilon
 
 def complex_close_enough(a, b):
     """Returns True if the two complex numbers `a` and `b` are within
-    `epsilon` (1e-9) of each other, False if they're farther apart."""
+    `epsilon` (1e-6) of each other, False if they're farther apart."""
     diff = complex(a.real - b.real, a.imag - b.imag)
     mag = math.sqrt(pow(diff.real, 2) + pow(diff.imag, 2))
     if mag < epsilon:
