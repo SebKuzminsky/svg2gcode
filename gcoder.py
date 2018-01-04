@@ -201,7 +201,7 @@ def split_path_at_intersections(path_list):
             print("    this:", this_seg, file=sys.stderr)
             print("    other:", other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
-            print("    intersections:", len(intersections), file=sys.stderr)
+            print("    intersections:", intersections, file=sys.stderr)
 
             # Intersections at the segments' endpoints don't count;
             # filter out un-interesting intersections.
