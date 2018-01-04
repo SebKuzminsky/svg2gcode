@@ -1,13 +1,19 @@
 #!/bin/bash
 
 export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
+export PATH=$(dirname $(realpath $0))/..:${PATH}
 
 do_test() {
     TEST_FILE=$(basename "$1")
+    rm -f stderr
     if [ -f expected.ngc ]; then
-        ./${TEST_FILE} > result.ngc
+        if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
+            svg2gcode --job ${TEST_FILE} test.svg >| result.ngc 2>> stderr
+        else
+            ./${TEST_FILE} > result.ngc 2>> stderr
+        fi
     else
-        ./${TEST_FILE}
+        ./${TEST_FILE} 2>> stderr
     fi
     if [ $? -ne 0 ]; then
         echo "FAILED: non-zero exit code"
@@ -17,7 +23,16 @@ do_test() {
     if [ -f expected.ngc ]; then
         diff -u expected.ngc result.ngc
         if [ $? -ne 0 ]; then
-            echo "FAILED: unexpected result"
+            echo "FAILED: unexpected G-code result"
+            return 1
+        fi
+    fi
+
+    if [ -f expected.canon ]; then
+        rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
+        diff -u expected.canon result.canon
+        if [ $? -ne 0 ]; then
+            echo "FAILED: unexpected Canon result"
             return 1
         fi
     fi
@@ -27,9 +42,9 @@ do_test() {
 
 
 FAILED=""
-for TEST in $(find . -name 'test.py' -o -name 'test.sh'); do
+for TEST in $(find . -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g'); do
     TEST_DIR=$(dirname ${TEST})
-    TEST_NAME=$(realpath --relative-to=${PWD} ${TEST_DIR})
+    TEST_NAME=$(realpath --relative-to=${PWD}/.. ${TEST_DIR})
     ORIG_DIR=${PWD}
 
     echo "running ${TEST_NAME}"
