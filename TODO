@@ -13,7 +13,12 @@ so it would be most convenient if i could render its Path objects.
 
 # Future embellishments
 
-* Leave behind some finishing allowance.
+* replace svgpathtools with svg.path + shapely?  Shapely doesn't do arcs
+    or bezier curves, only linear splines.  Which is maybe fine.  Shapely
+    has parallel_offset(), left and right...  FlatCAM uses Shapely.
+
+* pocket: Leave behind some finishing allowance, slot the perimeter
+    (or the center?), clear the bulk.
 
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
     slotting and side-milling, for roughing and finishing.
