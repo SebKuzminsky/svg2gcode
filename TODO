@@ -13,9 +13,16 @@ so it would be most convenient if i could render its Path objects.
 
 # Future embellishments
 
-* replace svgpathtools with svg.path + shapely?  Shapely doesn't do arcs
-    or bezier curves, only linear splines.  Which is maybe fine.  Shapely
-    has parallel_offset(), left and right...  FlatCAM uses Shapely.
+* replace svgpathtools with something else?
+
+** svg.path + shapely?  Shapely doesn't do arcs or bezier curves, only
+    linear splines.  Which is maybe fine.  Shapely has parallel_offset(),
+    left and right...  FlatCAM uses Shapely.
+
+** pythonocc/liboce?  (pythonocc isn't packaged, liboce doesn't have
+    python bindings in stretch)
+
+** occmodel?  Jeff used it for CAD in python.
 
 * pocket: Leave behind some finishing allowance, slot the perimeter
     (or the center?), clear the bulk.
