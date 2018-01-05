@@ -1,0 +1,24 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": 9
+        },
+        {
+            "job-type": "offset",
+            "distance": 12
+        },
+        {
+            "job-type": "offset",
+            "distance": 15
+        },
+        {
+            "job-type": "offset",
+            "distance": 18
+        },
+        {
+            "job-type": "offset",
+            "distance": 21
+        }
+    ]
+}
