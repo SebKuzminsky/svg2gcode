@@ -170,107 +170,173 @@ def split_path_at_intersections(path_list):
     Returns a list of path lists."""
 
 
-    def filter_out_uninteresting_intersections(this_seg, other_seg, intersections):
-        interesting_intersections = []
-        for intersection in intersections:
-            this_intersection = this_seg.point(intersection[0])
-            other_intersection = other_seg.point(intersection[1])
-            if complex_close_enough(this_intersection, this_seg.start):
-                continue
-            if complex_close_enough(this_intersection, this_seg.end):
-                continue
-            if complex_close_enough(other_intersection, other_seg.start):
-                continue
-            if complex_close_enough(other_intersection, other_seg.end):
-                continue
-            interesting_intersections.append(intersection)
-        return interesting_intersections
+    def find_earliest_intersection(path_list, this_seg_index):
+        this_seg = path_list[this_seg_index]
+        print("looking for earliest intersection of this seg(%d):" % this_seg_index, this_seg, file=sys.stderr)
+
+        earliest_this_t = None
+        earliest_other_seg_index = None
+        earliest_other_t = None
+
+        for other_seg_index in range(this_seg_index+2, len(path_list)):
+            other_seg = path_list[other_seg_index]
+            print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
+            intersections = this_seg.intersect(other_seg)
+            if len(intersections) == 0:
+                continue;
+            print("        intersect!", file=sys.stderr)
+
+            # The intersection that comes earliest in `this_seg` is
+            # the interesting one, except that intersections at the
+            # segments' endpoints don't count.
+            for intersection in intersections:
+                if complex_close_enough(intersection[0], 0.0) or complex_close_enough(intersection[0], 1.0):
+                    continue
+
+                if (earliest_this_t == None) or (intersection[0] < earliest_this_t):
+                    print("        earliest!", file=sys.stderr)
+                    earliest_this_t = intersection[0]
+                    earliest_other_seg_index = other_seg_index
+                    earliest_other_t = intersection[1]
+
+        return earliest_this_t, earliest_other_seg_index, earliest_other_t
 
 
     print("splitting path:", file=sys.stderr)
     print("    ", path_list, file=sys.stderr)
 
-    first_path = []
-    second_path = []
-    for i in range(len(path_list)):
-        this_seg = path_list[i]
-        for j in range(i+1, len(path_list)):
-            other_seg = path_list[j]
+    # This is a list of pairs.  Each pair represents a place where the
+    # input path crosses itself.  The two members of the pair are the
+    # indexes of the segments that end at the intersection point.
+    intersections = []
 
-            print("intersecting:", file=sys.stderr)
-            print("    this:", this_seg, file=sys.stderr)
-            print("    other:", other_seg, file=sys.stderr)
-            intersections = this_seg.intersect(other_seg)
-            print("    intersections:", intersections, file=sys.stderr)
+    this_seg_index = 0
+    while this_seg_index < len(path_list):
+        this_seg = path_list[this_seg_index]
 
-            # Intersections at the segments' endpoints don't count;
-            # filter out un-interesting intersections.
-            #
-            # FIXME: What if the end of one segment touches the middle
-            # of another segment?  I think that's not interesting.
-            intersections = filter_out_uninteresting_intersections(this_seg, other_seg, intersections)
+        this_t, other_seg_index, other_t = find_earliest_intersection(path_list, this_seg_index)
+        if this_t == None:
+            this_seg_index += 1
+            continue
 
-            if not intersections:
-                continue
+        # Found the next intersection.  Split the segments and note
+        # the intersection.
 
-            # Found at least one interesting intersection.  Split the path at the
-            # first intersection we found and recurse on each fragment.
+        other_seg = path_list[other_seg_index]
 
+        this_first_seg, this_second_seg = this_seg.split(this_t)
+        other_first_seg, other_second_seg = other_seg.split(other_t)
+        print("split this seg:", this_seg, file=sys.stderr)
+        print("    t:", this_t, file=sys.stderr)
+        print("    ", this_first_seg, file=sys.stderr)
+        print("    ", this_second_seg, file=sys.stderr)
+        print("split other seg:", other_seg, file=sys.stderr)
+        print("    t:", other_t, file=sys.stderr)
+        print("    ", other_first_seg, file=sys.stderr)
+        print("    ", other_second_seg, file=sys.stderr)
 
-            intersection = intersections[0]
-            this_first_seg, this_second_seg = this_seg.split(intersection[0])
-            other_first_seg, other_second_seg = other_seg.split(intersection[1])
-            print("split this seg:", this_seg, file=sys.stderr)
-            print("    t:", intersection[0], file=sys.stderr)
-            print("    ", this_first_seg, file=sys.stderr)
-            print("    ", this_second_seg, file=sys.stderr)
-            print("split other seg:", other_seg, file=sys.stderr)
-            print("    t:", intersection[1], file=sys.stderr)
-            print("    ", other_first_seg, file=sys.stderr)
-            print("    ", other_second_seg, file=sys.stderr)
+        # FIXME: This fixup is bogus, but the two segments'
+        # `t` parameters don't put the intersection at the
+        # same point...
+        other_first_seg.end = this_first_seg.end
+        other_second_seg.start = other_first_seg.end
 
-            # FIXME: This fixup is bogus, but the two segments'
-            # `t` parameters don't put the intersection at the
-            # same point...
-            other_first_seg.end = this_first_seg.end
-            other_second_seg.start = other_first_seg.end
+        assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
+        assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
+        assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
 
-            assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
-            assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
-            assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
+        assert(complex_close_enough(this_first_seg.start, this_seg.start))
+        assert(complex_close_enough(this_second_seg.end, this_seg.end))
 
-            assert(complex_close_enough(this_first_seg.start, this_seg.start))
-            assert(complex_close_enough(this_second_seg.end, this_seg.end))
+        assert(complex_close_enough(other_first_seg.start, other_seg.start))
+        assert(complex_close_enough(other_second_seg.end, other_seg.end))
 
-            assert(complex_close_enough(other_first_seg.start, other_seg.start))
-            assert(complex_close_enough(other_second_seg.end, other_seg.end))
+        # Replace the old (pre-split) this_seg with the first sub-segment.
+        path_list[this_seg_index] = this_first_seg
 
-            first_path.append(this_first_seg)
-            first_path.append(other_second_seg)
-            for k in range(j+1, len(path_list)):
-                first_path.append(path_list[k])
+        # Insert the second sub-segment after the first one.
+        path_list.insert(this_seg_index+1, this_second_seg)
 
-            second_path.append(this_second_seg)
-            for k in range(i+1, j):
-                second_path.append(path_list[k])
-            second_path.append(other_first_seg)
+        # We inserted a segment before other_seg, so we increment
+        # its index.
+        other_seg_index += 1
 
-            print("split!", file=sys.stderr)
-            print("    1st:", first_path, file=sys.stderr)
-            print("    2nd:", second_path, file=sys.stderr)
+        # Replace the old (pre-split) other_seg with the first sub-segment.
+        path_list[other_seg_index] = other_first_seg
 
-            first_paths = split_path_at_intersections(first_path)
-            second_paths = split_path_at_intersections(second_path)
-            return first_paths + second_paths
+        # Insert the second sub-segment after the first one.
+        path_list.insert(other_seg_index+1, other_second_seg)
 
-        # This_seg did not intersect any of the other segments in the
-        # path list, so it goes in the first path.
-        first_path.append(this_seg)
+        for i in range(len(intersections)):
+            print("bumping intersection:", file=sys.stderr)
+            print("    ", intersections[i], file=sys.stderr)
+            if intersections[i][1] >= this_seg_index:
+                intersections[i][1] += 1  # for this_seg that got split
+            if intersections[i][1] >= other_seg_index:
+                intersections[i][1] += 1  # for other_seg that got split
+            print("    ", intersections[i], file=sys.stderr)
 
-    # This path list did not intersect itself, so we return a list
-    # containing just the input path.
-    print("no split", file=sys.stderr)
-    return [first_path]
+        # Add this new intersection we just made.
+        i = [this_seg_index, other_seg_index]
+        print("    new:", i, file=sys.stderr)
+        intersections.append(i)
+
+        # Look for intersections in the remainder of this_seg (the second
+        # part of the split).
+        this_seg_index += 1
+
+    print("found some intersections:", file=sys.stderr)
+    for i in intersections:
+        print("    ", i, file=sys.stderr)
+        print("        ", path_list[i[0]], file=sys.stderr)
+        print("        ", path_list[i[1]], file=sys.stderr)
+
+    paths = []
+    while True:
+        print("starting a new path", file=sys.stderr)
+        path = []
+        # Start at the first unused segment
+        seg_index = 0
+        for seg_index in range(len(path_list)):
+            if path_list[seg_index] != None:
+                break
+
+        while seg_index < len(path_list):
+            if path_list[seg_index] == None:
+                # Done with this path.
+                break
+
+            print("    adding segment %d:" % seg_index, path_list[seg_index], file=sys.stderr)
+            path.append(path_list[seg_index])
+            path_list[seg_index] = None
+
+            i = None
+            for i in intersections:
+                if seg_index == i[0] or seg_index == i[1]:
+                    break
+            print("i:", i, file=sys.stderr)
+            print("seg_index:", seg_index, file=sys.stderr)
+            if (i is not None) and (i[0] == seg_index):
+                # This segment is the first entrance to an intersection,
+                # take the second exit.
+                print("    intersection!", file=sys.stderr)
+                seg_index = i[1] + 1
+            elif (i is not None) and (i[1] == seg_index):
+                # This segment is the second entrance to an intersection,
+                # take the first exit.
+                print("    intersection!", file=sys.stderr)
+                seg_index = i[0] + 1
+            else:
+                # This segment doesn't end in an intersection, just go
+                # to the next one.
+                seg_index += 1
+
+        if path == []:
+            break
+
+        paths.append(path)
+
+    return paths
 
 
 def approximate_path_area(path):
