@@ -366,6 +366,7 @@ def offset_path(path, offset_distance, steps=100):
     # This only works on closed paths.
     print("input path:", file=sys.stderr)
     print(path, file=sys.stderr)
+    print("offset:", offset_distance, file=sys.stderr)
     assert(path.isclosed())
 
 
