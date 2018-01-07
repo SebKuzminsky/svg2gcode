@@ -2,7 +2,8 @@
     "jobs": [
         {
             "job-type": "pocket",
-            "distance": 4.88
+            "tool-diameter": 9.76,
+            "width-of-cut": 4.88
         }
     ]
 }

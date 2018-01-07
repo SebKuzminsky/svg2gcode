@@ -76,9 +76,41 @@ if args.job:
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
+
         elif job['job-type'] == 'pocket':
-            offset = job['distance']
+            # FIXME: get these from a different tool info section of the json data
+            if "tool-diameter" in job.keys():
+                tool_diameter = job['tool-diameter']
+            else:
+                raise ValueError('no "tool-diameter" specified in "pocket" job')
+            tool_radius = tool_diameter / 2.0
+
+            if "width-of-cut" in job.keys():
+                width_of_cut = job['width-of-cut']
+            else:
+                raise ValueError('no "width-of-cut" specified in "pocket" job')
+
+            finishing_allowance = 0.0
+            if "finishing-allowance" in job.keys():
+                finishing_allowance = job['finishing-allowance']
+
+            offset = finishing_allowance + tool_radius
+            new_paths = gcoder.offset_path(input_path, offset)
+            if not new_paths:
+                break
+            gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+            for path in new_paths:
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+            offset_paths += new_paths
+
             while True:
+                offset += width_of_cut
                 new_paths = gcoder.offset_path(input_path, offset)
                 if not new_paths:
                     break
@@ -92,7 +124,6 @@ if args.job:
                         z_cut_depth=args.z_cut_depth
                     )
                 offset_paths += new_paths
-                offset += job['distance']
 
         elif job['job-type'] == 'engrave':
             gcoder.comment("engrave path")
