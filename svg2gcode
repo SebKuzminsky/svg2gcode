@@ -62,6 +62,7 @@ if args.job:
 
     for job in data['jobs']:
         print("job:", job, file=sys.stderr)
+
         if job['job-type'] == 'offset':
             offset = job['distance']
             new_paths = gcoder.offset_path(input_path, offset)
@@ -92,6 +93,16 @@ if args.job:
                     )
                 offset_paths += new_paths
                 offset += job['distance']
+
+        elif job['job-type'] == 'engrave':
+            gcoder.comment("engrave path")
+            gcoder.path_to_gcode(
+                svg,
+                input_path,
+                z_traverse=args.z_traverse,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=args.z_cut_depth
+            )
 
 else:
     if args.pocket:
