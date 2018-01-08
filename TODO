@@ -30,6 +30,9 @@ so it would be most convenient if i could render its Path objects.
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
     slotting and side-milling, for roughing and finishing.
 
+* Override pocket cut params from command line.  Width of cut is a
+    function of depth of cut.
+
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Join adjacent offset curves smarter.  First cut a slot offset by
