@@ -27,6 +27,27 @@ so it would be most convenient if i could render its Path objects.
 * pocket: Leave behind some finishing allowance, slot the perimeter
     (or the center?), clear the bulk.
 
+    Inset the material contour by the finishing allowance to get the
+    rough material contour.
+
+    The first tool path is the perimeter slotting cut (which might be
+    wrong, shouldn't we make the smallest possible slot in the middle
+    and go out from there?). Inset the rough material contour by the
+    tool radius to get the tool path for this wrong slot.
+
+    After that we want to side mill the remainder
+
+    Inset the slotting tool path by the tool radius to find the remaining
+    material contour
+
+    While the remaining material contour is greater than zero:
+
+        Outset the remaining material contour by the tool radius minus
+        the width of cut to find the next pass tool path
+
+        Inset the tool path by the tool radius to find the new remaining
+        material contour
+
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
     slotting and side-milling, for roughing and finishing.
 
