@@ -48,6 +48,9 @@ so it would be most convenient if i could render its Path objects.
         Inset the tool path by the tool radius to find the new remaining
         material contour
 
+* offset_path() should be named offset_paths(), since it returns a list
+    of paths.
+
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
     slotting and side-milling, for roughing and finishing.
 
