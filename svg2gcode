@@ -53,7 +53,7 @@ if args.include_input:
     )
 
 
-offset_paths = []
+output_paths = []
 if args.job:
     data = json.load(open(args.job))
 
@@ -66,7 +66,7 @@ if args.job:
         if job['job-type'] == 'offset':
             offset = job['distance']
             new_paths = gcoder.offset_path(input_path, offset)
-            offset_paths += new_paths
+            output_paths += new_paths
             for path in new_paths:
                 gcoder.comment("offset path (%.4f offset)" % offset)
                 gcoder.path_to_gcode(
@@ -107,7 +107,7 @@ if args.job:
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
-            offset_paths += new_paths
+            output_paths += new_paths
 
             while True:
                 offset += width_of_cut
@@ -123,7 +123,7 @@ if args.job:
                         z_top_of_material=args.z_top_of_material,
                         z_cut_depth=args.z_cut_depth
                     )
-                offset_paths += new_paths
+                output_paths += new_paths
 
         elif job['job-type'] == 'engrave':
             gcoder.comment("engrave path")
@@ -151,12 +151,12 @@ else:
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
-            offset_paths += new_paths
+            output_paths += new_paths
             offset += args.offset[0]
     else:
         for offset in args.offset:
             new_paths = gcoder.offset_path(input_path, offset)
-            offset_paths += new_paths
+            output_paths += new_paths
             for path in new_paths:
                 gcoder.comment("offset path (%.4f offset)" % offset)
                 gcoder.path_to_gcode(
@@ -167,6 +167,6 @@ else:
                     z_cut_depth=args.z_cut_depth
                 )
 
-svgpathtools.paths2svg.wsvg(paths=[input_path] + offset_paths)
+svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)
 
 gcoder.m2()
