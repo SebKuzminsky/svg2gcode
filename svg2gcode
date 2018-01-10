@@ -125,6 +125,97 @@ if args.job:
                     )
                 output_paths += new_paths
 
+        elif job['job-type'] == 'pocket2':
+            # Alternative pocketing algorithm (currently not working):
+            #
+            # Inset the material contour by the finishing allowance to
+            # get the rough material contour.
+            #
+            # The first tool path is the perimeter slotting cut (which
+            # might be wrong, shouldn't we make the smallest possible
+            # slot in the middle and go out from there?). Inset the rough
+            # material contour by the tool radius to get the tool path
+            # for this wrong slot.
+            #
+            # After that we want to side mill the remainder
+            #
+            # Inset the slotting tool path by the tool radius to find
+            # the remaining material contour
+            #
+            # While the remaining material contour is greater than zero:
+            #
+            #     Outset the remaining material contour by the tool radius
+            #     minus the width of cut to find the next pass tool path
+            #
+            #     Inset the tool path by the tool radius to find the
+            #     new remaining material contour
+
+            material_contour = input_path
+
+            # FIXME: get these from a different tool info section of the json data
+            if "tool-diameter" in job.keys():
+                tool_diameter = job['tool-diameter']
+            else:
+                raise ValueError('no "tool-diameter" specified in "pocket" job')
+            tool_radius = tool_diameter / 2.0
+
+            if "width-of-cut" in job.keys():
+                width_of_cut = job['width-of-cut']
+            else:
+                raise ValueError('no "width-of-cut" specified in "pocket" job')
+
+            finishing_allowance = 0.0
+            if "finishing-allowance" in job.keys():
+                finishing_allowance = job['finishing-allowance']
+
+            offset = finishing_allowance + tool_radius
+            slotting_paths = gcoder.offset_path(material_contour, offset)
+            if not slotting_paths:
+                break
+            gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+            for path in slotting_paths:
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+            output_paths += slotting_paths
+
+            remaining_material_contours = []
+            for path in slotting_paths:
+                remaining_material_contours += gcoder.offset_path(path, tool_radius)
+
+            while len(remaining_material_contours) > 0:
+                print("remaining material %d:" % len(remaining_material_contours), remaining_material_contours, file=sys.stderr)
+                # output_paths += remaining_material_contours
+                offset = -tool_radius + width_of_cut
+
+                side_milling_paths = []
+                for path in remaining_material_contours:
+                    if path == []:
+                        # FIXME derp what
+                        continue
+                    print("making side milling path from:", path, file=sys.stderr)
+                    side_milling_paths += gcoder.offset_path(path, offset)
+                if not side_milling_paths:
+                    break
+
+                remaining_material_contours = []
+                for path in side_milling_paths:
+                    gcoder.comment("pocket path")
+                    gcoder.path_to_gcode(
+                        svg,
+                        path,
+                        z_traverse=args.z_traverse,
+                        z_top_of_material=args.z_top_of_material,
+                        z_cut_depth=args.z_cut_depth
+                    )
+                    remaining_material_contours += gcoder.offset_path(path, tool_radius)
+                output_paths += side_milling_paths
+
+
         elif job['job-type'] == 'engrave':
             gcoder.comment("engrave path")
             gcoder.path_to_gcode(
