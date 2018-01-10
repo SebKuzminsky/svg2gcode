@@ -361,7 +361,7 @@ def approximate_path_area(path):
 def offset_path(path, offset_distance, steps=100):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curve
-    (in the form of another svgpathtools.path.Path)."""
+    (in the form of a list of svgpathtools.path.Path objects)."""
 
     # This only works on closed paths.
     print("input path:", file=sys.stderr)
