@@ -469,14 +469,55 @@ def offset_path(path, offset_distance, steps=100):
             continue
 
         # FIXME: Choose values for `large_arc` and `sweep` correctly here.
-        joining_arc = svgpathtools.path.Arc(
+        # I think the goal is to make the joining arc tangent to the segments it joins.
+        # large_arc should always be False
+        # sweep means "clockwise" (but +Y is down)
+        print("determining joining arc:", file=sys.stderr)
+        print("    this_seg ending normal:", this_seg.normal(1), file=sys.stderr)
+        print("    next_seg starting normal:", next_seg.normal(0), file=sys.stderr)
+
+        sweep_arc = svgpathtools.path.Arc(
             start = this_seg.end,
             end = next_seg.start,
             radius = complex(offset_distance, offset_distance),
             rotation = 0,
             large_arc = False,
-            sweep = True  # sweep means "clockwise" (but +Y is down)
+            sweep = True
         )
+        sweep_start_error = this_seg.normal(1) - sweep_arc.normal(0)
+        sweep_end_error = next_seg.normal(0) - sweep_arc.normal(1)
+        sweep_error = pow(abs(sweep_start_error), 2) + pow(abs(sweep_end_error), 2)
+        print("    sweep arc starting normal:", sweep_arc.normal(0), file=sys.stderr)
+        print("    sweep arc ending normal:", sweep_arc.normal(1), file=sys.stderr)
+        print("    sweep starting error:", sweep_start_error, file=sys.stderr)
+        print("    sweep end error:", sweep_end_error, file=sys.stderr)
+        print("    sweep error:", sweep_error, file=sys.stderr)
+
+        antisweep_arc = svgpathtools.path.Arc(
+            start = this_seg.end,
+            end = next_seg.start,
+            radius = complex(offset_distance, offset_distance),
+            rotation = 0,
+            large_arc = False,
+            sweep = False
+        )
+        antisweep_start_error = this_seg.normal(1) - antisweep_arc.normal(0)
+        antisweep_end_error = next_seg.normal(0) - antisweep_arc.normal(1)
+        antisweep_error = pow(abs(antisweep_start_error), 2) + pow(abs(antisweep_end_error), 2)
+        print("    antisweep arc starting normal:", antisweep_arc.normal(0), file=sys.stderr)
+        print("    antisweep arc ending normal:", antisweep_arc.normal(1), file=sys.stderr)
+        print("    antisweep starting error:", antisweep_start_error, file=sys.stderr)
+        print("    antisweep end error:", antisweep_end_error, file=sys.stderr)
+        print("    antisweep error:", antisweep_error, file=sys.stderr)
+
+        joining_arc = None
+        if sweep_error < antisweep_error:
+            print("joining arc is sweep", file=sys.stderr)
+            joining_arc = sweep_arc
+        else:
+            print("joining arc is antisweep", file=sys.stderr)
+            joining_arc = antisweep_arc
+
         joined_offset_path_list.append(this_seg)
         joined_offset_path_list.append(joining_arc)
         print("these segments don't join:", file=sys.stderr)
