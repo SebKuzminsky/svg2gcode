@@ -39,6 +39,7 @@ if gcoder.approximate_path_area(input_path) > 0:
     input_path = input_path.reversed()
 
 gcoder.metric()
+gcoder.path_blend(tolerance=0.01)
 gcoder.speed(args.speed)
 gcoder.feed(args.feed)
 
