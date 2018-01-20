@@ -664,6 +664,10 @@ def spindle_off():
     print("M5")
 
 
+def path_blend(tolerance=None):
+    print("G64 P%.4f (enable path blending with tolerance)" % tolerance)
+
+
 def quill_up():
     absolute()
     cutter_comp_off()
