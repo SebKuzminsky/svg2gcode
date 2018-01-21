@@ -5,6 +5,12 @@ export PATH=$(dirname $(realpath $0))/..:${PATH}
 
 do_test() {
     TEST_FILE=$(basename "$1")
+
+    if [ -f skip ]; then
+        echo SKIPPED
+        return 2
+    fi
+
     rm -f stderr
     if [ -f expected.ngc ]; then
         if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
@@ -48,6 +54,7 @@ else
 fi
 
 FAILED=""
+SKIPPED=""
 for TEST in $(find ${TEST_DIRS} -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
     TEST_DIR=$(dirname ${TEST})
     TEST_NAME=$(realpath --relative-to=${PWD}/.. ${TEST_DIR})
@@ -56,24 +63,39 @@ for TEST in $(find ${TEST_DIRS} -name 'test.py' -o -name 'test.sh' -o -name 'tes
     echo "running ${TEST_NAME}"
     cd ${TEST_DIR}
     do_test ${TEST}
-    if [ $? -ne 0 ]; then
-        FAILED="${FAILED} ${TEST_NAME}"
-    else
+    R=$?
+    if [ $R -eq 0 ]; then
         rm -f result.ngc
         rm -f result.canon
         rm -f stderr
+    elif [ $R -eq 1 ]; then
+        FAILED="${FAILED} ${TEST_NAME}"
+    elif [ $R -eq 2 ]; then
+        SKIPPED="${SKIPPED} ${TEST_NAME}"
+    else
+        echo "unknown return code $? from do_test, aborting"
+        exit 99
     fi
     cd ${ORIG_DIR}
 done
 
+
+RETVAL=0
 
 if [ -n "${FAILED}" ]; then
     echo "failed tests:"
     for TEST in ${FAILED}; do
         echo "    ${TEST}"
     done
-    exit 1
+    RETVAL=1
 fi
 
-echo "all tests passed!"
-exit 0
+if [ -n "${SKIPPED}" ]; then
+    echo "skipped tests:"
+    for TEST in ${SKIPPED}; do
+        echo "    ${TEST}"
+    done
+    RETVAL=1
+fi
+
+exit ${RETVAL}
