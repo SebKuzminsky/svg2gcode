@@ -552,7 +552,7 @@ def offset_path(path, offset_distance, steps=100):
             if complex_close_enough(this_seg.end, next_seg.start):
                 next_seg.start = this_seg.end
             else:
-                print("discontinuity (seg %d and following):" % i, file=sys.stderr)
+                print("gap in the path (seg %d and following):" % i, file=sys.stderr)
                 print("    this_seg.end:", this_seg.end, file=sys.stderr)
                 print("    next_seg.start:", next_seg.start, file=sys.stderr)
 
