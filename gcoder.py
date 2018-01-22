@@ -485,6 +485,11 @@ def offset_path(path, offset_distance, steps=100):
             joined_offset_path_list.append(this_seg)
             continue
 
+        print("these segments don't touch end to end:", file=sys.stderr)
+        print(this_seg, file=sys.stderr)
+        print(next_seg, file=sys.stderr)
+        print("    error:", this_seg.end-next_seg.start, file=sys.stderr)
+
         # FIXME: Choose values for `large_arc` and `sweep` correctly here.
         # I think the goal is to make the joining arc tangent to the segments it joins.
         # large_arc should always be False
@@ -537,9 +542,6 @@ def offset_path(path, offset_distance, steps=100):
 
         joined_offset_path_list.append(this_seg)
         joined_offset_path_list.append(joining_arc)
-        print("these segments don't join:", file=sys.stderr)
-        print(this_seg, file=sys.stderr)
-        print(next_seg, file=sys.stderr)
         print("adding joining arc:", file=sys.stderr)
         print(joining_arc, file=sys.stderr)
 
