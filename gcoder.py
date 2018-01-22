@@ -540,10 +540,19 @@ def offset_path(path, offset_distance, steps=100):
             print("joining arc is antisweep", file=sys.stderr)
             joining_arc = antisweep_arc
 
-        joined_offset_path_list.append(this_seg)
-        joined_offset_path_list.append(joining_arc)
-        print("adding joining arc:", file=sys.stderr)
+        print("joining arc:", file=sys.stderr)
         print(joining_arc, file=sys.stderr)
+        print("    length:", joining_arc.length(), file=sys.stderr)
+        print("    start-end distance:", joining_arc.start-joining_arc.end, file=sys.stderr)
+
+        # FIXME: this is kind of arbitrary
+        joining_seg = joining_arc
+        if joining_arc.length() < 1e-4:
+            joining_seg = svgpathtools.path.Line(joining_arc.start, joining_arc.end)
+            print("    too short!  replacing with a line:", joining_seg, file=sys.stderr)
+
+        joined_offset_path_list.append(this_seg)
+        joined_offset_path_list.append(joining_seg)
 
     offset_path_list = joined_offset_path_list
 
