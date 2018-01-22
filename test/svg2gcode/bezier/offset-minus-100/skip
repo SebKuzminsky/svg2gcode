@@ -1,0 +1,20 @@
+is this failure because the arc is too big?
+
+looking for earliest intersection of this seg(101): Arc(start=(-26.5365054061+166.466166496j), radius=(100+100j), rotation=0, large_arc=False, sweep=False, end=(169.296631881+159.960075379j))
+...
+    other[303]: Arc(start=(125.043935026+184.376543305j), radius=(100+100j), rotation=0, large_arc=False, sweep=False, end=(178.337876831-4.46533082634j))
+Traceback (most recent call last):
+  File "/home/seb/gcoder/test/../svg2gcode", line 69, in <module>
+    new_paths = gcoder.offset_path(input_path, offset)
+  File "/home/seb/gcoder/gcoder.py", line 571, in offset_path
+    offset_paths_list = split_path_at_intersections(offset_path_list)
+  File "/home/seb/gcoder/gcoder.py", line 217, in split_path_at_intersections
+    this_t, other_seg_index, other_t = find_earliest_intersection(path_list, this_seg_index)
+  File "/home/seb/gcoder/gcoder.py", line 184, in find_earliest_intersection
+    intersections = this_seg.intersect(other_seg)
+  File "/home/seb/gcoder/svgpathtools/svgpathtools/path.py", line 1790, in intersect
+    tol=tol, tol_deC=tol)
+  File "/home/seb/gcoder/svgpathtools/svgpathtools/bezier.py", line 331, in bezier_intersections
+    raise Exception("bezier_intersections has reached maximum "
+Exception: bezier_intersections has reached maximum iterations without terminating... either there's a problem/bug or you can fix by raising the max iterations or lowering tol_deC
+
