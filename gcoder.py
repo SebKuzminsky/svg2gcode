@@ -363,6 +363,23 @@ def offset_path(path, offset_distance, steps=100):
     distance, `offset_distance`, and returns the parallel offset curve
     (in the form of a list of svgpathtools.path.Path objects)."""
 
+
+    def point_is_enclosed(point, check_paths):
+        """`point` is a point we're interested in, and `check_paths`
+        is a list of svgpath.path.Path objects.  This function returns
+        True is `point` lies inside any of the Paths, and False if it
+        is outside all of the paths."""
+
+        for path in check_paths:
+            # find outside_point, which lies outside other_path
+            (xmin, xmax, ymin, ymax) = path.bbox()
+            outside_point = complex(xmax+100, ymax+100)
+            print("outside_point:", outside_point, file=sys.stderr)
+            if svgpathtools.path_encloses_pt(point, outside_point, path):
+                return True
+        return False
+
+
     # This only works on closed paths.
     print("input path:", file=sys.stderr)
     print(path, file=sys.stderr)
@@ -558,27 +575,70 @@ def offset_path(path, offset_distance, steps=100):
 
 
     #
-    # Done!  Convert each path list to a Path object, sanity check,
-    # and return them.
+    # Convert each path list to a Path object and sanity check.
     #
 
     offset_paths = []
-
-    path_area = approximate_path_area(path)
-
     for path_list in offset_paths_list:
         offset_path = svgpathtools.Path(*path_list)
         print("offset path:", file=sys.stderr)
         print(offset_path, file=sys.stderr)
-        print("continuous?", offset_path.iscontinuous(), file=sys.stderr)
-        print("", file=sys.stderr)
         assert(offset_path.isclosed())
-        offset_path_area = approximate_path_area(offset_path)
-        if path_area * offset_path_area < 0.0:
-            # Input path and offset path go in the opposite directions,
-            # drop offset path.
-            continue
         offset_paths.append(offset_path)
+
+
+    #
+    # The set of paths we got from split_path_at_intersections() has
+    # zero or more 'true paths' that we actually want to return, plus
+    # zero or more 'false paths' that should be pruned.
+    #
+    # When offsetting a path to the inside, the false paths will be
+    # outside the true path and will wind in the opposite direction of
+    # the input path.
+    #
+    # When offsetting a path to the outside, the false paths will be
+    # inside the true paths, and will wind in the same direction as the
+    # input path.
+    #
+    # [citation needed]
+    #
+
+    if offset_distance > 0:
+        # The offset is inwards, discard paths with opposite direction
+        # from input path.
+
+        path_area = approximate_path_area(path)
+        print("input path area:", path_area, file=sys.stderr)
+
+        keepers = []
+        for offset_path in offset_paths:
+            offset_path_area = approximate_path_area(offset_path)
+            print("offset path area:", offset_path_area, file=sys.stderr)
+            if path_area * offset_path_area < 0.0:
+                # Input path and offset path go in the opposite directions,
+                # drop offset path.
+                print("wrong direction, dropping", file=sys.stderr)
+                continue
+            keepers.append(offset_path)
+        offset_paths = keepers
+
+    else:
+        # The offset is outwards, discard paths that lie inside any
+        # other path.
+
+        all_offset_paths = offset_paths
+        for this_path in all_offset_paths:
+            print("checking path:", this_path, file=sys.stderr)
+
+            first_seg = this_path[0]
+            this_point = first_seg.point(0.5)
+
+            if point_is_enclosed(this_point, offset_paths):
+                # This path is enclosed so it's no good, drop it.
+                print("    dropping", file=sys.stderr)
+                offset_paths.remove(this_path)
+            else:
+                print("    keeping", file=sys.stderr)
 
     return offset_paths
 
