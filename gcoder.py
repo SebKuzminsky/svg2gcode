@@ -364,23 +364,24 @@ def offset_path(path, offset_distance, steps=100):
     (in the form of a list of svgpathtools.path.Path objects)."""
 
 
-    def point_is_enclosed(point, ignore_path, check_paths):
+    def is_enclosed(path, check_paths):
 
-        """`point` is a point we're interested in, it lies on the path
-        `ignore_path`.  `check_paths` is a list of svgpath.path.Path
-        objects (except that `ignore_path`, if it's in `check_paths`,
-        is ignored).  This function returns True is `point` lies inside
-        any of the `check_paths` Paths, and False if it is outside all
-        of the paths."""
+        """`path` is an svgpathtools.path.Path object, `check_paths`
+        is a list of svgpath.path.Path objects.  This function returns
+        True if `path` lies inside any of the paths in `check_paths`,
+        and returns False if it lies outside all of them."""
+
+        seg = path[0]
+        point = seg.point(0.5)
 
         for i in range(len(check_paths)):
-            path = check_paths[i]
-            if path == ignore_path:
+            test_path = check_paths[i]
+            if path == test_path:
                 continue
             # find outside_point, which lies outside other_path
-            (xmin, xmax, ymin, ymax) = path.bbox()
+            (xmin, xmax, ymin, ymax) = test_path.bbox()
             outside_point = complex(xmax+100, ymax+100)
-            if svgpathtools.path_encloses_pt(point, outside_point, path):
+            if svgpathtools.path_encloses_pt(point, outside_point, test_path):
                 print("point is within path", i, file=sys.stderr)
                 return True
         return False
@@ -646,11 +647,7 @@ def offset_path(path, offset_distance, steps=100):
         keepers = []
         for this_path in offset_paths:
             print("checking path:", this_path, file=sys.stderr)
-
-            first_seg = this_path[0]
-            this_point = first_seg.point(0.5)
-
-            if point_is_enclosed(this_point, this_path, offset_paths):
+            if is_enclosed(this_path, offset_paths):
                 # This path is enclosed so it's no good, drop it.
                 print("    dropping", file=sys.stderr)
             else:
