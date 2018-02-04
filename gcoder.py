@@ -410,12 +410,30 @@ def offset_path(path, offset_distance, steps=100):
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
             # Circular arcs remain arcs, elliptical arcs become linear
             # approximations below.
-            # FIXME: this only works for concave arcs
-            new_radius = seg.radius.real - offset_distance
+            #
+            # Polygons (input paths) are counter-clockwise.
+            #
+            # Positive offsets are to the inside of the polygon, negative
+            # offsets are to the outside.
+            #
+            # If this arc is counter-clockwise (sweep == False),
+            # *subtract* the `offset_distance` from its radius, so
+            # insetting makes the arc smaller and outsetting makes
+            # it larger.
+            #
+            # If this arc is clockwise (sweep == True), *add* the
+            # `offset_distance` from its radius, so insetting makes the
+            # arc larger and outsetting makes it smaller.
+
+            if seg.sweep == False:
+                new_radius = seg.radius.real - offset_distance
+            else:
+                new_radius = seg.radius.real + offset_distance
+
             start = seg.point(0) + (offset_distance * seg.normal(0))
             end = seg.point(1) + (offset_distance * seg.normal(1))
             if new_radius > 0.002:
-                radius = complex(seg.radius.real - offset_distance, seg.radius.imag - offset_distance)
+                radius = complex(new_radius, new_radius)
                 offset_arc = svgpathtools.path.Arc(
                     start = start,
                     end = end,
