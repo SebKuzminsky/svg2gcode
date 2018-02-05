@@ -127,7 +127,7 @@ if args.job:
                 output_paths += new_paths
 
         elif job['job-type'] == 'pocket2':
-            # Alternative pocketing algorithm (currently not working):
+            # Alternative pocketing algorithm.
             #
             # Inset the material contour by the finishing allowance to
             # get the rough material contour.
