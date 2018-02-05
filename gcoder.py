@@ -490,8 +490,10 @@ def offset_path(path, offset_distance, steps=100):
         print("    next", next_seg, file=sys.stderr)
         intersections = this_seg.intersect(next_seg)
         print("    intersections:", intersections, file=sys.stderr)
-        for intersection in intersections:
+        if len(intersections) > 0:
+            intersection = intersections[0]
             point = this_seg.point(intersection[0])
+            print("    intersection point:", point, file=sys.stderr)
             if not complex_close_enough(point, this_seg.end):
                 this_seg.end = this_seg.point(intersection[0])
                 next_seg.start = this_seg.end
