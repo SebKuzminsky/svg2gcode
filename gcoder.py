@@ -400,6 +400,8 @@ def offset_path(path, offset_distance, steps=100):
     # input path.
     #
 
+    print("generating offset segments...", file=sys.stderr)
+
     offset_path_list = []
     for seg in path:
         if type(seg) == svgpathtools.path.Line:
@@ -473,6 +475,8 @@ def offset_path(path, offset_distance, steps=100):
     # trim to the intersection.
     #
 
+    print("trimming intersecting segments...", file=sys.stderr)
+
     for i in range(len(offset_path_list)):
         this_seg = offset_path_list[i]
         if (i+1) < len(offset_path_list):
@@ -497,6 +501,8 @@ def offset_path(path, offset_distance, steps=100):
     # Find all the places where adjacent segments do not end/start close
     # to each other, and join them with Arcs.
     #
+
+    print("joining non-connecting segments with arcs...", file=sys.stderr)
 
     joined_offset_path_list = []
     for i in range(len(offset_path_list)):
@@ -587,6 +593,8 @@ def offset_path(path, offset_distance, steps=100):
     # multiple separate paths in those places.
     #
 
+    print("splitting path at intersections...", file=sys.stderr)
+
     offset_paths_list = split_path_at_intersections(offset_path_list)
 
 
@@ -594,6 +602,10 @@ def offset_path(path, offset_distance, steps=100):
     # Smooth the path: adjacent segments whose start/end points are
     # "close enough" to each other are adjusted so they actually touch.
     #
+    # FIXME: is this still needed?
+    #
+
+    print("smoothing paths...", file=sys.stderr)
 
     for path_list in offset_paths_list:
         for i in range(len(path_list)):
@@ -614,6 +626,8 @@ def offset_path(path, offset_distance, steps=100):
     # Convert each path list to a Path object and sanity check.
     #
 
+    print("converting path lists to paths...", file=sys.stderr)
+
     offset_paths = []
     for path_list in offset_paths_list:
         offset_path = svgpathtools.Path(*path_list)
@@ -626,7 +640,7 @@ def offset_path(path, offset_distance, steps=100):
     #
     # The set of paths we got from split_path_at_intersections() has
     # zero or more 'true paths' that we actually want to return, plus
-    # zero or more 'false paths' that should be pruned.
+    # zero or more 'false paths' that should be discarded.
     #
     # When offsetting a path to the inside, the false paths will be
     # outside the true path and will wind in the opposite direction of
@@ -639,15 +653,18 @@ def offset_path(path, offset_distance, steps=100):
     # [citation needed]
     #
 
+    print("pruning false paths...", file=sys.stderr)
+
+    path_area = approximate_path_area(path)
+    print("input path area:", path_area, file=sys.stderr)
+
+    keepers = []
+
     if offset_distance > 0:
-        # The offset is inwards, discard paths with opposite direction
-        # from input path.
-
-        path_area = approximate_path_area(path)
-        print("input path area:", path_area, file=sys.stderr)
-
-        keepers = []
+        # The offset is positive (inwards), discard paths with opposite
+        # direction from input path.
         for offset_path in offset_paths:
+            print("checking path:", offset_path, file=sys.stderr)
             offset_path_area = approximate_path_area(offset_path)
             print("offset path area:", offset_path_area, file=sys.stderr)
             if path_area * offset_path_area < 0.0:
@@ -656,23 +673,29 @@ def offset_path(path, offset_distance, steps=100):
                 print("wrong direction, dropping", file=sys.stderr)
                 continue
             keepers.append(offset_path)
-        offset_paths = keepers
 
     else:
-        # The offset is outwards, discard paths that lie inside any
-        # other path.
-
-        keepers = []
-        for this_path in offset_paths:
-            print("checking path:", this_path, file=sys.stderr)
-            if is_enclosed(this_path, offset_paths):
-                # This path is enclosed so it's no good, drop it.
-                print("    dropping", file=sys.stderr)
+        # The offset is negative (outwards), discard paths that lie
+        # inside any other path and have the same winding direction as
+        # the input path.
+        for offset_path in offset_paths:
+            print("checking path:", offset_path, file=sys.stderr)
+            if is_enclosed(offset_path, offset_paths):
+                print("    enclosed", file=sys.stderr)
+                # This path is enclosed, check the winding direction.
+                offset_path_area = approximate_path_area(offset_path)
+                print("offset path area:", offset_path_area, file=sys.stderr)
+                if path_area * offset_path_area > 0.0:
+                    print("    winding is the same as input, dropping", file=sys.stderr)
+                    continue
+                else:
+                    print("    winding is opposite input", file=sys.stderr)
             else:
-                print("    keeping", file=sys.stderr)
-                keepers.append(this_path)
+                print("    not enclosed", file=sys.stderr)
+            print("    keeping", file=sys.stderr)
+            keepers.append(offset_path)
 
-        offset_paths = keepers
+    offset_paths = keepers
 
     return offset_paths
 
