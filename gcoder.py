@@ -705,6 +705,7 @@ def offset_path(path, offset_distance, steps=100):
 def path_to_gcode(svg, path, z_traverse=10, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True):
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
+    z_start = min(z_traverse, z_top_of_material + 0.5)
 
     if lead_in:
         g0(z=z_traverse)
@@ -713,7 +714,6 @@ def path_to_gcode(svg, path, z_traverse=10, z_top_of_material=0, z_cut_depth=0, 
     spindle_on()
 
     if lead_in:
-        z_start = min(z_traverse, z_top_of_material + 0.5)
         g0(z=z_start)
         g1(z=z_cut_depth)
     else:
