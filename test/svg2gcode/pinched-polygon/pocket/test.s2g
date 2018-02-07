@@ -1,0 +1,13 @@
+{
+    "jobs": [
+        {
+            "job-type": "pocket2",
+            "tool-diameter": 15,
+            "width-of-cut": 5,
+            "finishing-allowance": 5
+        },
+        {
+            "job-type": "engrave"
+        }
+    ]
+}
