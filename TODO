@@ -24,6 +24,8 @@ so it would be most convenient if i could render its Path objects.
 
 ** occmodel?  Jeff used it for CAD in python.
 
+** libpolyclipping?  https://sourceforge.net/projects/polyclipping/
+
 * offset_path() should be named offset_paths(), since it returns a list
     of paths.
 
