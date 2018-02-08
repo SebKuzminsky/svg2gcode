@@ -49,6 +49,13 @@ so it would be most convenient if i could render its Path objects.
 * Pockets with islands.
 
 
+== Fix units handling
+
+When the SVG uses mm everything's fine, but the mini-liner svg in the
+griptilian scales project uses inch(?) units and the result is the
+wrong size.
+
+
 == Smart transitions
 
 I want better transitions from a finished pass to the start of the
