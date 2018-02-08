@@ -1,0 +1,147 @@
+= svg2gcode(1)
+
+
+== NAME
+
+svg2gcode - produce g-code tool paths from SVG files
+
+
+== SYNOPSIS
+
+*svg2gcode* [_OPTIONS_] file.svg
+
+
+== DESCRIPTION
+
+svg2gcode reads a job description file and an SVG file (containing a
+single closed path), and produces the corresponding g-code.
+
+
+== Job File Format
+
+The job file is a json document.
+
+At the top level there's a hash with a key named "jobs", whose value
+is a list of job descriptions.  svg2gcode writes g-code for each job
+description in the list.
+
+Each job description is a hash, and has a key named "job-type" whose
+value is the type of the job.  The supported job types and their arguments
+(provided as additional key/value pairs in the job description hash) are:
+
+
+=== Job type: engrave
+
+The toolpath follows the path in the SVG.
+
+No arguments.
+
+
+=== Job type: offset
+
+The toolpath is offset inwards or outwards from the path in the SVG.
+
+Arguments:
+
+*distance* (float):: Distance from the input path to the tool path.
+Positive distances are in the interior of the SVG path, negative distances
+are on the outside of the SVG path.
+
+
+=== Job type: pocket
+
+Old simple pocketing algorithm.  Obsolete, use pocket2 instead.
+
+
+=== Job type: pocket2
+
+Make a pocket from the SVG path.
+
+svg2gcode uses the SVG path (optionally offset by a finishing allowance
+argument) as the material contour of the wall of the pocket,
+
+It cuts a slot around the inside of this adjustted material contour.
+
+The slot leaves zero or more "islands" of remaining material in the
+pocket.
+
+svg2gcode removes the islands one by one using the side of the endmill
+to shrink the island from the edges.  Each pass removes width-of-cut
+material from the perimeter of the island until nothing remains, then
+moves on to the next island.
+
+svg2gcode tries to keep the tool down in the pocket as much as it can,
+but some of the transitions between passes trigger defensive "raise,
+traverse, plunge" movements.
+
+Arguments:
+
+*tool-diameter* (float):: Diameter of the end mill used, in mm.
+
+*width-of-cut* (float):: Desired width-of-cut when shoulder milling,
+in mm.
+
+*finishing-allowance* (float):: Make the pocket smaller than the SVG
+path by this amount, in mm.
+
+
+== OPTIONS
+
+*-b*, *--bits* _N_::
+
+      (default 8) For Modbus communication.  Set number of data bits
+      to _N_.  _N_ must be between 5 and 8 inclusive.
+
+*-p*, *--parity* [Even,Odd,None]
+
+      (default None) For Modbus communication.  Set serial parity to Even,
+      Odd, or None.
+
+*-r*, *--rate* _N_::
+
+      (default 38400) For Modbus communication.  Set baud rate to _N_.
+      It is an error if the rate is not one of the following: 1200,
+      2400, 4800, 9600, 19200, 38400
+
+*-s*, *--stopbits* [1,2]::
+
+      (default 1) For Modbus communication.  Set serial stop bits to 1
+      or 2.
+
+*-t*, *--target* _N_::
+
+      (default 1) For Modbus communication.  Set Modbus target (slave)
+      number.  This must match the device number you set on the Huanyang
+      GT VFD.
+
+*-d*, *--device* _PATH_::
+
+      (default /dev/ttyS0) For Modbus communication.  Set the name of
+      the serial device node to use.
+
+*-v*, *--verbose*::
+
+      Turn on verbose mode.
+
+*-S*, *--motor-max-speed* _RPM_::
+
+    The motor's max speed in RPM.  This must match the motor speed value
+    configured in VFD register P2.03.
+
+*-F*, *--max-frequency* _HZ_::
+
+    This is the maximum output frequency of the VFD in Hz.  It should
+    correspond to the motor's rated max frequency, and to the maximum
+    and upper limit output frequency configured in VFD register P0.03
+    and P0.04.
+
+*-f*, *--min-frequency* _HZ_::
+
+    This is the minimum output frequency of the VFD in Hz.  It should
+    correspond to the minimum output frequency configured in VFD
+    register P0.05.
+
+
+== EXAMPLES
+
+better have some
