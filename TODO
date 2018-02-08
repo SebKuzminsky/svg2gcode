@@ -47,3 +47,36 @@ so it would be most convenient if i could render its Path objects.
   work-holding tabs.
 
 * Pockets with islands.
+
+
+== Smart transitions
+
+I want better transitions from a finished pass to the start of the
+next pass.
+
+It currently does "raise, traverse, plunge", which is simple, safe,
+slow, and plungy.
+
+Sometimes one pass ends very near the start of the next pass.  In this
+case it'd be better to feed there directly, along the floor of the pocket.
+
+However sometimes there's a long way from one pass end to the next pass
+start, and obstacles can intervene: other islands, and the walls of the
+pocket itself.
+
+To select which of "raise, traverse, plunge" and "feed" to use:
+
+    the proposed feed move is a g1 from the current (X, Y) to the start
+    of the next pass
+
+    If the proposed feed intersects the original slotting toolpath
+    we'll gouge the wall of the pocket, so choose RTP.
+
+    If the proposed feed comes within tool_radius of any island other
+    than the one we're on, it gouges that island, so choose RTP
+
+    If the proposed feed intersects the next pass, *except* at the start
+    point, then it gouges the island we're on, so choose RTP (FIXME: or
+    choose a different starting point in the next pass?)
+
+    If we get here there's no gouge, so choose that feed move
