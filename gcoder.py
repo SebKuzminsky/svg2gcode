@@ -160,7 +160,7 @@ class svg():
         return (x, y)
 
 
-def split_path_at_intersections(path_list):
+def split_path_at_intersections(path_list, debug=False):
 
     """`path_list` is a list of connected path segments.  This function
     identifies each place where the path intersects intself, and splits
@@ -172,7 +172,7 @@ def split_path_at_intersections(path_list):
 
     def find_earliest_intersection(path_list, this_seg_index):
         this_seg = path_list[this_seg_index]
-        print("looking for earliest intersection of this seg(%d):" % this_seg_index, this_seg, file=sys.stderr)
+        if debug: print("looking for earliest intersection of this seg(%d):" % this_seg_index, this_seg, file=sys.stderr)
 
         earliest_this_t = None
         earliest_other_seg_index = None
@@ -180,11 +180,11 @@ def split_path_at_intersections(path_list):
 
         for other_seg_index in range(this_seg_index+2, len(path_list)):
             other_seg = path_list[other_seg_index]
-            print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
+            if debug: print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
             if len(intersections) == 0:
                 continue;
-            print("        intersect!", file=sys.stderr)
+            if debug: print("        intersect!", file=sys.stderr)
 
             # The intersection that comes earliest in `this_seg` is
             # the interesting one, except that intersections at the
@@ -194,7 +194,7 @@ def split_path_at_intersections(path_list):
                     continue
 
                 if (earliest_this_t == None) or (intersection[0] < earliest_this_t):
-                    print("        earliest!", file=sys.stderr)
+                    if debug: print("        earliest!", file=sys.stderr)
                     earliest_this_t = intersection[0]
                     earliest_other_seg_index = other_seg_index
                     earliest_other_t = intersection[1]
@@ -202,8 +202,8 @@ def split_path_at_intersections(path_list):
         return earliest_this_t, earliest_other_seg_index, earliest_other_t
 
 
-    print("splitting path:", file=sys.stderr)
-    print("    ", path_list, file=sys.stderr)
+    if debug: print("splitting path:", file=sys.stderr)
+    if debug: print("    ", path_list, file=sys.stderr)
 
     # This is a list of pairs.  Each pair represents a place where the
     # input path crosses itself.  The two members of the pair are the
@@ -226,14 +226,14 @@ def split_path_at_intersections(path_list):
 
         this_first_seg, this_second_seg = this_seg.split(this_t)
         other_first_seg, other_second_seg = other_seg.split(other_t)
-        print("split this seg:", this_seg, file=sys.stderr)
-        print("    t:", this_t, file=sys.stderr)
-        print("    ", this_first_seg, file=sys.stderr)
-        print("    ", this_second_seg, file=sys.stderr)
-        print("split other seg:", other_seg, file=sys.stderr)
-        print("    t:", other_t, file=sys.stderr)
-        print("    ", other_first_seg, file=sys.stderr)
-        print("    ", other_second_seg, file=sys.stderr)
+        if debug: print("split this seg:", this_seg, file=sys.stderr)
+        if debug: print("    t:", this_t, file=sys.stderr)
+        if debug: print("    ", this_first_seg, file=sys.stderr)
+        if debug: print("    ", this_second_seg, file=sys.stderr)
+        if debug: print("split other seg:", other_seg, file=sys.stderr)
+        if debug: print("    t:", other_t, file=sys.stderr)
+        if debug: print("    ", other_first_seg, file=sys.stderr)
+        if debug: print("    ", other_second_seg, file=sys.stderr)
 
         # FIXME: This fixup is bogus, but the two segments'
         # `t` parameters don't put the intersection at the
@@ -268,32 +268,32 @@ def split_path_at_intersections(path_list):
         path_list.insert(other_seg_index+1, other_second_seg)
 
         for i in range(len(intersections)):
-            print("bumping intersection:", file=sys.stderr)
-            print("    ", intersections[i], file=sys.stderr)
+            if debug: print("bumping intersection:", file=sys.stderr)
+            if debug: print("    ", intersections[i], file=sys.stderr)
             if intersections[i][1] >= this_seg_index:
                 intersections[i][1] += 1  # for this_seg that got split
             if intersections[i][1] >= other_seg_index:
                 intersections[i][1] += 1  # for other_seg that got split
-            print("    ", intersections[i], file=sys.stderr)
+            if debug: print("    ", intersections[i], file=sys.stderr)
 
         # Add this new intersection we just made.
         i = [this_seg_index, other_seg_index]
-        print("    new:", i, file=sys.stderr)
+        if debug: print("    new:", i, file=sys.stderr)
         intersections.append(i)
 
         # Look for intersections in the remainder of this_seg (the second
         # part of the split).
         this_seg_index += 1
 
-    print("found some intersections:", file=sys.stderr)
+    if debug: print("found some intersections:", file=sys.stderr)
     for i in intersections:
-        print("    ", i, file=sys.stderr)
-        print("        ", path_list[i[0]], file=sys.stderr)
-        print("        ", path_list[i[1]], file=sys.stderr)
+        if debug: print("    ", i, file=sys.stderr)
+        if debug: print("        ", path_list[i[0]], file=sys.stderr)
+        if debug: print("        ", path_list[i[1]], file=sys.stderr)
 
     paths = []
     while True:
-        print("starting a new path", file=sys.stderr)
+        if debug: print("starting a new path", file=sys.stderr)
         path = []
         # Start at the first unused segment
         seg_index = 0
@@ -306,7 +306,7 @@ def split_path_at_intersections(path_list):
                 # Done with this path.
                 break
 
-            print("    adding segment %d:" % seg_index, path_list[seg_index], file=sys.stderr)
+            if debug: print("    adding segment %d:" % seg_index, path_list[seg_index], file=sys.stderr)
             path.append(path_list[seg_index])
             path_list[seg_index] = None
 
@@ -314,17 +314,17 @@ def split_path_at_intersections(path_list):
             for i in intersections:
                 if seg_index == i[0] or seg_index == i[1]:
                     break
-            print("i:", i, file=sys.stderr)
-            print("seg_index:", seg_index, file=sys.stderr)
+            if debug: print("i:", i, file=sys.stderr)
+            if debug: print("seg_index:", seg_index, file=sys.stderr)
             if (i is not None) and (i[0] == seg_index):
                 # This segment is the first entrance to an intersection,
                 # take the second exit.
-                print("    intersection!", file=sys.stderr)
+                if debug: print("    intersection!", file=sys.stderr)
                 seg_index = i[1] + 1
             elif (i is not None) and (i[1] == seg_index):
                 # This segment is the second entrance to an intersection,
                 # take the first exit.
-                print("    intersection!", file=sys.stderr)
+                if debug: print("    intersection!", file=sys.stderr)
                 seg_index = i[0] + 1
             else:
                 # This segment doesn't end in an intersection, just go
@@ -358,7 +358,7 @@ def approximate_path_area(path):
     return tmp.area()
 
 
-def offset_path(path, offset_distance, steps=100):
+def offset_path(path, offset_distance, steps=100, debug=False):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curve
     (in the form of a list of svgpathtools.path.Path objects)."""
@@ -382,15 +382,15 @@ def offset_path(path, offset_distance, steps=100):
             (xmin, xmax, ymin, ymax) = test_path.bbox()
             outside_point = complex(xmax+100, ymax+100)
             if svgpathtools.path_encloses_pt(point, outside_point, test_path):
-                print("point is within path", i, file=sys.stderr)
+                if debug: print("point is within path", i, file=sys.stderr)
                 return True
         return False
 
 
     # This only works on closed paths.
-    print("input path:", file=sys.stderr)
-    print(path, file=sys.stderr)
-    print("offset:", offset_distance, file=sys.stderr)
+    if debug: print("input path:", file=sys.stderr)
+    if debug: print(path, file=sys.stderr)
+    if debug: print("offset:", offset_distance, file=sys.stderr)
     assert(path.isclosed())
 
 
@@ -400,7 +400,7 @@ def offset_path(path, offset_distance, steps=100):
     # input path.
     #
 
-    print("generating offset segments...", file=sys.stderr)
+    if debug: print("generating offset segments...", file=sys.stderr)
 
     offset_path_list = []
     for seg in path:
@@ -475,7 +475,7 @@ def offset_path(path, offset_distance, steps=100):
     # trim to the intersection.
     #
 
-    print("trimming intersecting segments...", file=sys.stderr)
+    if debug: print("trimming intersecting segments...", file=sys.stderr)
 
     for i in range(len(offset_path_list)):
         this_seg = offset_path_list[i]
@@ -485,15 +485,15 @@ def offset_path(path, offset_distance, steps=100):
             next_seg = offset_path_list[0]
 
         # FIXME: I'm not sure about this part.
-        print("intersecting", file=sys.stderr)
-        print("    this", this_seg, file=sys.stderr)
-        print("    next", next_seg, file=sys.stderr)
+        if debug: print("intersecting", file=sys.stderr)
+        if debug: print("    this", this_seg, file=sys.stderr)
+        if debug: print("    next", next_seg, file=sys.stderr)
         intersections = this_seg.intersect(next_seg)
-        print("    intersections:", intersections, file=sys.stderr)
+        if debug: print("    intersections:", intersections, file=sys.stderr)
         if len(intersections) > 0:
             intersection = intersections[0]
             point = this_seg.point(intersection[0])
-            print("    intersection point:", point, file=sys.stderr)
+            if debug: print("    intersection point:", point, file=sys.stderr)
             if not complex_close_enough(point, this_seg.end):
                 this_seg.end = this_seg.point(intersection[0])
                 next_seg.start = this_seg.end
@@ -504,7 +504,7 @@ def offset_path(path, offset_distance, steps=100):
     # to each other, and join them with Arcs.
     #
 
-    print("joining non-connecting segments with arcs...", file=sys.stderr)
+    if debug: print("joining non-connecting segments with arcs...", file=sys.stderr)
 
     joined_offset_path_list = []
     for i in range(len(offset_path_list)):
@@ -518,18 +518,18 @@ def offset_path(path, offset_distance, steps=100):
             joined_offset_path_list.append(this_seg)
             continue
 
-        print("these segments don't touch end to end:", file=sys.stderr)
-        print(this_seg, file=sys.stderr)
-        print(next_seg, file=sys.stderr)
-        print("    error:", this_seg.end-next_seg.start, file=sys.stderr)
+        if debug: print("these segments don't touch end to end:", file=sys.stderr)
+        if debug: print(this_seg, file=sys.stderr)
+        if debug: print(next_seg, file=sys.stderr)
+        if debug: print("    error:", this_seg.end-next_seg.start, file=sys.stderr)
 
         # FIXME: Choose values for `large_arc` and `sweep` correctly here.
         # I think the goal is to make the joining arc tangent to the segments it joins.
         # large_arc should always be False
         # sweep means "clockwise" (but +Y is down)
-        print("determining joining arc:", file=sys.stderr)
-        print("    this_seg ending normal:", this_seg.normal(1), file=sys.stderr)
-        print("    next_seg starting normal:", next_seg.normal(0), file=sys.stderr)
+        if debug: print("determining joining arc:", file=sys.stderr)
+        if debug: print("    this_seg ending normal:", this_seg.normal(1), file=sys.stderr)
+        if debug: print("    next_seg starting normal:", next_seg.normal(0), file=sys.stderr)
 
         sweep_arc = svgpathtools.path.Arc(
             start = this_seg.end,
@@ -542,11 +542,11 @@ def offset_path(path, offset_distance, steps=100):
         sweep_start_error = this_seg.normal(1) - sweep_arc.normal(0)
         sweep_end_error = next_seg.normal(0) - sweep_arc.normal(1)
         sweep_error = pow(abs(sweep_start_error), 2) + pow(abs(sweep_end_error), 2)
-        print("    sweep arc starting normal:", sweep_arc.normal(0), file=sys.stderr)
-        print("    sweep arc ending normal:", sweep_arc.normal(1), file=sys.stderr)
-        print("    sweep starting error:", sweep_start_error, file=sys.stderr)
-        print("    sweep end error:", sweep_end_error, file=sys.stderr)
-        print("    sweep error:", sweep_error, file=sys.stderr)
+        if debug: print("    sweep arc starting normal:", sweep_arc.normal(0), file=sys.stderr)
+        if debug: print("    sweep arc ending normal:", sweep_arc.normal(1), file=sys.stderr)
+        if debug: print("    sweep starting error:", sweep_start_error, file=sys.stderr)
+        if debug: print("    sweep end error:", sweep_end_error, file=sys.stderr)
+        if debug: print("    sweep error:", sweep_error, file=sys.stderr)
 
         antisweep_arc = svgpathtools.path.Arc(
             start = this_seg.end,
@@ -559,30 +559,30 @@ def offset_path(path, offset_distance, steps=100):
         antisweep_start_error = this_seg.normal(1) - antisweep_arc.normal(0)
         antisweep_end_error = next_seg.normal(0) - antisweep_arc.normal(1)
         antisweep_error = pow(abs(antisweep_start_error), 2) + pow(abs(antisweep_end_error), 2)
-        print("    antisweep arc starting normal:", antisweep_arc.normal(0), file=sys.stderr)
-        print("    antisweep arc ending normal:", antisweep_arc.normal(1), file=sys.stderr)
-        print("    antisweep starting error:", antisweep_start_error, file=sys.stderr)
-        print("    antisweep end error:", antisweep_end_error, file=sys.stderr)
-        print("    antisweep error:", antisweep_error, file=sys.stderr)
+        if debug: print("    antisweep arc starting normal:", antisweep_arc.normal(0), file=sys.stderr)
+        if debug: print("    antisweep arc ending normal:", antisweep_arc.normal(1), file=sys.stderr)
+        if debug: print("    antisweep starting error:", antisweep_start_error, file=sys.stderr)
+        if debug: print("    antisweep end error:", antisweep_end_error, file=sys.stderr)
+        if debug: print("    antisweep error:", antisweep_error, file=sys.stderr)
 
         joining_arc = None
         if sweep_error < antisweep_error:
-            print("joining arc is sweep", file=sys.stderr)
+            if debug: print("joining arc is sweep", file=sys.stderr)
             joining_arc = sweep_arc
         else:
-            print("joining arc is antisweep", file=sys.stderr)
+            if debug: print("joining arc is antisweep", file=sys.stderr)
             joining_arc = antisweep_arc
 
-        print("joining arc:", file=sys.stderr)
-        print(joining_arc, file=sys.stderr)
-        print("    length:", joining_arc.length(), file=sys.stderr)
-        print("    start-end distance:", joining_arc.start-joining_arc.end, file=sys.stderr)
+        if debug: print("joining arc:", file=sys.stderr)
+        if debug: print(joining_arc, file=sys.stderr)
+        if debug: print("    length:", joining_arc.length(), file=sys.stderr)
+        if debug: print("    start-end distance:", joining_arc.start-joining_arc.end, file=sys.stderr)
 
         # FIXME: this is kind of arbitrary
         joining_seg = joining_arc
         if joining_arc.length() < 1e-4:
             joining_seg = svgpathtools.path.Line(joining_arc.start, joining_arc.end)
-            print("    too short!  replacing with a line:", joining_seg, file=sys.stderr)
+            if debug: print("    too short!  replacing with a line:", joining_seg, file=sys.stderr)
 
         joined_offset_path_list.append(this_seg)
         joined_offset_path_list.append(joining_seg)
@@ -595,7 +595,7 @@ def offset_path(path, offset_distance, steps=100):
     # multiple separate paths in those places.
     #
 
-    print("splitting path at intersections...", file=sys.stderr)
+    if debug: print("splitting path at intersections...", file=sys.stderr)
 
     offset_paths_list = split_path_at_intersections(offset_path_list)
 
@@ -607,7 +607,7 @@ def offset_path(path, offset_distance, steps=100):
     # FIXME: is this still needed?
     #
 
-    print("smoothing paths...", file=sys.stderr)
+    if debug: print("smoothing paths...", file=sys.stderr)
 
     for path_list in offset_paths_list:
         for i in range(len(path_list)):
@@ -619,22 +619,22 @@ def offset_path(path, offset_distance, steps=100):
             if complex_close_enough(this_seg.end, next_seg.start):
                 next_seg.start = this_seg.end
             else:
-                print("gap in the path (seg %d and following):" % i, file=sys.stderr)
-                print("    this_seg.end:", this_seg.end, file=sys.stderr)
-                print("    next_seg.start:", next_seg.start, file=sys.stderr)
+                if debug: print("gap in the path (seg %d and following):" % i, file=sys.stderr)
+                if debug: print("    this_seg.end:", this_seg.end, file=sys.stderr)
+                if debug: print("    next_seg.start:", next_seg.start, file=sys.stderr)
 
 
     #
     # Convert each path list to a Path object and sanity check.
     #
 
-    print("converting path lists to paths...", file=sys.stderr)
+    if debug: print("converting path lists to paths...", file=sys.stderr)
 
     offset_paths = []
     for path_list in offset_paths_list:
         offset_path = svgpathtools.Path(*path_list)
-        print("offset path:", file=sys.stderr)
-        print(offset_path, file=sys.stderr)
+        if debug: print("offset path:", file=sys.stderr)
+        if debug: print(offset_path, file=sys.stderr)
         assert(offset_path.isclosed())
         offset_paths.append(offset_path)
 
@@ -655,10 +655,10 @@ def offset_path(path, offset_distance, steps=100):
     # [citation needed]
     #
 
-    print("pruning false paths...", file=sys.stderr)
+    if debug: print("pruning false paths...", file=sys.stderr)
 
     path_area = approximate_path_area(path)
-    print("input path area:", path_area, file=sys.stderr)
+    if debug: print("input path area:", path_area, file=sys.stderr)
 
     keepers = []
 
@@ -666,13 +666,13 @@ def offset_path(path, offset_distance, steps=100):
         # The offset is positive (inwards), discard paths with opposite
         # direction from input path.
         for offset_path in offset_paths:
-            print("checking path:", offset_path, file=sys.stderr)
+            if debug: print("checking path:", offset_path, file=sys.stderr)
             offset_path_area = approximate_path_area(offset_path)
-            print("offset path area:", offset_path_area, file=sys.stderr)
+            if debug: print("offset path area:", offset_path_area, file=sys.stderr)
             if path_area * offset_path_area < 0.0:
                 # Input path and offset path go in the opposite directions,
                 # drop offset path.
-                print("wrong direction, dropping", file=sys.stderr)
+                if debug: print("wrong direction, dropping", file=sys.stderr)
                 continue
             keepers.append(offset_path)
 
@@ -681,20 +681,20 @@ def offset_path(path, offset_distance, steps=100):
         # inside any other path and have the same winding direction as
         # the input path.
         for offset_path in offset_paths:
-            print("checking path:", offset_path, file=sys.stderr)
+            if debug: print("checking path:", offset_path, file=sys.stderr)
             if is_enclosed(offset_path, offset_paths):
-                print("    enclosed", file=sys.stderr)
+                if debug: print("    enclosed", file=sys.stderr)
                 # This path is enclosed, check the winding direction.
                 offset_path_area = approximate_path_area(offset_path)
-                print("offset path area:", offset_path_area, file=sys.stderr)
+                if debug: print("offset path area:", offset_path_area, file=sys.stderr)
                 if path_area * offset_path_area > 0.0:
-                    print("    winding is the same as input, dropping", file=sys.stderr)
+                    if debug: print("    winding is the same as input, dropping", file=sys.stderr)
                     continue
                 else:
-                    print("    winding is opposite input", file=sys.stderr)
+                    if debug: print("    winding is opposite input", file=sys.stderr)
             else:
-                print("    not enclosed", file=sys.stderr)
-            print("    keeping", file=sys.stderr)
+                if debug: print("    not enclosed", file=sys.stderr)
+            if debug: print("    keeping", file=sys.stderr)
             keepers.append(offset_path)
 
     offset_paths = keepers
