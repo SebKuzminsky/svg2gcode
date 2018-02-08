@@ -69,11 +69,13 @@ To select which of "raise, traverse, plunge" and "feed" to use:
     the proposed feed move is a g1 from the current (X, Y) to the start
     of the next pass
 
-    If the proposed feed intersects the original slotting toolpath
-    we'll gouge the wall of the pocket, so choose RTP.
+    If the proposed feed intersects the original slotting toolpath we'll
+    gouge the wall of the pocket, so choose RTP (FIXME: or follow along
+    the slotting path until the second intersection?
 
     If the proposed feed comes within tool_radius of any island other
-    than the one we're on, it gouges that island, so choose RTP
+    than the one we're on, it gouges that island, so choose RTP (FIXME:
+    or do that island instead?)
 
     If the proposed feed intersects the next pass, *except* at the start
     point, then it gouges the island we're on, so choose RTP (FIXME: or
