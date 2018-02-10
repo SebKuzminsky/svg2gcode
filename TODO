@@ -26,6 +26,8 @@ so it would be most convenient if i could render its Path objects.
 
 ** libpolyclipping?  https://sourceforge.net/projects/polyclipping/
 
+** libarea?  https://github.com/Heeks/libarea.git
+
 * offset_path() should be named offset_paths(), since it returns a list
     of paths.
 
