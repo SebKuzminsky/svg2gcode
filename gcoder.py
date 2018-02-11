@@ -408,6 +408,7 @@ def offset_path(path, offset_distance, steps=100, debug=False):
             start = seg.point(0) + (offset_distance * seg.normal(0))
             end = seg.point(1) + (offset_distance * seg.normal(1))
             offset_path_list.append(svgpathtools.Line(start, end))
+            if debug: print("    ", offset_path_list[-1], file=sys.stderr)
 
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
             # Circular arcs remain arcs, elliptical arcs become linear
@@ -446,10 +447,11 @@ def offset_path(path, offset_distance, steps=100, debug=False):
                 )
                 offset_path_list.append(offset_arc)
             elif new_radius > 0.0:
-                # Offset Arc still exists but radius is smaller than
-                # the minimum that LinuxCNC accepts, replace with a Line.
+                # Offset Arc radius is smaller than the minimum that
+                # LinuxCNC accepts, replace with a Line.
                 offset_arc = svgpathtools.path.Line(start = start, end = end)
                 offset_path_list.append(offset_arc)
+            if debug: print("    ", offset_path_list[-1], file=sys.stderr)
 
         else:
             # Deal with any segment that's not a line or a circular arc.
@@ -468,6 +470,7 @@ def offset_path(path, offset_distance, steps=100, debug=False):
                 start = points[k]
                 end = points[k+1]
                 offset_path_list.append(svgpathtools.Line(start, end))
+            if debug: print("    (long list of short lines)", file=sys.stderr)
 
 
     #
