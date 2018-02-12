@@ -123,17 +123,26 @@ class svg():
         self.svg_file = svg_file
         self.height = 0.0
 
+        # svg coordinate * scale == mm
+        self.scale = 1.0
+
         self.cairo = cairosvg.parser.Tree(url=self.svg_file)
 
         m = re.match('([0-9.]+)([a-zA-Z]*)', self.cairo['height'])
         if m == None:
             raise SystemExit, "failed to parse SVG height: %s" % c['height']
 
-        if len(m.groups()) == 1:
-            self.height = float(m.group(1))
-        elif len(m.groups()) == 2:
-            print("FIXME: there's a string here ('%s') specifying the units, i hope it's 1:1 with the SVG user units, and i hope it's mm" % m.group(2), file=sys.stderr)
-            self.height = float(m.group(1))
+        self.height = float(m.group(1))
+
+        if len(m.groups()) == 2:
+            if m.group(2) == "mm":
+                self.height = float(m.group(1))
+            elif m.group(2) == '':
+                # no units on the height implies 96 dpi
+                # 1 inch/96 units * 25.4 mm/1 inch = 25.4/96 mm/unit
+                self.scale = 25.4/96
+            else:
+                raise SystemExit, "unhandled SVG units '%s'" % m.group(2)
         else:
             raise SystemExit, "weird result from re"
 
@@ -143,13 +152,13 @@ class svg():
     def to_mm_x(self, x_mm):
         if type(x_mm) != float:
             raise SystemExit, 'non-float input'
-        return x_mm
+        return x_mm * self.scale
 
 
     def to_mm_y(self, y_mm):
         if type(y_mm) != float:
             raise SystemExit, 'non-float input'
-        return self.height - y_mm
+        return self.height - y_mm * self.scale
 
 
     def to_mm(self, xy):
