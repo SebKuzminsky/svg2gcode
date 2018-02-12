@@ -13,20 +13,6 @@ so it would be most convenient if i could render its Path objects.
 
 # Future embellishments
 
-* replace svgpathtools with something else?
-
-** svg.path + shapely?  Shapely doesn't do arcs or bezier curves, only
-    linear splines.  Which is maybe fine.  Shapely has parallel_offset(),
-    left and right...  FlatCAM uses Shapely.
-
-** pythonocc/liboce?  (pythonocc isn't packaged, liboce doesn't have
-    python bindings in stretch)
-
-** occmodel?  Jeff used it for CAD in python.
-
-** libpolyclipping?  https://sourceforge.net/projects/polyclipping/
-
-** libarea?  https://github.com/Heeks/libarea.git
 
 * offset_path() should be named offset_paths(), since it returns a list
     of paths.
@@ -49,6 +35,55 @@ so it would be most convenient if i could render its Path objects.
   work-holding tabs.
 
 * Pockets with islands.
+
+
+== Look into replacing svgpathtools with something else
+
+=== Possible options
+
+==== pythonocc/liboce
+
+pythonocc isn't packaged, liboce doesn't have python bindings in stretch
+
+
+=== occmodel
+
+Jeff used it for CAD in python.
+
+
+=== libpolyclipping
+
+aka clipper
+
+https://sourceforge.net/projects/polyclipping/
+
+http://www.angusj.com/delphi/clipper.php
+
+In Debian as libpolyclipping: https://packages.debian.org/stretch/libpolyclipping16
+
+
+=== libarea
+
+https://github.com/Heeks/libarea.git
+
+
+=== Considered and discarded
+
+==== svg.path + shapely
+
+Shapely doesn't do arcs or bezier curves, only linear splines.
+Which is maybe fine.  Shapely has parallel_offset(), left and right...
+FlatCAM uses Shapely.
+
+
+=== libclippoly http://clippoly.sourceforge.net/
+
+Doesn't do offsetting
+
+
+=== gpc
+
+Not libre.
 
 
 == Fix units handling
