@@ -48,7 +48,10 @@ pythonocc isn't packaged, liboce doesn't have python bindings in stretch
 
 === occmodel
 
-Jeff used it for CAD in python.
+A python front-end to the OpenCASCADE modelling kernel.  Jeff used it
+for CAD in python.
+
+Not packaged in Stretch (though liboce is).
 
 
 === libpolyclipping
@@ -61,10 +64,17 @@ http://www.angusj.com/delphi/clipper.php
 
 In Debian as libpolyclipping: https://packages.debian.org/stretch/libpolyclipping16
 
+No arcs, we'd have to approximate using linear splines.
+
 
 === libarea
 
 https://github.com/Heeks/libarea.git
+
+
+=== opencamlib
+
+Anders Wallin's project.  Not in debian.
 
 
 === Considered and discarded
@@ -78,7 +88,9 @@ FlatCAM uses Shapely.
 
 === libclippoly http://clippoly.sourceforge.net/
 
-Doesn't do offsetting
+Lines only, no arcs, no bezier curves.
+
+Doesn't do offsetting.
 
 
 === gpc
