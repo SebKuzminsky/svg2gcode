@@ -1,16 +1,31 @@
-# G-Coder Python module
-
-This is a python module that writes g-code.  It is intended to be
-called from a program that has an idea of some cuts it wants to make.
-G-coder functions write g-code to an output file.  Some G-coder
-functions correspond directly to specific G-codes, and some to more
-complex operations consisting of longer sequences of g-codes.
-
-
 # svg2gcode
 
 svg2gcode reads an SVG file and produces g-code machining operations
 from it.
+
+
+## Installation
+
+Clone the svg2gcode repo:
+
+    `git clone https://github.com/SebKuzminsky/svg2gcode.git`
+    `git submodule init`
+    `git submodule update`
+
+
+Install dependencies:
+
+    `sudo apt-get install python python-cairosvg python-svgwrite python-numpy`
+
+    The test suite runs the LinuxCNC Standalone Interpreter to validate
+    the emitted g-code, this is available in the `linuxcnc-uspace` package
+    from the linuxcnc.org deb archive:
+
+        `sudo apt-key adv --keyserver hkp://keys.gnupg.net --recv-key 3cb9fd148f374fef`
+
+        Add this apt source: `deb http://linuxcnc.org stretch base 2.7-uspace`
+
+        `sudo apt-get install linuxcnc-uspace`
 
 
 ## Engrave operation
@@ -57,13 +72,10 @@ Parameters:
     Omit this parameter or set it to 0 to leave nothing behind.
 
 
-# Requirements
+# G-Coder Python module
 
-Install dependencies:
-
-    `sudo apt-get install pyton-cairosvg python-svgwrite`
-
-Check out the svgpathtools submodule:
-
-    `git submodule init`
-    `git submodule update`
+This is a python module that writes g-code.  It is intended to be
+called from a program that has an idea of some cuts it wants to make.
+G-coder functions write g-code to an output file.  Some G-coder
+functions correspond directly to specific G-codes, and some to more
+complex operations consisting of longer sequences of g-codes.
