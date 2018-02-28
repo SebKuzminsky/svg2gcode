@@ -8,24 +8,31 @@ from it.
 
 Clone the svg2gcode repo:
 
-    `git clone https://github.com/SebKuzminsky/svg2gcode.git`
-    `git submodule init`
-    `git submodule update`
+    git clone https://github.com/SebKuzminsky/svg2gcode.git
+    git submodule init
+    git submodule update
 
 
 Install dependencies:
 
-    `sudo apt-get install python python-cairosvg python-svgwrite python-numpy`
+    sudo apt-get install python python-cairosvg python-svgwrite python-numpy
 
-    The test suite runs the LinuxCNC Standalone Interpreter to validate
-    the emitted g-code, this is available in the `linuxcnc-uspace` package
-    from the linuxcnc.org deb archive:
+The test suite runs the LinuxCNC Standalone Interpreter to validate
+the emitted g-code, this is available in the `linuxcnc-uspace` package
+from the linuxcnc.org deb archive.
 
-        `sudo apt-key adv --keyserver hkp://keys.gnupg.net --recv-key 3cb9fd148f374fef`
+Add the GPG key that validates the linuxcnc.org deb archive:
 
-        Add this apt source: `deb http://linuxcnc.org stretch base 2.7-uspace`
+    sudo apt-key adv --keyserver hkp://keys.gnupg.net --recv-key 3cb9fd148f374fef
 
-        `sudo apt-get install linuxcnc-uspace`
+Add the apt source for the linuxcnc.org deb archive:
+
+    deb http://linuxcnc.org stretch base 2.7-uspace
+
+
+Install the `linuxcnc-uspace` package:
+
+    sudo apt-get install linuxcnc-uspace
 
 
 ## Engrave operation
