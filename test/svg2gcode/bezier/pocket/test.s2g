@@ -1,0 +1,9 @@
+{
+    "jobs": [
+        {
+            "job-type": "pocket",
+            "tool-diameter": 9.76,
+            "width-of-cut": 4.88
+        }
+    ]
+}

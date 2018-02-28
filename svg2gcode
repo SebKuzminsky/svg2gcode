@@ -1,0 +1,325 @@
+#!/usr/bin/env python2
+from __future__ import print_function
+
+import argparse
+import json
+import math
+import os
+import sys
+
+import gcoder
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
+import svgpathtools
+
+
+def remove_island(island, slot, tool_radius, width_of_cut):
+    z_traverse = args.z_traverse
+    z_top_of_material = args.z_top_of_material
+    z_cut_depth = args.z_cut_depth
+    z_start = min(z_traverse, z_top_of_material + 0.5)
+
+    offset = -tool_radius + width_of_cut
+    island_output_paths = []
+
+    print("removing island:", island, file=sys.stderr)
+
+    while island != None:
+        print("remaining material:", island, file=sys.stderr)
+
+        side_milling_paths = gcoder.offset_path(island, offset)
+
+        if len(side_milling_paths) == 0:
+            print("no more side milling paths", file=sys.stderr)
+            return island_output_paths
+
+        island_output_paths += side_milling_paths
+
+        remaining_material_contours = []
+        for path in side_milling_paths:
+            gcoder.comment("pocket side-milling path")
+
+            # Here, the tool is down on the floor of the pocket.
+
+            # FIXME: if we can reach it without gouging, just feed there
+            # else this:
+            (x, y) = svg.to_mm(path[0].start)
+            if gcoder.current_z < z_start:
+                gcoder.g1(z=z_start)
+            if gcoder.current_z < z_traverse:
+                gcoder.g0(z=z_traverse)
+            gcoder.g0(x=x, y=y)
+            gcoder.g0(z=z_start)
+            gcoder.g1(z=z_cut_depth)
+
+            gcoder.path_to_gcode(
+                svg,
+                path,
+                z_traverse=args.z_traverse,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=args.z_cut_depth,
+                lead_in=False,
+                lead_out=False
+            )
+            remaining_material_contours += gcoder.offset_path(path, tool_radius)
+
+        num_islands = len(remaining_material_contours)
+        print("%d sub-islands remaining" % num_islands, file=sys.stderr)
+        if num_islands == 0:
+            # Done!
+            return island_output_paths
+
+        elif num_islands == 1:
+            # Just one island, iterate on it.
+            island = remaining_material_contours[0]
+
+        else:
+            # Multiple islands, recurse on each one.
+            for island in remaining_material_contours:
+                island_output_paths += remove_island(island, slot, tool_radius, width_of_cut)
+            return island_output_paths
+
+
+def pocket(input_path, job):
+    # Alternative pocketing algorithm.
+    #
+    # Inset the material contour by the finishing allowance to
+    # get the rough material contour.
+    #
+    # The first tool path is the perimeter slotting cut (which
+    # might be wrong, shouldn't we make the smallest possible
+    # slot in the middle and go out from there?). Inset the rough
+    # material contour by the tool radius to get the tool path
+    # for this wrong slot.
+    #
+    # After that we want to side mill the remainder
+    #
+    # Inset the slotting tool path by the tool radius to find
+    # the remaining material contour
+    #
+    # While the remaining material contour is greater than zero:
+    #
+    #     Outset the remaining material contour by the tool radius
+    #     minus the width of cut to find the next pass tool path
+    #
+    #     Inset the tool path by the tool radius to find the
+    #     new remaining material contour
+
+    output_paths = []
+    material_contour = input_path
+
+    # FIXME: get these from a different tool info section of the json data
+    if "tool-diameter" in job.keys():
+        tool_diameter = job['tool-diameter']
+    else:
+        raise ValueError('no "tool-diameter" specified in "pocket" job')
+    tool_radius = tool_diameter / 2.0
+
+    if "width-of-cut" in job.keys():
+        width_of_cut = job['width-of-cut']
+    else:
+        raise ValueError('no "width-of-cut" specified in "pocket" job')
+
+    finishing_allowance = 0.0
+    if "finishing-allowance" in job.keys():
+        finishing_allowance = job['finishing-allowance']
+
+    offset = finishing_allowance + tool_radius
+    slotting_paths = gcoder.offset_path(material_contour, offset)
+    if not slotting_paths:
+        print("no slotting path!", file=sys.stderr)
+        return []
+    gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+
+    for slot in slotting_paths:
+        gcoder.path_to_gcode(
+            svg,
+            slot,
+            z_traverse=args.z_traverse,
+            z_top_of_material=args.z_top_of_material,
+            z_cut_depth=args.z_cut_depth,
+            lead_in=True,
+            lead_out=False
+        )
+        output_paths += slot
+
+        remaining_material_contours = gcoder.offset_path(slot, tool_radius)
+
+        # FIXME: sort the remaining islands, nearest first
+
+        for island in remaining_material_contours:
+            output_paths += remove_island(island, slot, tool_radius, width_of_cut)
+
+        # The tool is left down on the floor of the pocket, raise it
+        # up now.
+        z_start = min(args.z_traverse, args.z_top_of_material + 0.5)
+        gcoder.g1(z=z_start)
+        gcoder.g0(z=args.z_traverse)
+
+    return output_paths
+
+
+parser = argparse.ArgumentParser(description="Compute offset paths from the paths in an SVG file.")
+parser.add_argument("SVG", help="The name of the SVG file to read.")
+parser.add_argument("-o", "--offset", type=float, action='append', help="The offset to use (may be specified multiple times).")
+parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
+parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 1000)", default=1000)
+parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
+parser.add_argument("--z-top-of-material", type=float, help="The Z level where the material starts.  (Default: 0)", default=0)
+parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  (Default: 0)", default=0)
+parser.add_argument("--include-input", action="store_true", help="Emit g-code for input path too (in addition to emitting g-code for the offset path).")
+parser.add_argument("--pocket", action="store_true", help="Generate g-code to empty the pocket defined by the input path.")
+parser.add_argument("-j", "--job", type=str, help="Read machining job parameters from the specified file.")
+args = parser.parse_args()
+
+
+svg = gcoder.svg(args.SVG)
+input_path = svg.paths[0]
+if not input_path.isclosed():
+    raise ValueError, "path is not closed"
+
+# positive area == clockwise path
+# negative area == counter-clockwise path
+# Make sure the input path is counter-clockwise.
+if gcoder.approximate_path_area(input_path) > 0:
+    input_path = input_path.reversed()
+
+gcoder.metric()
+gcoder.path_blend(tolerance=0.01)
+gcoder.speed(args.speed)
+gcoder.feed(args.feed)
+
+if args.include_input:
+    gcoder.comment("input path")
+    gcoder.path_to_gcode(
+        svg,
+        input_path,
+        z_traverse=args.z_traverse,
+        z_top_of_material=args.z_top_of_material,
+        z_cut_depth=args.z_cut_depth
+    )
+
+
+output_paths = []
+if args.job:
+    data = json.load(open(args.job))
+
+    if "tool" in data.keys():
+        print("tool:", data["tool"], file=sys.stderr)
+
+    for job in data['jobs']:
+        print("job:", job, file=sys.stderr)
+
+        if job['job-type'] == 'offset':
+            offset = job['distance']
+            new_paths = gcoder.offset_path(input_path, offset)
+            output_paths += new_paths
+            for path in new_paths:
+                gcoder.comment("offset path (%.4f offset)" % offset)
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+
+        elif job['job-type'] == 'pocket':
+            # FIXME: get these from a different tool info section of the json data
+            if "tool-diameter" in job.keys():
+                tool_diameter = job['tool-diameter']
+            else:
+                raise ValueError('no "tool-diameter" specified in "pocket" job')
+            tool_radius = tool_diameter / 2.0
+
+            if "width-of-cut" in job.keys():
+                width_of_cut = job['width-of-cut']
+            else:
+                raise ValueError('no "width-of-cut" specified in "pocket" job')
+
+            finishing_allowance = 0.0
+            if "finishing-allowance" in job.keys():
+                finishing_allowance = job['finishing-allowance']
+
+            offset = finishing_allowance + tool_radius
+            new_paths = gcoder.offset_path(input_path, offset)
+            if not new_paths:
+                break
+            gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+            for path in new_paths:
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+            output_paths += new_paths
+
+            while True:
+                offset += width_of_cut
+                new_paths = gcoder.offset_path(input_path, offset)
+                if not new_paths:
+                    break
+                for path in new_paths:
+                    gcoder.comment("pocket path (%.4f offset)" % offset)
+                    gcoder.path_to_gcode(
+                        svg,
+                        path,
+                        z_traverse=args.z_traverse,
+                        z_top_of_material=args.z_top_of_material,
+                        z_cut_depth=args.z_cut_depth
+                    )
+                output_paths += new_paths
+
+        elif job['job-type'] == 'pocket2':
+            print("calling pocket", file=sys.stderr)
+            output_paths = pocket(input_path, job)
+            print("input path:", input_path, file=sys.stderr)
+            print("output paths:", output_paths, file=sys.stderr)
+
+        elif job['job-type'] == 'engrave':
+            gcoder.comment("engrave path")
+            gcoder.path_to_gcode(
+                svg,
+                input_path,
+                z_traverse=args.z_traverse,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=args.z_cut_depth
+            )
+
+else:
+    if args.pocket:
+        offset = args.offset[0]
+        while True:
+            new_paths = gcoder.offset_path(input_path, offset)
+            if not new_paths:
+                break
+            for path in new_paths:
+                gcoder.comment("pocket path (%.4f offset)" % offset)
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+            output_paths += new_paths
+            offset += args.offset[0]
+    else:
+        for offset in args.offset:
+            new_paths = gcoder.offset_path(input_path, offset)
+            output_paths += new_paths
+            for path in new_paths:
+                gcoder.comment("offset path (%.4f offset)" % offset)
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth
+                )
+
+svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)
+
+gcoder.m2()

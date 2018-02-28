@@ -1,0 +1,140 @@
+What I want for the first step is a simple CAM program that reads an
+SVG and makes a pocketing toolpath from the interior of the path.
+
+It must be scriptable.
+
+A future version might have an optional GUI.  This GUI should display
+the input SVG and the computed tool path, and let you export the toolpath
+as g-code.
+
+I'm planning to use svgpathtools to compute the offset paths needed,
+so it would be most convenient if i could render its Path objects.
+
+
+# Future embellishments
+
+
+* offset_path() should be named offset_paths(), since it returns a list
+    of paths.
+
+* Specify cut parameters (max doc, max woc, speed, feed) for plunging,
+    slotting and side-milling, for roughing and finishing.
+
+* Override pocket cut params from command line.  Width of cut is a
+    function of depth of cut.
+
+* Specify preamble (set G64P, G40, etc, like gcoder.init()).
+
+* Join adjacent offset curves smarter.  First cut a slot offset by
+    finishing allowance + tool radius, then side-mill to the inside
+    by the side-milling doc.  Or first slot the innermost path, then
+    side-mill out?  Watch how the depth of cut compares between slotting
+    and side milling.
+
+* Cut along the path (outside, inside, or right on top, optionally with
+  work-holding tabs.
+
+* Pockets with islands.
+
+
+== Look into replacing svgpathtools with something else
+
+=== Possible options
+
+==== pythonocc/liboce
+
+pythonocc isn't packaged, liboce doesn't have python bindings in stretch
+
+
+=== occmodel
+
+A python front-end to the OpenCASCADE modelling kernel.  Jeff used it
+for CAD in python.
+
+Not packaged in Stretch (though liboce is).
+
+
+=== libpolyclipping
+
+aka clipper
+
+https://sourceforge.net/projects/polyclipping/
+
+http://www.angusj.com/delphi/clipper.php
+
+In Debian as libpolyclipping: https://packages.debian.org/stretch/libpolyclipping16
+
+No arcs, we'd have to approximate using linear splines.
+
+
+=== libarea
+
+https://github.com/Heeks/libarea.git
+
+
+=== opencamlib
+
+Anders Wallin's project.  Not in debian.
+
+
+=== Considered and discarded
+
+==== svg.path + shapely
+
+Shapely doesn't do arcs or bezier curves, only linear splines.
+Which is maybe fine.  Shapely has parallel_offset(), left and right...
+FlatCAM uses Shapely.
+
+
+=== libclippoly http://clippoly.sourceforge.net/
+
+Lines only, no arcs, no bezier curves.
+
+Doesn't do offsetting.
+
+
+=== gpc
+
+Not libre.
+
+
+== Fix units handling
+
+When the SVG uses mm everything's fine, but the mini-liner svg in the
+griptilian scales project uses inch(?) units and the result is the
+wrong size.
+
+
+== Smart transitions
+
+I want better transitions from a finished pass to the start of the
+next pass.
+
+It currently does "raise, traverse, plunge", which is simple, safe,
+slow, and plungy.
+
+Sometimes one pass ends very near the start of the next pass.  In this
+case it'd be better to feed there directly, along the floor of the pocket.
+
+However sometimes there's a long way from one pass end to the next pass
+start, and obstacles can intervene: other islands, and the walls of the
+pocket itself.
+
+To select which of "raise, traverse, plunge" and "feed" to use:
+
+    the proposed feed move is a g1 from the current (X, Y) to the start
+    of the next pass
+
+    If the proposed feed intersects the original slotting toolpath we'll
+    gouge the wall of the pocket, so choose RTP (FIXME: or follow along
+    the slotting path until the second intersection?
+
+    If the proposed feed comes within tool_radius of any island other
+    than the one we're on, it gouges that island, so choose RTP (FIXME:
+    or do that island instead?)
+
+    If the proposed feed intersects the next pass, *except* at the start
+    point, then it gouges the island we're on, so choose RTP (FIXME: or
+    choose a different starting point in the next pass?)
+
+    If we get here there's no gouge, so choose that feed move

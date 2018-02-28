@@ -1,0 +1,3 @@
+[submodule "svgpathtools"]
+	path = svgpathtools
+	url = https://github.com/SebKuzminsky/svgpathtools.git

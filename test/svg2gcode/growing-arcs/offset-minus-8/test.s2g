@@ -1,0 +1,15 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": -7.9
+        },
+        {
+            "job-type": "offset",
+            "distance": -8
+        },
+        {
+            "job-type": "engrave"
+        }
+    ]
+}

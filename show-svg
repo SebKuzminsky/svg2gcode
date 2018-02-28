@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import pygtk
+pygtk.require('2.0')
+
+import gobject
+import pango
+import gtk
+import math
+import time
+from gtk import gdk
+import cairo
+import cairosvg
+import rsvg
+
+def expose_cairo(win, event, svg):
+    w, h = svg.get_dimension_data()[0:2]
+    win.set_size_request(w, h)
+
+    cr = win.window.cairo_create()
+    cr.set_source_color(win.style.fg[win.state])
+
+    #cr.rectangle(10, 200, 120, 80)
+    #cr.stroke()
+
+    #cr.arc(300, 240, 40, 0, 2*math.pi)
+
+    svg.render_cairo(cr)
+    cr.stroke()
+
+    return True
+
+
+win = gtk.Window()
+win.set_title('Simple CAM')
+win.connect('delete-event', gtk.main_quit)
+
+# svg = cairosvg.parser.Tree(url='pocket-0.svg')
+svg = rsvg.Handle(file='pocket-0.svg')
+
+win.connect('expose-event', expose_cairo, svg)
+
+win.show_all()
+
+gtk.main()
