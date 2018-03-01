@@ -8,13 +8,37 @@ svg2gcode - produce g-code tool paths from SVG files
 
 == SYNOPSIS
 
-*svg2gcode* [_OPTIONS_] file.svg
+*svg2gcode* [_OPTIONS_] --job JOBFILE FILE.SVG
 
 
 == DESCRIPTION
 
 svg2gcode reads a job description file and an SVG file (containing a
 single closed path), and produces the corresponding g-code.
+
+
+== OPTIONS
+
+*-s*, *--speed* _N_::
+
+    The spindle speed to use, in RPM.  (Default: 1000)
+
+*-f*, *--feed* _N_::
+
+    The tool feed rate to use, in mm/minute.  (Default: 1000)
+
+*--z-traverse* _N_::
+
+    The Z level for safe traverses above the work and workholding, in mm.
+    (Default: 10)
+
+*--z-top-of-material* _N_::
+
+    The Z level where the material starts, in mm.  (Default: 0)
+
+*--z-cut-depth* _N_::
+
+    The Z level to cut down to, in mm.  (Default: 0)
 
 
 == Job File Format
@@ -36,6 +60,16 @@ The toolpath follows the path in the SVG.
 
 No arguments.
 
+Example:
+
+    {
+	"jobs": [
+	    {
+		"job-type": "engrave"
+	    }
+	]
+    }
+
 
 === Job type: offset
 
@@ -47,10 +81,16 @@ Arguments:
 Positive distances are in the interior of the SVG path, negative distances
 are on the outside of the SVG path.
 
+Example:
 
-=== Job type: pocket
-
-Old simple pocketing algorithm.  Obsolete, use pocket2 instead.
+    {
+	"jobs": [
+	    {
+		"job-type": "offset",
+		"distance": 2.1
+	    }
+	]
+    }
 
 
 === Job type: pocket2
@@ -84,64 +124,20 @@ in mm.
 *finishing-allowance* (float):: Make the pocket smaller than the SVG
 path by this amount, in mm.
 
+Example:
 
-== OPTIONS
-
-*-b*, *--bits* _N_::
-
-      (default 8) For Modbus communication.  Set number of data bits
-      to _N_.  _N_ must be between 5 and 8 inclusive.
-
-*-p*, *--parity* [Even,Odd,None]
-
-      (default None) For Modbus communication.  Set serial parity to Even,
-      Odd, or None.
-
-*-r*, *--rate* _N_::
-
-      (default 38400) For Modbus communication.  Set baud rate to _N_.
-      It is an error if the rate is not one of the following: 1200,
-      2400, 4800, 9600, 19200, 38400
-
-*-s*, *--stopbits* [1,2]::
-
-      (default 1) For Modbus communication.  Set serial stop bits to 1
-      or 2.
-
-*-t*, *--target* _N_::
-
-      (default 1) For Modbus communication.  Set Modbus target (slave)
-      number.  This must match the device number you set on the Huanyang
-      GT VFD.
-
-*-d*, *--device* _PATH_::
-
-      (default /dev/ttyS0) For Modbus communication.  Set the name of
-      the serial device node to use.
-
-*-v*, *--verbose*::
-
-      Turn on verbose mode.
-
-*-S*, *--motor-max-speed* _RPM_::
-
-    The motor's max speed in RPM.  This must match the motor speed value
-    configured in VFD register P2.03.
-
-*-F*, *--max-frequency* _HZ_::
-
-    This is the maximum output frequency of the VFD in Hz.  It should
-    correspond to the motor's rated max frequency, and to the maximum
-    and upper limit output frequency configured in VFD register P0.03
-    and P0.04.
-
-*-f*, *--min-frequency* _HZ_::
-
-    This is the minimum output frequency of the VFD in Hz.  It should
-    correspond to the minimum output frequency configured in VFD
-    register P0.05.
+    {
+	"jobs": [
+	    {
+		"job-type": "pocket2",
+		"tool-diameter": 15.25,
+		"width-of-cut": 5.125,
+		"finishing-allowance": 5.0
+	    }
+	]
+    }
 
 
-== EXAMPLES
+=== Job type: pocket
 
-better have some
+Old simple pocketing algorithm.  Obsolete, use pocket2 instead.
