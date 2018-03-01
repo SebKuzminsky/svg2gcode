@@ -3,6 +3,8 @@
 svg2gcode reads an SVG file and produces g-code machining operations
 from it.
 
+![Example generated tool path](example-toolpath.png)
+
 
 ## Installation
 
