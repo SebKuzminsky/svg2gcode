@@ -15,7 +15,7 @@ Clone the svg2gcode repo:
 
 Install dependencies:
 
-    sudo apt-get install python python-cairosvg python-svgwrite python-numpy
+    sudo apt-get install python python-cairosvg python-svgwrite python-numpy asciidoc docbook-xml docbook-xsl xsltproc
 
 The test suite runs the LinuxCNC Standalone Interpreter to validate
 the emitted g-code, this is available in the `linuxcnc-uspace` package
@@ -33,6 +33,11 @@ Add the apt source for the linuxcnc.org deb archive:
 Install the `linuxcnc-uspace` package:
 
     sudo apt-get install linuxcnc-uspace
+
+
+Build the manpage:
+
+    make
 
 
 ## Engrave operation
