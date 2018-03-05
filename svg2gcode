@@ -183,8 +183,8 @@ def pocket(input_path, job):
 parser = argparse.ArgumentParser(description="Compute offset paths from the paths in an SVG file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-o", "--offset", type=float, action='append', help="The offset to use (may be specified multiple times).")
-parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000.)", default=1000)
-parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 1000)", default=1000)
+parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
+parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 100.0 mm/min)")
 parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the material starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  (Default: 0)", default=0)
@@ -193,6 +193,13 @@ parser.add_argument("--pocket", action="store_true", help="Generate g-code to em
 parser.add_argument("-j", "--job", type=str, help="Read machining job parameters from the specified file.")
 args = parser.parse_args()
 
+if args.speed == None:
+    print("WARNING: no --speed argument supplied, using the default 1000 rpm", file=sys.stderr)
+    args.speed = 1000
+
+if args.feed == None:
+    print("WARNING: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
+    args.feed = 100.0
 
 svg = gcoder.svg(args.SVG)
 input_path = svg.paths[0]

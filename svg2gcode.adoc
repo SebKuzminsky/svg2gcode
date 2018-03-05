@@ -21,11 +21,11 @@ single closed path), and produces the corresponding g-code.
 
 *-s*, *--speed* _N_::
 
-    The spindle speed to use, in RPM.  (Default: 1000)
+    The spindle speed to use, in RPM.  (Default: 1000 rpm)
 
 *-f*, *--feed* _N_::
 
-    The tool feed rate to use, in mm/minute.  (Default: 1000)
+    The tool feed rate to use, in mm/minute.  (Default: 100.0 mm/min)
 
 *--z-traverse* _N_::
 
