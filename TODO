@@ -66,6 +66,8 @@ In Debian as libpolyclipping: https://packages.debian.org/stretch/libpolyclippin
 
 No arcs, we'd have to approximate using linear splines.
 
+FreeCAD 0.17's Path workbench uses clipper.
+
 
 === libarea
 
