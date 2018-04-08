@@ -470,8 +470,10 @@ def offset_path(path, offset_distance, steps=100, debug=False):
             end = seg.point(1) + (offset_distance * seg.normal(1))
             sweep = seg.sweep
 
+            flipped = False
             if new_radius < 0.0:
                 if debug: print("    inverting Arc!", file=sys.stderr)
+                flipped = True
                 new_radius = abs(new_radius)
                 sweep = not sweep
 
@@ -490,6 +492,10 @@ def offset_path(path, offset_distance, steps=100, debug=False):
                 # Offset Arc radius is smaller than the minimum that
                 # LinuxCNC accepts, replace with a Line.
                 if debug: print("    arc too small, replacing with a line", file=sys.stderr)
+                if flipped:
+                    old_start = start
+                    start = end
+                    end = old_start
                 offset_arc = svgpathtools.path.Line(start = start, end = end)
                 offset_path_list.append(offset_arc)
             else:
