@@ -1,0 +1,9 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": 4.7625,
+            "comment": "The distance is the radius of a 0.375 inch diameter cutter, same as some of the corners in the SVG."
+        }
+    ]
+}
