@@ -32,6 +32,12 @@ single closed path), and produces the corresponding g-code.
     The Z level for safe traverses above the work and workholding, in mm.
     (Default: 10)
 
+*--z-approach* _N_::
+
+    The Z level down to which we should rapid, before slowing to the
+    feed rate to approach the work, in mm.  (Default: 0.5 mm above
+    z-top-of-material).
+
 *--z-top-of-material* _N_::
 
     The Z level where the material starts, in mm.  (Default: 0)

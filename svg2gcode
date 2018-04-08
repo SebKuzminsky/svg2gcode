@@ -35,11 +35,6 @@ import svgpathtools
 
 
 def remove_island(island, slot, tool_radius, width_of_cut):
-    z_traverse = args.z_traverse
-    z_top_of_material = args.z_top_of_material
-    z_cut_depth = args.z_cut_depth
-    z_start = min(z_traverse, z_top_of_material + 0.5)
-
     offset = -tool_radius + width_of_cut
     island_output_paths = []
 
@@ -65,18 +60,19 @@ def remove_island(island, slot, tool_radius, width_of_cut):
             # FIXME: if we can reach it without gouging, just feed there
             # else this:
             (x, y) = svg.to_mm(path[0].start)
-            if gcoder.current_z < z_start:
-                gcoder.g1(z=z_start)
-            if gcoder.current_z < z_traverse:
-                gcoder.g0(z=z_traverse)
+            if gcoder.current_z < args.z_approach:
+                gcoder.g1(z=args.z_approach)
+            if gcoder.current_z < args.z_traverse:
+                gcoder.g0(z=args.z_traverse)
             gcoder.g0(x=x, y=y)
-            gcoder.g0(z=z_start)
-            gcoder.g1(z=z_cut_depth)
+            gcoder.g0(z=args.z_approach)
+            gcoder.g1(z=args.z_cut_depth)
 
             gcoder.path_to_gcode(
                 svg,
                 path,
                 z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
                 z_top_of_material=args.z_top_of_material,
                 z_cut_depth=args.z_cut_depth,
                 lead_in=False,
@@ -157,6 +153,7 @@ def pocket(input_path, job):
             svg,
             slot,
             z_traverse=args.z_traverse,
+            z_approach=args.z_approach,
             z_top_of_material=args.z_top_of_material,
             z_cut_depth=args.z_cut_depth,
             lead_in=True,
@@ -173,8 +170,7 @@ def pocket(input_path, job):
 
         # The tool is left down on the floor of the pocket, raise it
         # up now.
-        z_start = min(args.z_traverse, args.z_top_of_material + 0.5)
-        gcoder.g1(z=z_start)
+        gcoder.g1(z=args.z_approach)
         gcoder.g0(z=args.z_traverse)
 
     return output_paths
@@ -186,7 +182,8 @@ parser.add_argument("-j", "--job", type=str, help="Read machining job parameters
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 100.0 mm/min)")
 parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
-parser.add_argument("--z-top-of-material", type=float, help="The Z level where the material starts.  (Default: 0)", default=0)
+parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
+parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  (Default: 0)", default=0)
 parser.add_argument("-o", "--offset", type=float, action='append', help="(deprecated) The offset to use (may be specified multiple times).")
 parser.add_argument("--include-input", action="store_true", help="(deprecated) Emit g-code for input path too (in addition to emitting g-code for the offset path).")
@@ -200,6 +197,9 @@ if args.speed == None:
 if args.feed == None:
     print("WARNING: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
     args.feed = 100.0
+
+if args.z_approach == None:
+    args.z_approach = 0.5 + args.z_top_of_material
 
 svg = gcoder.svg(args.SVG)
 input_path = svg.paths[0]
@@ -223,6 +223,7 @@ if args.include_input:
         svg,
         input_path,
         z_traverse=args.z_traverse,
+        z_approach=args.z_approach,
         z_top_of_material=args.z_top_of_material,
         z_cut_depth=args.z_cut_depth
     )
@@ -248,6 +249,7 @@ if args.job:
                     svg,
                     path,
                     z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
@@ -279,6 +281,7 @@ if args.job:
                     svg,
                     path,
                     z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
@@ -295,6 +298,7 @@ if args.job:
                         svg,
                         path,
                         z_traverse=args.z_traverse,
+                        z_approach=args.z_approach,
                         z_top_of_material=args.z_top_of_material,
                         z_cut_depth=args.z_cut_depth
                     )
@@ -312,6 +316,7 @@ if args.job:
                 svg,
                 input_path,
                 z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
                 z_top_of_material=args.z_top_of_material,
                 z_cut_depth=args.z_cut_depth
             )
@@ -329,6 +334,7 @@ else:
                     svg,
                     path,
                     z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
@@ -344,6 +350,7 @@ else:
                     svg,
                     path,
                     z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
                     z_cut_depth=args.z_cut_depth
                 )
