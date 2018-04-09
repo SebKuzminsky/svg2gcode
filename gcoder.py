@@ -756,7 +756,7 @@ def offset_path(path, offset_distance, steps=100, debug=False):
     return offset_paths
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True):
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None):
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
 
@@ -771,8 +771,16 @@ def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0
 
     if lead_in:
         g0(z=z_approach)
+        if plunge_feed:
+            set_feed_rate(plunge_feed)
+        elif feed:
+            set_feed_rate(feed)
         g1(z=z_cut_depth)
+        if plunge_feed and feed:
+            set_feed_rate(feed)
     else:
+        if feed:
+            set_feed_rate(feed)
         g1(x=x, y=y)
 
     for element in path:

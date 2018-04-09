@@ -25,7 +25,23 @@ single closed path), and produces the corresponding g-code.
 
 *-f*, *--feed* _N_::
 
-    The tool feed rate to use, in mm/minute.  (Default: 100.0 mm/min)
+    The tool feed rate to use, in mm/minute.  Used by the 'engrave' and
+    'offset' job types.  (Default: 100.0 mm/min)
+
+ *--shoulder-feed* _N_::
+
+    The tool feed rate to use for shoulder milling, in mm/minute.
+    Used by the 'pocket2' job type.  (Default: 90.0 mm/min)
+
+*--slot-feed* _N_::
+
+    The tool feed rate to use for slot milling, in mm/minute.  Used by
+    the 'pocket2' job type.  (Default: 75.0 mm/min)
+
+*--plunge-feed* _N_::
+
+    The tool feed rate to use for plunging cuts, in mm/minute.  Used by
+    all job types.  (Default: 50.0 mm/min)
 
 *--z-traverse* _N_::
 

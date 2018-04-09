@@ -66,6 +66,7 @@ def remove_island(island, slot, tool_radius, width_of_cut):
                 gcoder.g0(z=args.z_traverse)
             gcoder.g0(x=x, y=y)
             gcoder.g0(z=args.z_approach)
+            gcoder.set_feed_rate(args.plunge_feed)
             gcoder.g1(z=args.z_cut_depth)
 
             gcoder.path_to_gcode(
@@ -76,7 +77,8 @@ def remove_island(island, slot, tool_radius, width_of_cut):
                 z_top_of_material=args.z_top_of_material,
                 z_cut_depth=args.z_cut_depth,
                 lead_in=False,
-                lead_out=False
+                lead_out=False,
+                feed=args.shoulder_feed
             )
             remaining_material_contours += gcoder.offset_path(path, tool_radius)
 
@@ -157,7 +159,9 @@ def pocket(input_path, job):
             z_top_of_material=args.z_top_of_material,
             z_cut_depth=args.z_cut_depth,
             lead_in=True,
-            lead_out=False
+            lead_out=False,
+            plunge_feed=args.plunge_feed,
+            feed=args.slot_feed
         )
         output_paths += slot
 
@@ -180,7 +184,10 @@ parser = argparse.ArgumentParser(description="Compute offset paths from the path
 parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-j", "--job", type=str, help="Read machining job parameters from the specified file.")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
-parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  (Default: 100.0 mm/min)")
+parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
+parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket2' job type.  (Default: 90.0 mm/min)")
+parser.add_argument("--slot-feed", type=float, help="The tool feed rate to use for slot milling, in mm/minute.  Used by the 'pocket2' job type'.  (Default: 75.0 mm/min)")
+parser.add_argument("--plunge-feed", type=float, help="The tool feed rate to use for plunging cuts, in mm/minute.  Used by all job types.  (Default: 50.0 mm/min)")
 parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
 parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
@@ -197,6 +204,10 @@ if args.speed == None:
 if args.feed == None:
     print("WARNING: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
     args.feed = 100.0
+
+if args.plunge_feed == None:
+    print("WARNING: no --plunge-feed argument supplied, using the default 50 mm/min", file=sys.stderr)
+    args.plunge_feed = 50
 
 if args.z_approach == None:
     args.z_approach = 0.5 + args.z_top_of_material
@@ -215,7 +226,6 @@ if gcoder.approximate_path_area(input_path) > 0:
 gcoder.metric()
 gcoder.path_blend(tolerance=0.01)
 gcoder.speed(args.speed)
-gcoder.feed(args.feed)
 
 if args.include_input:
     gcoder.comment("input path")
@@ -225,7 +235,9 @@ if args.include_input:
         z_traverse=args.z_traverse,
         z_approach=args.z_approach,
         z_top_of_material=args.z_top_of_material,
-        z_cut_depth=args.z_cut_depth
+        z_cut_depth=args.z_cut_depth,
+        plunge_feed=args.plunge_feed,
+        feed=args.feed
     )
 
 
@@ -251,7 +263,9 @@ if args.job:
                     z_traverse=args.z_traverse,
                     z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
-                    z_cut_depth=args.z_cut_depth
+                    z_cut_depth=args.z_cut_depth,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.feed
                 )
 
         elif job['job-type'] == 'pocket':
@@ -283,7 +297,9 @@ if args.job:
                     z_traverse=args.z_traverse,
                     z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
-                    z_cut_depth=args.z_cut_depth
+                    z_cut_depth=args.z_cut_depth,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.feed
                 )
             output_paths += new_paths
 
@@ -300,11 +316,21 @@ if args.job:
                         z_traverse=args.z_traverse,
                         z_approach=args.z_approach,
                         z_top_of_material=args.z_top_of_material,
-                        z_cut_depth=args.z_cut_depth
+                        z_cut_depth=args.z_cut_depth,
+                        plunge_feed=args.plunge_feed,
+                        feed=args.feed
                     )
                 output_paths += new_paths
 
         elif job['job-type'] == 'pocket2':
+            if args.slot_feed == None:
+                print("WARNING: no --slot-feed argument supplied, using the default 75 mm/min", file=sys.stderr)
+                args.slot_feed = 75
+
+            if args.shoulder_feed == None:
+                print("WARNING: no --shoulder-feed argument supplied, using the default 90 mm/min", file=sys.stderr)
+                args.shoulder_feed = 90
+
             print("calling pocket", file=sys.stderr)
             output_paths = pocket(input_path, job)
             print("input path:", input_path, file=sys.stderr)
@@ -318,7 +344,9 @@ if args.job:
                 z_traverse=args.z_traverse,
                 z_approach=args.z_approach,
                 z_top_of_material=args.z_top_of_material,
-                z_cut_depth=args.z_cut_depth
+                z_cut_depth=args.z_cut_depth,
+                plunge_feed=args.plunge_feed,
+                feed=args.feed
             )
 
 else:
@@ -336,7 +364,9 @@ else:
                     z_traverse=args.z_traverse,
                     z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
-                    z_cut_depth=args.z_cut_depth
+                    z_cut_depth=args.z_cut_depth,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.feed
                 )
             output_paths += new_paths
             offset += args.offset[0]
@@ -352,7 +382,9 @@ else:
                     z_traverse=args.z_traverse,
                     z_approach=args.z_approach,
                     z_top_of_material=args.z_top_of_material,
-                    z_cut_depth=args.z_cut_depth
+                    z_cut_depth=args.z_cut_depth,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.feed
                 )
 
 svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)

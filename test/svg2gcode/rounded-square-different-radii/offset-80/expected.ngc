@@ -1,6 +1,5 @@
 G21
 G64 P0.0100 (enable path blending with tolerance)
 S 1000
-F 100.0000
 
 M2
