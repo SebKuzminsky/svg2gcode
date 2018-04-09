@@ -36,6 +36,9 @@ so it would be most convenient if i could render its Path objects.
 
 * Pockets with islands.
 
+* Get rid of the feed() function, switch everything to set_feed_rate(),
+  which is unlikely to collide with users' variables.
+
 
 == Look into replacing svgpathtools with something else
 
