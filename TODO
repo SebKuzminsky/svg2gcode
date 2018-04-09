@@ -39,6 +39,9 @@ so it would be most convenient if i could render its Path objects.
 * Get rid of the feed() function, switch everything to set_feed_rate(),
   which is unlikely to collide with users' variables.
 
+* It's called "shoulder milling", not "side milling", update the code &
+  check the docs.
+
 
 == Look into replacing svgpathtools with something else
 
