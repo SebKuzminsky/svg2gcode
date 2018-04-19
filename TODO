@@ -13,10 +13,6 @@ so it would be most convenient if i could render its Path objects.
 
 # Future embellishments
 
-
-* offset_path() should be named offset_paths(), since it returns a list
-    of paths.
-
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
     slotting and shoulder milling, for roughing and finishing.
 

@@ -388,9 +388,9 @@ def approximate_path_area(path):
     return tmp.area()
 
 
-def offset_path(path, offset_distance, steps=100, debug=False):
+def offset_paths(path, offset_distance, steps=100, debug=False):
     """Takes an svgpathtools.path.Path object, `path`, and a float
-    distance, `offset_distance`, and returns the parallel offset curve
+    distance, `offset_distance`, and returns the parallel offset curves
     (in the form of a list of svgpathtools.path.Path objects)."""
 
 
