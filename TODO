@@ -18,7 +18,7 @@ so it would be most convenient if i could render its Path objects.
     of paths.
 
 * Specify cut parameters (max doc, max woc, speed, feed) for plunging,
-    slotting and side-milling, for roughing and finishing.
+    slotting and shoulder milling, for roughing and finishing.
 
 * Override pocket cut params from command line.  Width of cut is a
     function of depth of cut.
@@ -26,10 +26,10 @@ so it would be most convenient if i could render its Path objects.
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Join adjacent offset curves smarter.  First cut a slot offset by
-    finishing allowance + tool radius, then side-mill to the inside
-    by the side-milling doc.  Or first slot the innermost path, then
-    side-mill out?  Watch how the depth of cut compares between slotting
-    and side milling.
+    finishing allowance + tool radius, then shoulder mill to the inside
+    by the shoulder milling doc.  Or first slot the innermost path,
+    then shoulder mill out?  Watch how the depth of cut compares between
+    slotting and shoulder milling.
 
 * Cut along the path (outside, inside, or right on top, optionally with
   work-holding tabs.
@@ -38,9 +38,6 @@ so it would be most convenient if i could render its Path objects.
 
 * Get rid of the feed() function, switch everything to set_feed_rate(),
   which is unlikely to collide with users' variables.
-
-* It's called "shoulder milling", not "side milling", update the code &
-  check the docs.
 
 
 == Look into replacing svgpathtools with something else

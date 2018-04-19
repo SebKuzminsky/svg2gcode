@@ -43,17 +43,17 @@ def remove_island(island, slot, tool_radius, width_of_cut):
     while island != None:
         print("remaining material:", island, file=sys.stderr)
 
-        side_milling_paths = gcoder.offset_path(island, offset)
+        shoulder_milling_paths = gcoder.offset_path(island, offset)
 
-        if len(side_milling_paths) == 0:
-            print("no more side milling paths", file=sys.stderr)
+        if len(shoulder_milling_paths) == 0:
+            print("no more shoulder milling paths", file=sys.stderr)
             return island_output_paths
 
-        island_output_paths += side_milling_paths
+        island_output_paths += shoulder_milling_paths
 
         remaining_material_contours = []
-        for path in side_milling_paths:
-            gcoder.comment("pocket side-milling path")
+        for path in shoulder_milling_paths:
+            gcoder.comment("pocket shoulder-milling path")
 
             # Here, the tool is down on the floor of the pocket.
 
@@ -111,7 +111,7 @@ def pocket(input_path, job):
     # material contour by the tool radius to get the tool path
     # for this wrong slot.
     #
-    # After that we want to side mill the remainder
+    # After that we want to shoulder mill the remainder
     #
     # Inset the slotting tool path by the tool radius to find
     # the remaining material contour
