@@ -114,7 +114,6 @@ if [ -n "${SKIPPED}" ]; then
     for TEST in ${SKIPPED}; do
         echo "    ${TEST}"
     done
-    RETVAL=1
 fi
 
 exit ${RETVAL}
