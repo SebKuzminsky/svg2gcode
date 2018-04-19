@@ -5,7 +5,7 @@ import gcoder
 
 gcoder.init()
 
-gcoder.feed(1.23)
+gcoder.set_feed_rate(1.23)
 gcoder.g1(x=1)
 
 path = []

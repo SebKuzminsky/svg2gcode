@@ -6,7 +6,7 @@ gcoder.init()
 gcoder.relative_arc_centers()
 
 gcoder.speed(1000)
-gcoder.feed(10)
+gcoder.set_feed_rate(10)
 gcoder.spindle_on()
 
 path = []

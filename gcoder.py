@@ -940,9 +940,6 @@ def metric():
 def set_feed_rate(feed_rate_units_per_minute):
     print("F %.4f" % feed_rate_units_per_minute)
 
-def feed(feed_rate_units_per_minute):
-    set_feed_rate(feed_rate_units_per_minute)
-
 
 def speed(spindle_rpm):
     print("S %d" % spindle_rpm)
