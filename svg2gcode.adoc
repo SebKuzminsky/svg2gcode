@@ -60,7 +60,8 @@ single closed path), and produces the corresponding g-code.
 
 *--z-cut-depth* _N_::
 
-    The Z level to cut down to, in mm.  (Default: 0)
+    The Z level to cut down to, in mm.  Must be lower than
+    *--z-top-of-material*.  (Default: -1)
 
 
 == Job File Format
