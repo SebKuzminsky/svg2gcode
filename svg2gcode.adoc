@@ -147,6 +147,14 @@ in mm.
 *finishing-allowance* (float):: Make the pocket smaller than the SVG
 path by this amount, in mm.
 
+*slot-max-depth-of-cut* (float):: Maximum depth of a slot milling pass,
+in mm.  Defaults to `(z-top-of-material - z-cut_depth)` so it cuts the
+pocket in a single pass.
+
+*shoulder-max-depth-of-cut* (float):: Maximum depth of a shoulder milling
+pass, in mm.  Defaults to `(z-top-of-material - z-cut_depth)` so it cuts
+the pocket in a single pass.
+
 Example:
 
     {
@@ -155,7 +163,9 @@ Example:
 		"job-type": "pocket2",
 		"tool-diameter": 15.25,
 		"width-of-cut": 5.125,
-		"finishing-allowance": 5.0
+		"finishing-allowance": 5.0,
+                "slot-max-depth-of-cut": 1.2,
+                "shoulder-max-depth-of-cut": 2.8
 	    }
 	]
     }

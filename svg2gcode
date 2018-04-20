@@ -116,6 +116,24 @@ def pocket(input_path, job):
     if "finishing-allowance" in job.keys():
         finishing_allowance = job['finishing-allowance']
 
+    pocket_depth = args.z_top_of_material - args.z_cut_depth
+
+    slot_max_depth_of_cut = pocket_depth
+    if "slot-max-depth-of-cut" in job.keys():
+        slot_max_depth_of_cut = job['slot-max-depth-of-cut']
+    else:
+        print("WARNING: no 'slot-max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
+
+    shoulder_max_depth_of_cut = pocket_depth
+    if "shoulder-max-depth-of-cut" in job.keys():
+        shoulder_max_depth_of_cut = job['shoulder-max-depth-of-cut']
+    else:
+        print("WARNING: no 'shoulder-max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
+
+    max_depth_of_cut = min(slot_max_depth_of_cut, shoulder_max_depth_of_cut)
+    num_passes = math.ceil(pocket_depth / max_depth_of_cut)
+    depth_of_cut = pocket_depth / num_passes
+
 
     #
     # Compute initial slotting paths.
@@ -126,6 +144,7 @@ def pocket(input_path, job):
     if not slotting_paths:
         print("no slotting path!", file=sys.stderr)
         return []
+    output_paths += slotting_paths
 
 
     #
@@ -135,64 +154,62 @@ def pocket(input_path, job):
     shoulder_milling_paths = []
     for slot in slotting_paths:
         remaining_material_contours = gcoder.offset_paths(slot, tool_radius)
-
         # FIXME: sort the remaining islands, nearest first
-
         for island in remaining_material_contours:
             shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
+    output_paths += shoulder_milling_paths
 
 
     #
     # Emit all the g-code.
     #
+    z = args.z_top_of_material
+    while z > args.z_cut_depth:
+        z -= depth_of_cut
 
-    gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+        for path in slotting_paths:
+            gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+            gcoder.path_to_gcode(
+                svg,
+                path,
+                z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=z,
+                lead_in=True,
+                lead_out=False,
+                plunge_feed=args.plunge_feed,
+                feed=args.slot_feed
+            )
 
-    for path in slotting_paths:
-        gcoder.path_to_gcode(
-            svg,
-            path,
-            z_traverse=args.z_traverse,
-            z_approach=args.z_approach,
-            z_top_of_material=args.z_top_of_material,
-            z_cut_depth=args.z_cut_depth,
-            lead_in=True,
-            lead_out=False,
-            plunge_feed=args.plunge_feed,
-            feed=args.slot_feed
-        )
-        output_paths += path
+        for path in shoulder_milling_paths:
+            # The tool is currently down on the floor of the pocket.
 
-    for path in shoulder_milling_paths:
-        # The tool is currently down on the floor of the pocket.
+            gcoder.comment("pocket shoulder-milling path")
 
-        gcoder.comment("pocket shoulder-milling path")
+            # FIXME: if we can reach it without gouging, just feed there
+            # else this:
+            (x, y) = svg.to_mm(path[0].start)
+            if gcoder.current_z < args.z_approach:
+                gcoder.g1(z=args.z_approach)
+            if gcoder.current_z < args.z_traverse:
+                gcoder.g0(z=args.z_traverse)
+            gcoder.g0(x=x, y=y)
+            gcoder.g0(z=args.z_approach)
+            gcoder.set_feed_rate(args.plunge_feed)
+            gcoder.g1(z=z)
 
-        # FIXME: if we can reach it without gouging, just feed there
-        # else this:
-        (x, y) = svg.to_mm(path[0].start)
-        if gcoder.current_z < args.z_approach:
-            gcoder.g1(z=args.z_approach)
-        if gcoder.current_z < args.z_traverse:
-            gcoder.g0(z=args.z_traverse)
-        gcoder.g0(x=x, y=y)
-        gcoder.g0(z=args.z_approach)
-        gcoder.set_feed_rate(args.plunge_feed)
-        gcoder.g1(z=args.z_cut_depth)
-
-        gcoder.path_to_gcode(
-            svg,
-            path,
-            z_traverse=args.z_traverse,
-            z_approach=args.z_approach,
-            z_top_of_material=args.z_top_of_material,
-            z_cut_depth=args.z_cut_depth,
-            lead_in=False,
-            lead_out=False,
-            feed=args.shoulder_feed
-        )
-
-        output_paths += path
+            gcoder.path_to_gcode(
+                svg,
+                path,
+                z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=z,
+                lead_in=False,
+                lead_out=False,
+                feed=args.shoulder_feed
+            )
 
     # The tool is left down on the floor of the pocket, raise it
     # up now.

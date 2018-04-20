@@ -11,7 +11,9 @@
             "job-type": "pocket2",
             "tool-diameter": 10,
             "width-of-cut": 1,
-            "finishing-allowance": 1
+            "finishing-allowance": 1,
+            "slot-max-depth-of-cut": 0.45,
+            "shoulder-max-depth-of-cut": 1.45
         }
     ]
 }
