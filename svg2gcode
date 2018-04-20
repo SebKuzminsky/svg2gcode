@@ -34,7 +34,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpat
 import svgpathtools
 
 
-def remove_island(island, slot, tool_radius, width_of_cut):
+def remove_island(island, tool_radius, width_of_cut):
     offset = -tool_radius + width_of_cut
     island_output_paths = []
 
@@ -68,7 +68,7 @@ def remove_island(island, slot, tool_radius, width_of_cut):
         else:
             # Multiple islands, recurse on each one.
             for island in remaining_material_contours:
-                island_output_paths += remove_island(island, slot, tool_radius, width_of_cut)
+                island_output_paths += remove_island(island, tool_radius, width_of_cut)
             return island_output_paths
 
 
@@ -139,7 +139,7 @@ def pocket(input_path, job):
         # FIXME: sort the remaining islands, nearest first
 
         for island in remaining_material_contours:
-            shoulder_milling_paths += remove_island(island, slot, tool_radius, width_of_cut)
+            shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
 
 
     #
