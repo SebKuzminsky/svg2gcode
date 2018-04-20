@@ -53,33 +53,6 @@ def remove_island(island, slot, tool_radius, width_of_cut):
 
         remaining_material_contours = []
         for path in shoulder_milling_paths:
-            gcoder.comment("pocket shoulder-milling path")
-
-            # Here, the tool is down on the floor of the pocket.
-
-            # FIXME: if we can reach it without gouging, just feed there
-            # else this:
-            (x, y) = svg.to_mm(path[0].start)
-            if gcoder.current_z < args.z_approach:
-                gcoder.g1(z=args.z_approach)
-            if gcoder.current_z < args.z_traverse:
-                gcoder.g0(z=args.z_traverse)
-            gcoder.g0(x=x, y=y)
-            gcoder.g0(z=args.z_approach)
-            gcoder.set_feed_rate(args.plunge_feed)
-            gcoder.g1(z=args.z_cut_depth)
-
-            gcoder.path_to_gcode(
-                svg,
-                path,
-                z_traverse=args.z_traverse,
-                z_approach=args.z_approach,
-                z_top_of_material=args.z_top_of_material,
-                z_cut_depth=args.z_cut_depth,
-                lead_in=False,
-                lead_out=False,
-                feed=args.shoulder_feed
-            )
             remaining_material_contours += gcoder.offset_paths(path, tool_radius)
 
         num_islands = len(remaining_material_contours)
@@ -143,17 +116,42 @@ def pocket(input_path, job):
     if "finishing-allowance" in job.keys():
         finishing_allowance = job['finishing-allowance']
 
+
+    #
+    # Compute initial slotting paths.
+    #
+
     offset = finishing_allowance + tool_radius
     slotting_paths = gcoder.offset_paths(material_contour, offset)
     if not slotting_paths:
         print("no slotting path!", file=sys.stderr)
         return []
+
+
+    #
+    # Compute shoulder milling paths.
+    #
+
+    shoulder_milling_paths = []
+    for slot in slotting_paths:
+        remaining_material_contours = gcoder.offset_paths(slot, tool_radius)
+
+        # FIXME: sort the remaining islands, nearest first
+
+        for island in remaining_material_contours:
+            shoulder_milling_paths += remove_island(island, slot, tool_radius, width_of_cut)
+
+
+    #
+    # Emit all the g-code.
+    #
+
     gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
 
-    for slot in slotting_paths:
+    for path in slotting_paths:
         gcoder.path_to_gcode(
             svg,
-            slot,
+            path,
             z_traverse=args.z_traverse,
             z_approach=args.z_approach,
             z_top_of_material=args.z_top_of_material,
@@ -163,19 +161,43 @@ def pocket(input_path, job):
             plunge_feed=args.plunge_feed,
             feed=args.slot_feed
         )
-        output_paths += slot
+        output_paths += path
 
-        remaining_material_contours = gcoder.offset_paths(slot, tool_radius)
+    for path in shoulder_milling_paths:
+        # The tool is currently down on the floor of the pocket.
 
-        # FIXME: sort the remaining islands, nearest first
+        gcoder.comment("pocket shoulder-milling path")
 
-        for island in remaining_material_contours:
-            output_paths += remove_island(island, slot, tool_radius, width_of_cut)
+        # FIXME: if we can reach it without gouging, just feed there
+        # else this:
+        (x, y) = svg.to_mm(path[0].start)
+        if gcoder.current_z < args.z_approach:
+            gcoder.g1(z=args.z_approach)
+        if gcoder.current_z < args.z_traverse:
+            gcoder.g0(z=args.z_traverse)
+        gcoder.g0(x=x, y=y)
+        gcoder.g0(z=args.z_approach)
+        gcoder.set_feed_rate(args.plunge_feed)
+        gcoder.g1(z=args.z_cut_depth)
 
-        # The tool is left down on the floor of the pocket, raise it
-        # up now.
-        gcoder.g1(z=args.z_approach)
-        gcoder.g0(z=args.z_traverse)
+        gcoder.path_to_gcode(
+            svg,
+            path,
+            z_traverse=args.z_traverse,
+            z_approach=args.z_approach,
+            z_top_of_material=args.z_top_of_material,
+            z_cut_depth=args.z_cut_depth,
+            lead_in=False,
+            lead_out=False,
+            feed=args.shoulder_feed
+        )
+
+        output_paths += path
+
+    # The tool is left down on the floor of the pocket, raise it
+    # up now.
+    gcoder.g1(z=args.z_approach)
+    gcoder.g0(z=args.z_traverse)
 
     return output_paths
 
