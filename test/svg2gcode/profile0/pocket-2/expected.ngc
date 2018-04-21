@@ -22,7 +22,7 @@ G1 X96.5420 Y39.9250
 G1 X9.7630 Y39.9250
 G1 Z0.5000
 G0 Z10.0000
-; offset path (1.0000 offset)
+; offset path (1.0000 offset) 1/1, pass 1/1
 G90.1
 G0 Z10.0000
 G0 X9.7628 Y38.9250

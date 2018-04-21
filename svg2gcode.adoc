@@ -104,13 +104,18 @@ Arguments:
 Positive distances are in the interior of the SVG path, negative distances
 are on the outside of the SVG path.
 
+*max-depth-of-cut* (float):: Maximum depth of a milling pass, in mm.
+Defaults to `(z-top-of-material - z-cut_depth)` so it cuts in a single
+pass.
+
 Example:
 
     {
 	"jobs": [
 	    {
 		"job-type": "offset",
-		"distance": 2.1
+		"distance": 2.1,
+                "max-depth-of-cut": 3.1
 	    }
 	]
     }
