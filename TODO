@@ -32,6 +32,9 @@ so it would be most convenient if i could render its Path objects.
 
 * Pockets with islands.
 
+* Chain drilling.  Offset the path, walk along it in steps of (drill
+  diameter - overlap), g81 or g83.
+
 
 == Look into replacing svgpathtools with something else
 
