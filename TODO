@@ -22,18 +22,28 @@ so it would be most convenient if i could render its Path objects.
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Join adjacent offset curves smarter.  First cut a slot offset by
-    finishing allowance + tool radius, then shoulder mill to the inside
-    by the shoulder milling doc.  Or first slot the innermost path,
-    then shoulder mill out?  Watch how the depth of cut compares between
-    slotting and shoulder milling.
+  finishing allowance + tool radius, then shoulder mill to the inside
+  by the shoulder milling doc.  Or first slot the innermost path,
+  then shoulder mill out?  Watch how the depth of cut compares between
+  slotting and shoulder milling.
 
-* Cut along the path (outside, inside, or right on top, optionally with
-  work-holding tabs.
+* Add work-holding tabs.  The user would specify the number, width,
+  and height of the tabs.  Walk along the offset path to find the start
+  and end of all the tabs.  If the current pass is below the height of
+  the tabs, when you come to the start of one, feed up to the top of the
+  tab, across to the end of the tab, then plunge back down and continue.
+  Seems easy :-)
 
 * Pockets with islands.
 
 * Chain drilling.  Offset the path, walk along it in steps of (drill
   diameter - overlap), g81 or g83.
+
+* Some way to deal with open paths - sometimes you want to machine one
+  side of a part, not the whole perimeter.  You could include free space
+  return path in the drawing, but you would need to know the size of
+  the cutter so there's room for it.  "Entry" and "exit" moves (or maybe
+  "approach" and "departure" moves?) would be important here.
 
 
 == Look into replacing svgpathtools with something else
