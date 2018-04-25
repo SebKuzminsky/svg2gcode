@@ -82,6 +82,13 @@ FreeCAD 0.17's Path workbench uses clipper.
 
 https://github.com/Heeks/libarea.git
 
+Written in C++, builds a python module.
+
+Not actively maintained any more.  Not in Debian.  No docs, minimal
+comments.
+
+Contains an old copy of clipper aka libpolyclipping.
+
 
 === opencamlib
 
@@ -90,11 +97,8 @@ Anders Wallin's project.  Not in debian.
 
 == cgal
 
-
-== boost.geometry
-
-
-== boost.polygon
+Has Circles but not Arcs?  Weird.  But there's a Circular_Arc in the
+"2D Circular Geometry Kernel", whatever that is?
 
 
 === Considered and discarded
@@ -111,6 +115,16 @@ FlatCAM uses Shapely.
 Lines only, no arcs, no bezier curves.
 
 Doesn't do offsetting.
+
+
+== boost.geometry
+
+Doesn't have Arcs or Bezier Splines.
+
+
+== boost.polygon
+
+No arcs.
 
 
 === gpc
