@@ -88,6 +88,15 @@ https://github.com/Heeks/libarea.git
 Anders Wallin's project.  Not in debian.
 
 
+== cgal
+
+
+== boost.geometry
+
+
+== boost.polygon
+
+
 === Considered and discarded
 
 ==== svg.path + shapely
