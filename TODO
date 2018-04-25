@@ -46,6 +46,28 @@ so it would be most convenient if i could render its Path objects.
   "approach" and "departure" moves?) would be important here.
 
 
+
+
+# computational geometry
+
+lots of pdf papers here:
+https://www.geometrictools.com/Documentation/Documentation.html
+
+
+
+
+# svgpathtools bugs
+
+
+## Arc.intersect(Arc)
+
+https://github.com/mathandy/svgpathtools/issues/43
+
+Possible fix: http://www.wykobi.com/tutorial.html#CircleToCircleIntersections
+
+
+
+
 == Look into replacing svgpathtools with something else
 
 === Possible options
@@ -55,7 +77,7 @@ so it would be most convenient if i could render its Path objects.
 pythonocc isn't packaged, liboce doesn't have python bindings in stretch
 
 
-=== occmodel
+==== occmodel
 
 A python front-end to the OpenCASCADE modelling kernel.  Jeff used it
 for CAD in python.
@@ -63,7 +85,7 @@ for CAD in python.
 Not packaged in Stretch (though liboce is).
 
 
-=== libpolyclipping
+==== libpolyclipping
 
 aka clipper
 
@@ -78,7 +100,7 @@ No arcs, we'd have to approximate using linear splines.
 FreeCAD 0.17's Path workbench uses clipper.
 
 
-=== libarea
+==== libarea
 
 https://github.com/Heeks/libarea.git
 
@@ -90,15 +112,38 @@ comments.
 Contains an old copy of clipper aka libpolyclipping.
 
 
-=== opencamlib
+==== openvoronoi/opencamlib
 
 Anders Wallin's project.  Not in debian.
 
+openvoronoi doesn't handle arcs, and Anders claims for 3d you should
+tesselate anyway, so maybe i should just abandon myquest for arcs.
 
-== cgal
+http://www.anderswallin.net/CAM/
+
+
+==== cgal
 
 Has Circles but not Arcs?  Weird.  But there's a Circular_Arc in the
 "2D Circular Geometry Kernel", whatever that is?
+
+
+==== wykobi
+
+http://www.wykobi.com/
+
+MIT license.
+
+Not in debian, not actively maintained.
+
+Does circles but not arcs.
+
+
+==== DGtal
+
+https://dgtal.org/
+
+LGPL3
 
 
 === Considered and discarded
@@ -110,24 +155,24 @@ Which is maybe fine.  Shapely has parallel_offset(), left and right...
 FlatCAM uses Shapely.
 
 
-=== libclippoly http://clippoly.sourceforge.net/
+==== libclippoly http://clippoly.sourceforge.net/
 
 Lines only, no arcs, no bezier curves.
 
 Doesn't do offsetting.
 
 
-== boost.geometry
+==== boost.geometry
 
 Doesn't have Arcs or Bezier Splines.
 
 
-== boost.polygon
+==== boost.polygon
 
 No arcs.
 
 
-=== gpc
+==== gpc
 
 Not libre.
 
