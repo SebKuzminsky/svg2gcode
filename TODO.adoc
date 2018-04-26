@@ -51,6 +51,37 @@
   (imperial/metric).
 
 
+== Ramp, don't plunge
+
+Change the gcoder.path_to_gcode() entry move so it (optionally) ramps
+in instead of plunging.
+
+Add an optional argument "ramp_slope=None".
+
+* If it's None it plunges like now.
+
+* If it's a number it's treated as a "sink/run" slope and the path ramps
+  into the cut (from z_top_of_material).  Starting at the first segment
+  in the path, find the length of the segment and compute the ramp_slope
+  Z of the end point.
+
+** If it's above z_cut_depth go there and continue ramping during the
+   next segment.
+
+** If it's below z_cut_depth, find the `t` along this segment where the
+   ramp ends.  Ramp there, remember the end-of-ramp point (segment & t).
+   Do a normal slotting feed to the end of the segment.
+
+* When the path is "completed" (ie, when we've reached the end of the
+  last segment), we may still have to deal with the remaining ramp.  If
+  we have a remembered end-of-ramp point, feed there now.
+
+FIXME: this changes where the tool ends up at the end of path_to_gcode().
+It used to always be at the end of the last segment, possibly
+with lead_out.  Now it can be anywhere.  Audit the code that calls
+path_to_gcode() and make sure it's all ok with that.
+
+
 == Smart transitions
 
 I want better transitions from a finished pass to the start of the
