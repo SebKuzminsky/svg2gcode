@@ -1,0 +1,8 @@
+{
+    "jobs": [
+        {
+            "job-type": "engrave",
+            "ramp-slope": 0.1
+        }
+    ]
+}

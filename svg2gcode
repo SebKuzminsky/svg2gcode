@@ -431,6 +431,10 @@ if args.job:
             print("output paths:", output_paths, file=sys.stderr)
 
         elif job['job-type'] == 'engrave':
+            ramp_slope = None
+            if "ramp-slope" in job.keys():
+                ramp_slope = job['ramp-slope']
+
             gcoder.comment("engrave path")
             gcoder.path_to_gcode(
                 svg,
@@ -440,7 +444,8 @@ if args.job:
                 z_top_of_material=args.z_top_of_material,
                 z_cut_depth=args.z_cut_depth,
                 plunge_feed=args.plunge_feed,
-                feed=args.feed
+                feed=args.feed,
+                ramp_slope=ramp_slope
             )
 
 else:

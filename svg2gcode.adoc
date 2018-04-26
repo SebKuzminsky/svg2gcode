@@ -81,14 +81,29 @@ value is the type of the job.  The supported job types and their arguments
 
 The toolpath follows the path in the SVG.
 
-No arguments.
+Arguments:
 
-Example:
+*ramp-slope* (float, optional):: If specified, `ramp-slope` enables ramp
+entry into engraving cuts.  The value is the Z depth per unit horizontal
+distance of the ramp entry move.  The also enables a move at the end
+of the engrave path to remove the entry ramp.  The ramp entry move
+may wrap around the path.  If `ramp-slope` is not specified, `engrave`
+uses a full depth plunge entry.
+
+Examples:
 
     {
 	"jobs": [
 	    {
 		"job-type": "engrave"
+	    }
+    }
+
+    {
+	"jobs": [
+	    {
+		"job-type": "engrave",
+                "ramp-entry": 0.1
 	    }
 	]
     }
