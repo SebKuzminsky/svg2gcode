@@ -9,12 +9,6 @@
 
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
-* Join adjacent offset curves smarter.  First cut a slot offset by
-  finishing allowance + tool radius, then shoulder mill to the inside
-  by the shoulder milling doc.  Or first slot the innermost path,
-  then shoulder mill out?  Watch how the depth of cut compares between
-  slotting and shoulder milling.
-
 * Add work-holding tabs.  The user would specify the number, width,
   and height of the tabs.  Walk along the offset path to find the start
   and end of all the tabs.  If the current pass is below the height of
@@ -38,6 +32,59 @@
   toolpath as g-code.  Something like cambam.  Maybe start with dxf2gcode,
   add the features that are missing (svg input, offset paths, pocketing,
   what else?).
+
+* Better pocketing algorithm.  It currently makes the longest possible
+  slotting cut...  Instead, maybe first slot the innermost path, then
+  shoulder mill out?  That doesn't deal smartly when the current "start
+  outside, move inwards" algorithm generates multiple "remaining islands".
+  There must be literature on this topic.  Anders' Wallin's opencamlib
+  does something smarter.
+
+* Fix SVG units handling.  When the SVG uses mm everything's fine, but
+  the mini-liner svg in the griptilian scales project uses inch(?) units
+  and the result is the wrong size.
+
+* Add user units handling.  Currently all numbers the user specifies
+  are SI (mm for offsets, doc, etc; mm/min for feeds).  Accept units
+  with numbers, like "0.375inch" or "5mm/min"(?).  Some default applies
+  to numbers without specific units, and the default can be specified
+  (imperial/metric).
+
+
+== Smart transitions
+
+I want better transitions from a finished pass to the start of the
+next pass.
+
+It currently does "raise, traverse, plunge", which is simple, safe,
+slow, and plungy.
+
+Sometimes one pass ends near the start of the next pass, with no remaining
+material in between.  In this case it'd be better to feed there directly,
+along the floor of the pocket (or maybe just above, to avoid rubbing).
+
+However sometimes there's a long way from one pass end to the next pass
+start, and obstacles can intervene: other islands, and the walls of the
+pocket itself.  In this case revert to the current safe behavior.
+
+To select which of "raise, traverse, plunge" and "feed" to use:
+
+* The proposed feed move is a g1 from the current (X, Y) to the start
+  of the next pass.
+
+* If the proposed feed intersects the original slotting toolpath we'll
+  gouge the wall of the pocket, so choose RTP (FIXME: or follow along
+  the slotting path until the second intersection?
+
+* If the proposed feed comes within tool_radius of any island other
+  than the one we're on, it gouges that island, so choose RTP (FIXME:
+  or do that island instead?)
+
+* If the proposed feed intersects the next pass, *except* at the start
+  point, then it gouges the island we're going to, so choose RTP (FIXME:
+  or choose a different starting point in the next pass?)
+
+* If we get here there's no gouge, so choose that feed move.
 
 
 
@@ -169,45 +216,3 @@ No arcs.
 ==== gpc
 
 Not libre.
-
-
-== Fix units handling
-
-When the SVG uses mm everything's fine, but the mini-liner svg in the
-griptilian scales project uses inch(?) units and the result is the
-wrong size.
-
-
-== Smart transitions
-
-I want better transitions from a finished pass to the start of the
-next pass.
-
-It currently does "raise, traverse, plunge", which is simple, safe,
-slow, and plungy.
-
-Sometimes one pass ends very near the start of the next pass.  In this
-case it'd be better to feed there directly, along the floor of the pocket.
-
-However sometimes there's a long way from one pass end to the next pass
-start, and obstacles can intervene: other islands, and the walls of the
-pocket itself.
-
-To select which of "raise, traverse, plunge" and "feed" to use:
-
-    the proposed feed move is a g1 from the current (X, Y) to the start
-    of the next pass
-
-    If the proposed feed intersects the original slotting toolpath we'll
-    gouge the wall of the pocket, so choose RTP (FIXME: or follow along
-    the slotting path until the second intersection?
-
-    If the proposed feed comes within tool_radius of any island other
-    than the one we're on, it gouges that island, so choose RTP (FIXME:
-    or do that island instead?)
-
-    If the proposed feed intersects the next pass, *except* at the start
-    point, then it gouges the island we're on, so choose RTP (FIXME: or
-    choose a different starting point in the next pass?)
-
-    If we get here there's no gouge, so choose that feed move
