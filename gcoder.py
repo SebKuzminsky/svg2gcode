@@ -757,6 +757,55 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 
 def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None):
+
+    """Prints the G-code corresponding to the input `path`.
+
+Arguments:
+
+    `path`: The SVG path to emit g-code for.
+
+    `z_traverse` (float, default 10.0): Z level for safe traversals/rapids
+        across the work piece.  The lead-in move (if enabled) goes here
+        before any other motion.  The lead-out move (if enabled) leaves
+        the tool up here.
+
+    `z_approach` (float, defaults to 0.5mm above z_top_of_material):
+        Above this Z level we rapid, below it we feed.
+
+    `z_top_of_material` (float, default 0.0): Z level where the work
+        piece material starts.
+
+    `z_cut_depth` (float, default 0.0): Z level to cut down to.
+
+    `lead_in` (boolean, default True): If enabled, preliminary motion
+        consists of:
+
+            * rapid Z to the `z_traverse` level
+
+            * rapid X and Y to the start of the first path segment
+
+            * rapid Z to the `z_approach` level
+
+            * feed down to the `z_cut_depth` level
+
+        If `lead_in` is disabled the preliminary motion consists of
+        feeding to the start of the first segment.
+
+    `lead_out` (boolean, default True): If enabled, final motion (after
+        completing the path) consists of:
+
+            * feed Z to `z_approach` level
+
+            * rapid Z to `z_traverse` level
+
+        If disabled, the tool is left on the end of the final segment
+        in the path.
+
+    `feed`: Feed rate to use when ramping into the cut and when cutting
+        along the path.
+
+    `plunge_feed`: Feed rate to use when plunging into the cut."""
+
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
 
