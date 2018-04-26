@@ -1,15 +1,3 @@
-What I want for the first step is a simple CAM program that reads an
-SVG and makes a pocketing toolpath from the interior of the path.
-
-It must be scriptable.
-
-A future version might have an optional GUI.  This GUI should display
-the input SVG and the computed tool path, and let you export the toolpath
-as g-code.
-
-I'm planning to use svgpathtools to compute the offset paths needed,
-so it would be most convenient if i could render its Path objects.
-
 
 # Future embellishments
 
@@ -44,6 +32,12 @@ so it would be most convenient if i could render its Path objects.
   return path in the drawing, but you would need to know the size of
   the cutter so there's room for it.  "Entry" and "exit" moves (or maybe
   "approach" and "departure" moves?) would be important here.
+
+* GUI (optional, the program must still be scriptable).  The GUI displays
+  the input SVG and the computed tool path, and lets you export the
+  toolpath as g-code.  Something like cambam.  Maybe start with dxf2gcode,
+  add the features that are missing (svg input, offset paths, pocketing,
+  what else?).
 
 
 
