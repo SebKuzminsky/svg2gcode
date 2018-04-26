@@ -134,6 +134,10 @@ def pocket(input_path, job):
     num_passes = math.ceil(pocket_depth / max_depth_of_cut)
     depth_of_cut = pocket_depth / num_passes
 
+    ramp_slope = None
+    if "ramp-slope" in job.keys():
+        ramp_slope = job['ramp-slope']
+
 
     #
     # Compute initial slotting paths.
@@ -165,6 +169,7 @@ def pocket(input_path, job):
     #
     z = args.z_top_of_material
     while z > args.z_cut_depth:
+        z_prev = z
         z -= depth_of_cut
 
         for path in slotting_paths:
@@ -174,12 +179,13 @@ def pocket(input_path, job):
                 path,
                 z_traverse=args.z_traverse,
                 z_approach=args.z_approach,
-                z_top_of_material=args.z_top_of_material,
+                z_top_of_material=z_prev,
                 z_cut_depth=z,
                 lead_in=True,
                 lead_out=False,
                 plunge_feed=args.plunge_feed,
-                feed=args.slot_feed
+                feed=args.slot_feed,
+                ramp_slope=ramp_slope
             )
 
         for path in shoulder_milling_paths:
@@ -204,7 +210,7 @@ def pocket(input_path, job):
                 path,
                 z_traverse=args.z_traverse,
                 z_approach=args.z_approach,
-                z_top_of_material=args.z_top_of_material,
+                z_top_of_material=z_prev,
                 z_cut_depth=z,
                 lead_in=False,
                 lead_out=False,
