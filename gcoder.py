@@ -789,7 +789,7 @@ Arguments:
             * feed down to the `z_cut_depth` level
 
         If `lead_in` is disabled the preliminary motion consists of
-        feeding to the start of the first segment.
+        feeding X and Y to the start of the first segment.
 
     `lead_out` (boolean, default True): If enabled, final motion (after
         completing the path) consists of:
