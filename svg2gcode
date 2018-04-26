@@ -38,7 +38,7 @@ def remove_island(island, tool_radius, width_of_cut):
     offset = -tool_radius + width_of_cut
     island_output_paths = []
 
-    print("removing island:", island, file=sys.stderr)
+    print("removing an island", file=sys.stderr)
 
     while island != None:
         print("remaining material:", island, file=sys.stderr)
