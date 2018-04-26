@@ -756,7 +756,41 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     return offset_paths
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None):
+
+def path_segment_to_gcode(svg, segment, z=None):
+    if type(segment) == svgpathtools.path.Line:
+        (start_x, start_y) = svg.to_mm(segment.start)
+        (end_x, end_y) = svg.to_mm(segment.end)
+        g1(x=end_x, y=end_y, z=z)
+    elif type(segment) == svgpathtools.path.Arc:
+        # FIXME: g90.1 or g91.1?
+        if segment.radius.real != segment.radius.imag:
+            raise ValueError, "arc radii differ: %s", segment
+        (end_x, end_y) = svg.to_mm(segment.end)
+        (center_x, center_y) = svg.to_mm(segment.center)
+        if segment.sweep:
+            g2(x=end_x, y=end_y, z=z, i=center_x, j=center_y)
+        else:
+            g3(x=end_x, y=end_y, z=z, i=center_x, j=center_y)
+    else:
+        # Deal with any segment that's not a line or a circular arc,
+        # this includes elliptic arcs and bezier curves.  Use linear
+        # approximation.
+        #
+        # FIXME: The number of steps should probably be dynamically
+        #     adjusted to make the length of the *offset* line
+        #     segments manageable.
+        if z is not None:
+            raise ValueError, "Z value specified for non-Line, non-circular-Arc segment: %s", segment
+        steps = 1000
+        for k in range(steps+1):
+            t = k / float(steps)
+            end = segment.point(t)
+            (end_x, end_y) = svg.to_mm(end)
+            g1(x=end_x, y=end_y)
+
+
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None):
 
     """Prints the G-code corresponding to the input `path`.
 
@@ -777,34 +811,97 @@ Arguments:
 
     `z_cut_depth` (float, default 0.0): Z level to cut down to.
 
-    `lead_in` (boolean, default True): If enabled, preliminary motion
-        consists of:
+    `lead_in` (boolean, default True): Perform preliminary motion
+        (before starting to cut the path) as described below.
 
-            * rapid Z to the `z_traverse` level
-
-            * rapid X and Y to the start of the first path segment
-
-            * rapid Z to the `z_approach` level
-
-            * feed down to the `z_cut_depth` level
-
-        If `lead_in` is disabled the preliminary motion consists of
-        feeding X and Y to the start of the first segment.
-
-    `lead_out` (boolean, default True): If enabled, final motion (after
-        completing the path) consists of:
-
-            * feed Z to `z_approach` level
-
-            * rapid Z to `z_traverse` level
-
-        If disabled, the tool is left on the end of the final segment
-        in the path.
+    `lead_out` (boolean, default True): Perform final motion (after
+        finishing cutting the path) as described below.
 
     `feed`: Feed rate to use when ramping into the cut and when cutting
         along the path.
 
-    `plunge_feed`: Feed rate to use when plunging into the cut."""
+    `plunge_feed`: Feed rate to use when plunging into the cut.
+
+    `ramp_slope`: The Z depth per unit path length of the ramp slope.
+
+    Motion:
+
+        Preliminary Motion:
+
+            This function begins with preliminary motion, controlled by the
+            `lead_in` argument.  If `lead_in` is True:
+
+                * rapid Z to the `z_traverse` level
+
+                * rapid X and Y to the start of the first path segment
+
+                * rapid Z to the `z_approach` level
+
+            If `lead_in` is False:
+
+                * feed X and Y to the start of the first segment at
+                  `feed` feed rate
+
+            At the completion of Preliminary Motion, the tool is
+            positioned at the X and Y coordinates of the start of the
+            first segment in the path, but at an unknown Z level.
+
+            The Z level may be `z_approach` (if the `lead_in` argument
+            is True) or Z may be unchanged from where it was on entry
+            to the function (if the `lead_in` argument is False).
+
+        Entry Motion:
+
+            This gets the tool into the work.
+
+            If `ramp_slope` is None:
+
+                * set feed rate to `plunge_feed`
+
+                * feed Z to `z_cut_depth`
+
+            If `ramp_slope` is not None:
+
+                * set feed rate to `feed`
+
+                * feed Z to `z_top_of_material`
+
+                * Ramp down to `z_cut_depth` at the specified slope rate.
+                  This ramp may span segments, may wrap around the path,
+                  and may terminate anywhere in any segment.  The segment
+                  and location-within-the-segment where the ramp finishes
+                  is noted for later cleanup.
+
+            At the end of Entry Motion the tool is positioned somewhere
+            on the path, with Z at `z_cut_depth`.
+
+        Main Motion:
+
+            This cuts the path.
+
+            Main Motion feeds along the path with Z at the `z_cut_depth`,
+            starting at whatever (X, Y) position Entry Motion left it.
+
+            When Main Motion gets to the end of the path, if there's a
+            ramp remaining it cuts to the end of the ramp.
+
+            At the end of Main Motion the tool is positioned somewhere
+            on the path, with Z at `z_cut_depth`.  If there was an an
+            Entry ramp, (X, Y) is at the end of the ramp, if there was
+            no Entry ramp, (X, Y) is at the beginning of the path.
+
+        Final Motion:
+
+            If the `lead_out` argument is False, no Final Motion takes
+            place and the tool is left where the Path Motion left it.
+
+            If `lead_out` is True:
+
+                * feed Z to `z_approach` level
+
+                * rapid Z to `z_traverse` level
+
+"""
 
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
@@ -812,55 +909,93 @@ Arguments:
     if z_approach == None:
         z_approach = 0.5 + z_top_of_material
 
-    if lead_in:
+
+    #
+    # Preliminary Motion
+    #
+
+    if lead_in == True:
         g0(z=z_traverse)
         g0(x=x, y=y)
-
-    spindle_on()
-
-    if lead_in:
+        spindle_on()
         g0(z=z_approach)
-        if plunge_feed:
-            set_feed_rate(plunge_feed)
-        elif feed:
-            set_feed_rate(feed)
-        g1(z=z_cut_depth)
-        if plunge_feed and feed:
-            set_feed_rate(feed)
     else:
-        if feed:
-            set_feed_rate(feed)
+        spindle_on()
+        set_feed_rate(feed)
         g1(x=x, y=y)
 
-    for element in path:
-        if type(element) == svgpathtools.path.Line:
-            (start_x, start_y) = svg.to_mm(element.start)
-            (end_x, end_y) = svg.to_mm(element.end)
-            g1(x=end_x, y=end_y)
-        elif type(element) == svgpathtools.path.Arc:
-            # FIXME: g90.1 or g91.1?
-            if element.radius.real != element.radius.imag:
-                raise ValueError, "arc radii differ: %s", element
-            (end_x, end_y) = svg.to_mm(element.end)
-            (center_x, center_y) = svg.to_mm(element.center)
-            if element.sweep:
-                g2(x=end_x, y=end_y, i=center_x, j=center_y)
-            else:
-                g3(x=end_x, y=end_y, i=center_x, j=center_y)
-        else:
-            # Deal with any segment that's not a line or a circular arc,
-            # this includes elliptic arcs and bezier curves.  Use linear
-            # approximation.
-            #
-            # FIXME: The number of steps should probably be dynamically
-            #     adjusted to make the length of the *offset* line
-            #     segments manageable.
-            steps = 1000
-            for k in range(steps+1):
-                t = k / float(steps)
-                end = element.point(t)
-                (end_x, end_y) = svg.to_mm(end)
-                g1(x=end_x, y=end_y)
+
+    #
+    # Entry Motion
+    #
+
+    global current_z
+
+    segment_after_ramp = 0
+
+    if ramp_slope is not None:
+        # Ramp in.
+
+        # Start the ramp at the top of material
+        if lead_in != True:
+            set_feed_rate(feed)
+        g1(z=z_top_of_material)
+
+        while current_z > z_cut_depth:
+            for i in range(len(path)):
+                segment = path[i]
+                length = segment.length()
+                z_at_segment_end = current_z - (ramp_slope * length)
+                if z_at_segment_end >= z_cut_depth:
+                    # Not bottoming out on this segment.
+                    path_segment_to_gcode(svg, segment, z=z_at_segment_end)
+                else:
+                    # Bottoming out on this segment!
+                    #
+                    # Split the segment in two so the first part ends
+                    # at the end of the ramp.
+                    #
+                    # In this segment, as t goes from 0.0 to 1.0:
+                    # z(t) = current_z - (ramp_slope * length * t)
+                    #
+                    # Setting z(t) equal to z_cut_depth and solving for
+                    # t gives us this equation:
+                    t = (current_z - z_cut_depth) / (ramp_slope * length)
+                    new_segments = segment.split(t)
+                    path[i] = new_segments[0]
+                    path_segment_to_gcode(svg, path[i], z=z_cut_depth)
+                    path.insert(i+1, new_segments[1])
+                    segment_after_ramp = i+1
+                    break
+
+    else:
+        # Plunge in.
+        if current_z > z_cut_depth:
+            if plunge_feed is not None:
+                set_feed_rate(plunge_feed)
+            elif feed is not None:
+                set_feed_rate(feed)
+            g1(z=z_cut_depth)
+            if plunge_feed is not None and feed is not None:
+                set_feed_rate(feed)
+
+
+    #
+    # Main Motion
+    #
+
+    for i in range(segment_after_ramp, len(path)):
+        segment = path[i]
+        path_segment_to_gcode(svg, segment)
+
+    # Clean up the ramp.
+    for i in range(0, segment_after_ramp):
+        segment = path[i]
+        path_segment_to_gcode(svg, segment)
+
+    #
+    # Final Motion
+    #
 
     if lead_out:
         g1(z=z_approach)
@@ -878,6 +1013,8 @@ current_c = None
 current_u = None
 current_v = None
 current_w = None
+
+current_feed = None
 
 
 # When comparing floats, a difference of less than epsilon counts as no
