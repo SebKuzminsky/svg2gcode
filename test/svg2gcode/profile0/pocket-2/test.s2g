@@ -12,8 +12,8 @@
             "tool-diameter": 10,
             "width-of-cut": 1,
             "finishing-allowance": 1,
-            "slot-max-depth-of-cut": 0.45,
-            "shoulder-max-depth-of-cut": 1.45,
+            "slot-max-depth-of-cut": 2.0,
+            "shoulder-max-depth-of-cut": 4.5,
             "ramp-slope": 0.005
         }
     ]
