@@ -167,13 +167,14 @@ def pocket(input_path, job):
     #
     # Emit all the g-code.
     #
-    z = args.z_top_of_material
-    while z > args.z_cut_depth:
-        z_prev = z
-        z -= depth_of_cut
+    pass_num = 0
+    while pass_num < num_passes:
+        pass_num += 1
+        z = args.z_top_of_material - (depth_of_cut * pass_num)
+        z_prev = args.z_top_of_material - (depth_of_cut * (pass_num - 1))
 
         for path in slotting_paths:
-            gcoder.comment("initial slotting cut, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+            gcoder.comment("slotting cut %d/%d, z=%f, %.4f finishing allowance + %.4f tool radius" % (pass_num, num_passes, z, finishing_allowance, tool_radius))
             gcoder.path_to_gcode(
                 svg,
                 path,
