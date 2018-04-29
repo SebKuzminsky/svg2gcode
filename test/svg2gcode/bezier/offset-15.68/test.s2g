@@ -3,7 +3,8 @@
         {
             "job-type": "offset",
             "distance": 15.68,
-            "max-depth-of-cut": 0.3333333333
+            "max-depth-of-cut": 0.3333333333,
+            "ramp-slope": 0.01
         }
     ]
 }

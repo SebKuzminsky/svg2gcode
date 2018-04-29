@@ -790,7 +790,7 @@ def path_segment_to_gcode(svg, segment, z=None):
             g1(x=end_x, y=end_y)
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None):
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None):
 
     """Prints the G-code corresponding to the input `path`.
 
@@ -824,7 +824,19 @@ Arguments:
 
     `ramp_slope`: The Z depth per unit path length of the ramp slope.
 
+    `max_depth_of_cut` (float, optional): Max axial depth of cut.  The cut
+        starts at `z_top_of_material` and goes down to `z_cut_depth`;
+        if this distance is greater than `max_depth_of_cut` then the
+        cut will consist of multiple passes.  The axial depth-of-cut of
+        each pass will be the same, and may be adjusted down from the
+        specified max slightly, to cut to the specified depth in the
+        smallest number of equal-depth passes.  If `max_depth_of_cut` is
+        not specified, then the full depth will be cut in a single pass.
+
     Motion:
+
+        This function produces motion in three parts: Preliminary Motion,
+        one or more Cutting Passes, and Final Motion.
 
         Preliminary Motion:
 
@@ -850,44 +862,68 @@ Arguments:
             is True) or Z may be unchanged from where it was on entry
             to the function (if the `lead_in` argument is False).
 
-        Entry Motion:
+        Cutting Pass:
 
-            This gets the tool into the work.
+            The cut (from `z_top_of_material` to `z_cut_depth`) is made
+            in the minimum number of equal-depth cutting passes.
 
-            If `ramp_slope` has a value:
+            If `max_depth_of_cut` is None (not specified) the cut is
+            made in a single full-depth pass.
 
-                * feed Z to `z_top_of_material` (at `feed` feed rate)
+            If `max_depth_of_cut` has a value, the cut is made in
+            the smallest possible number of equal-depth passes, where
+            the per-pass depth of cut is as large as possible without
+            exceeding `max_depth_of_cut`.
 
-                * Move along the path while ramping down to
-                  `z_cut_depth` at the specified slope rate.  This ramp
-                  may span segments, may wrap around the path, and may
-                  terminate anywhere in any segment.  The segment and
-                  location-within-the-segment where the ramp finishes
-                  is noted for later cleanup.
+            A cutting pass consists of Entry Motion to get the tool into
+            the work, followed by Main Motion cutting the path.
 
-            If `ramp_slope` is None:
+            Entry Motion:
 
-                * feed Z to `z_cut_depth` (at `plunge_feed` feed rate)
+                This gets the tool into the work.
 
-            At the end of Entry Motion the tool is positioned somewhere
-            on the path, with Z at `z_cut_depth`.
+                If `ramp_slope` has a value:
 
-        Main Motion:
+                    * Feed Z to the top of this pass (at `feed` feed
+                      rate).
 
-            This cuts the path.
+                    * Move X and Y along the path while ramping Z down
+                      to the bottom of this pass at the specified slope
+                      rate.  The bottom of the pass is depth-of-cut
+                      below the top of the pass.  The ramp may span
+                      segments, may wrap around the path, and may
+                      terminate anywhere in any segment.  The segment
+                      and location-within-the-segment where the ramp
+                      finishes is noted for later cleanup.
 
-            Main Motion feeds along the path with Z at the `z_cut_depth`,
-            starting at whatever (X, Y) position Entry Motion left it.
+                If `ramp_slope` is None:
 
-            When Main Motion gets to the end of the path, if there's a
-            ramp remaining it cuts to the end of the ramp.
+                    * Feed Z to the bottom of this pass (at `plunge_feed`
+                      feed rate).
 
-            At the end of Main Motion the tool is positioned somewhere
-            on the path, with Z at `z_cut_depth`.  If there was an an
-            Entry ramp, (X, Y) is at the end of the ramp; if there was
-            no Entry ramp, (X, Y) is at the beginning of the path.
+                At the end of Entry Motion the tool is positioned
+                somewhere on the path, with Z at the bottom of the pass.
+
+            Main Motion:
+
+                This cuts the path.
+
+                Main Motion feeds along the path with Z fixed at the
+                bottom of the pass, starting at whatever (X, Y) position
+                Entry Motion left it and ending at the end of the path.
+
+                If the Entry Motion used a ramp, that ramp is in front
+                of the tool at the end of the pass.
 
         Final Motion:
+
+            At the end of the last cutting pass, the tool is positioned
+            at the (X, Y) starting point of the path, with Z at the
+            `z_cut_depth` level.
+
+            If the Entry Motion used ramp, then the final ramp remains
+            in front of the tool and is cut away now, leaving (X, Y)
+            at the end of the ramp move.
 
             If the `lead_out` argument is False, no Final Motion takes
             place and the tool is left where the Path Motion left it.
@@ -922,77 +958,108 @@ Arguments:
         g1(x=x, y=y)
 
 
+
     #
-    # Entry Motion
+    # Cutting Passes
     #
 
-    global current_z
+    cut_depth = z_top_of_material - z_cut_depth
 
-    segment_after_ramp = 0
+    if max_depth_of_cut == None:
+        max_depth_of_cut = cut_depth
 
-    if ramp_slope is not None:
-        # Ramp in.
-
-        # Start the ramp at the top of material
-        if lead_in == True:
-            set_feed_rate(feed)
-        g1(z=z_top_of_material)
-
-        while current_z > z_cut_depth:
-            for i in range(len(path)):
-                segment = path[i]
-                length = segment.length()
-                z_at_segment_end = current_z - (ramp_slope * length)
-                if z_at_segment_end >= z_cut_depth:
-                    # Not bottoming out on this segment.
-                    path_segment_to_gcode(svg, segment, z=z_at_segment_end)
-                else:
-                    # Bottoming out on this segment!
-                    #
-                    # Split the segment in two so the first part ends
-                    # at the end of the ramp.
-                    #
-                    # In this segment, as t goes from 0.0 to 1.0:
-                    # z(t) = current_z - (ramp_slope * length * t)
-                    #
-                    # Setting z(t) equal to z_cut_depth and solving for
-                    # t gives us this equation:
-                    t = (current_z - z_cut_depth) / (ramp_slope * length)
-                    new_segments = segment.split(t)
-                    path[i] = new_segments[0]
-                    path_segment_to_gcode(svg, path[i], z=z_cut_depth)
-                    path.insert(i+1, new_segments[1])
-                    segment_after_ramp = i+1
-                    break
-
+    num_passes_f = cut_depth / max_depth_of_cut
+    num_passes = 0
+    if close_enough(num_passes_f, round(num_passes_f)):
+        num_passes = int(round(num_passes_f))
     else:
-        # Plunge in.
-        if current_z > z_cut_depth:
-            if plunge_feed is not None:
-                set_feed_rate(plunge_feed)
-            elif feed is not None:
+        num_passes = math.ceil(cut_depth / max_depth_of_cut)
+
+    depth_of_cut = cut_depth / num_passes
+
+    pass_num = 1
+    while pass_num <= num_passes:
+        z_top = z_top_of_material - ((pass_num - 1) * depth_of_cut)
+        z_bottom = z_top_of_material - (pass_num * depth_of_cut)
+
+        comment("path pass %d/%d, z from %f to %f" % (pass_num, num_passes, z_top, z_bottom))
+
+        pass_num += 1
+
+
+        #
+        # Entry Motion
+        #
+
+        global current_z
+
+        segment_after_ramp = 0
+
+        if ramp_slope is not None:
+            # Ramp in.
+
+            # Start the ramp at the top of material
+            if lead_in == True:
                 set_feed_rate(feed)
-            g1(z=z_cut_depth)
-            if plunge_feed is not None and feed is not None:
-                set_feed_rate(feed)
+            g1(z=z_top)
+
+            while current_z > z_bottom:
+                for i in range(len(path)):
+                    segment = path[i]
+                    length = segment.length()
+                    z_at_segment_end = current_z - (ramp_slope * length)
+                    if z_at_segment_end >= z_bottom:
+                        # Not bottoming out on this segment.
+                        path_segment_to_gcode(svg, segment, z=z_at_segment_end)
+                    else:
+                        # Bottoming out on this segment!
+                        #
+                        # Split the segment in two so the first part ends
+                        # at the end of the ramp.
+                        #
+                        # In this segment, as t goes from 0.0 to 1.0:
+                        # z(t) = current_z - (ramp_slope * length * t)
+                        #
+                        # Setting z(t) equal to z_cut_depth and solving for
+                        # t gives us this equation:
+                        t = (current_z - z_bottom) / (ramp_slope * length)
+                        new_segments = segment.split(t)
+                        path[i] = new_segments[0]
+                        path_segment_to_gcode(svg, path[i], z=z_bottom)
+                        path.insert(i+1, new_segments[1])
+                        segment_after_ramp = i+1
+                        break
+
+        else:
+            # Plunge in.
+            if current_z > z_bottom:
+                if plunge_feed is not None:
+                    set_feed_rate(plunge_feed)
+                elif feed is not None:
+                    set_feed_rate(feed)
+                g1(z=z_bottom)
+                if plunge_feed is not None and feed is not None:
+                    set_feed_rate(feed)
 
 
-    #
-    # Main Motion
-    #
+        #
+        # Main Motion
+        #
 
-    for i in range(segment_after_ramp, len(path)):
-        segment = path[i]
-        path_segment_to_gcode(svg, segment)
+        for i in range(segment_after_ramp, len(path)):
+            segment = path[i]
+            path_segment_to_gcode(svg, segment)
 
-    # Clean up the ramp.
-    for i in range(0, segment_after_ramp):
-        segment = path[i]
-        path_segment_to_gcode(svg, segment)
+    # Done with all cutting passes.
 
     #
     # Final Motion
     #
+
+    # Clean up the final ramp (if any).
+    for i in range(0, segment_after_ramp):
+        segment = path[i]
+        path_segment_to_gcode(svg, segment)
 
     if lead_out:
         g1(z=z_approach)

@@ -1,12 +1,13 @@
 G21
 G64 P0.0100 (enable path blending with tolerance)
 S 1000
-; offset path (-7.9000 offset) 1/1, pass 1/1
+; offset path (-7.900000 offset) 1/1
 G90.1
 G0 Z10.0000
 G0 X77.7658 Y41.6028
 M3
 G0 Z0.5000
+; path pass 1/1, z from 0.000000 to -1.000000
 F 50.0000
 G1 Z-1.0000
 F 100.0000
@@ -39,12 +40,13 @@ G2 X64.6863 Y32.7391 I58.6101 J28.6213
 G3 X77.7658 Y41.6028 I71.2260 J37.1710
 G1 Z0.5000
 G0 Z10.0000
-; offset path (-8.0000 offset) 1/2, pass 1/1
+; offset path (-8.000000 offset) 1/2
 G90.1
 G0 Z10.0000
 G0 X77.8486 Y41.6589
 M3
 G0 Z0.5000
+; path pass 1/1, z from 0.000000 to -1.000000
 F 50.0000
 G1 Z-1.0000
 F 100.0000
@@ -70,12 +72,13 @@ G3 X72.2523 Y29.2371 I71.9450 J21.2430
 G3 X77.8486 Y41.6589 I71.2260 J37.1710
 G1 Z0.5000
 G0 Z10.0000
-; offset path (-8.0000 offset) 2/2, pass 1/1
+; offset path (-8.000000 offset) 2/2
 G90.1
 G0 Z10.0000
 G0 X70.9187 Y29.1769
 M3
 G0 Z0.5000
+; path pass 1/1, z from 0.000000 to -1.000000
 F 50.0000
 G1 Z-1.0000
 F 100.0000
@@ -94,6 +97,7 @@ G0 Z10.0000
 G0 X71.2260 Y37.1710
 M3
 G0 Z0.5000
+; path pass 1/1, z from 0.000000 to -1.000000
 F 50.0000
 G1 Z-1.0000
 F 100.0000

@@ -305,69 +305,34 @@ if args.job:
             new_paths = gcoder.offset_paths(input_path, offset)
             output_paths += new_paths
 
-            cut_depth = args.z_top_of_material - args.z_cut_depth
-
-            max_depth_of_cut = cut_depth
+            max_depth_of_cut = None
             if "max-depth-of-cut" in job.keys():
                 max_depth_of_cut = job['max-depth-of-cut']
             else:
+                cut_depth = args.z_top_of_material - args.z_cut_depth
                 print("WARNING: no 'max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, cut_depth), file=sys.stderr)
 
-            num_passes_f = cut_depth / max_depth_of_cut
-            num_passes = 0
-            if gcoder.close_enough(num_passes_f, round(num_passes_f)):
-                num_passes = int(round(num_passes_f))
-            else:
-                num_passes = math.ceil(cut_depth / max_depth_of_cut)
+            ramp_slope = None
+            if "ramp-slope" in job.keys():
+                ramp_slope = job['ramp-slope']
 
-            depth_of_cut = cut_depth / num_passes
-
-            path_num = 0
-            for path in new_paths:
-                path_num += 1
-
-                z = args.z_top_of_material
-
-                pass_num = 1
-
-                lead_in = True
-                lead_out = False
-
-                while pass_num <= num_passes:
-                    gcoder.comment("offset path (%.4f offset) %d/%d, pass %d/%d" % (offset, path_num, len(new_paths), pass_num, num_passes))
-
-                    z -= depth_of_cut
-
-                    if pass_num == 1:
-                        lead_in = True
-                    else:
-                        # We just completed a pass, we're positioned
-                        # over the starting point, at the bottom of the
-                        # previous pass.
-                        lead_in = False
-                        gcoder.set_feed_rate(args.plunge_feed)
-                        gcoder.g1(z=z)
-                        gcoder.set_feed_rate(args.feed)
-
-                    if pass_num == num_passes:
-                        # We're about to start the final pass, lead out
-                        # after finishing it.
-                        lead_out = True
-
-                    gcoder.path_to_gcode(
-                        svg,
-                        path,
-                        z_traverse=args.z_traverse,
-                        z_approach=args.z_approach,
-                        z_top_of_material=args.z_top_of_material,
-                        z_cut_depth=z,
-                        lead_in=lead_in,
-                        lead_out=lead_out,
-                        plunge_feed=args.plunge_feed,
-                        feed=args.feed
-                    )
-
-                    pass_num += 1
+            for i in range(len(new_paths)):
+                gcoder.comment("offset path (%f offset) %d/%d" % (offset, i+1, len(new_paths)))
+                path = new_paths[i]
+                gcoder.path_to_gcode(
+                    svg,
+                    path,
+                    z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
+                    z_top_of_material=args.z_top_of_material,
+                    z_cut_depth=args.z_cut_depth,
+                    lead_in=True,
+                    lead_out=True,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.feed,
+                    max_depth_of_cut=max_depth_of_cut,
+                    ramp_slope=ramp_slope
+                )
 
         elif job['job-type'] == 'pocket':
             # FIXME: get these from a different tool info section of the json data
