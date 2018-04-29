@@ -854,23 +854,20 @@ Arguments:
 
             This gets the tool into the work.
 
+            If `ramp_slope` has a value:
+
+                * feed Z to `z_top_of_material` (at `feed` feed rate)
+
+                * Move along the path while ramping down to
+                  `z_cut_depth` at the specified slope rate.  This ramp
+                  may span segments, may wrap around the path, and may
+                  terminate anywhere in any segment.  The segment and
+                  location-within-the-segment where the ramp finishes
+                  is noted for later cleanup.
+
             If `ramp_slope` is None:
 
-                * set feed rate to `plunge_feed`
-
-                * feed Z to `z_cut_depth`
-
-            If `ramp_slope` is not None:
-
-                * set feed rate to `feed`
-
-                * feed Z to `z_top_of_material`
-
-                * Ramp down to `z_cut_depth` at the specified slope rate.
-                  This ramp may span segments, may wrap around the path,
-                  and may terminate anywhere in any segment.  The segment
-                  and location-within-the-segment where the ramp finishes
-                  is noted for later cleanup.
+                * feed Z to `z_cut_depth` (at `plunge_feed` feed rate)
 
             At the end of Entry Motion the tool is positioned somewhere
             on the path, with Z at `z_cut_depth`.
@@ -887,7 +884,7 @@ Arguments:
 
             At the end of Main Motion the tool is positioned somewhere
             on the path, with Z at `z_cut_depth`.  If there was an an
-            Entry ramp, (X, Y) is at the end of the ramp, if there was
+            Entry ramp, (X, Y) is at the end of the ramp; if there was
             no Entry ramp, (X, Y) is at the beginning of the path.
 
         Final Motion:
