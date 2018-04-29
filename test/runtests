@@ -53,13 +53,10 @@ do_test() {
         fi
     fi
 
-    if [ -f expected.canon ]; then
-        rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
-        diff -u expected.canon result.canon
-        if [ $? -ne 0 ]; then
-            echo "FAILED: unexpected Canon result"
-            return 1
-        fi
+    rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
+    if [ $? -ne 0 ]; then
+        echo "FAILED: resulting g-code rejected by SAI"
+        return 1
     fi
 
     return 0
