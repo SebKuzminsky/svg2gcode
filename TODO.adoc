@@ -78,6 +78,9 @@ It used to always be at the end of the last segment, possibly
 with lead_out.  Now it can be anywhere.  Audit the code that calls
 path_to_gcode() and make sure it's all ok with that.
 
+FIXME: If it wraps the path while ramping, we can just keep ramping to
+finish the final pass.
+
 
 == Smart transitions
 
