@@ -83,12 +83,12 @@ The toolpath follows the path in the SVG.
 
 Arguments:
 
-*ramp-slope* (float, optional):: If specified, `ramp-slope` enables ramp
-entry into engraving cuts.  The value is the Z depth per unit horizontal
-distance of the ramp entry move.  The also enables a move at the end
-of the engrave path to remove the entry ramp.  The ramp entry move
-may wrap around the path.  If `ramp-slope` is not specified, `engrave`
-uses a full depth plunge entry.
+*ramp-slope* (float, optional):: If specified, `ramp-slope` enables
+ramp entry into the cut.  The value is the Z depth per unit horizontal
+distance of the ramp entry move.  `ramp_slope` also enables a move at
+the end of the path to remove the entry ramp.  The ramp entry move may
+wrap around the path.  If `ramp-slope` is not specified it uses a full
+depth plunge entry.
 
 Examples:
 
@@ -122,6 +122,13 @@ are on the outside of the SVG path.
 *max-depth-of-cut* (float):: Maximum depth of a milling pass, in mm.
 Defaults to `(z-top-of-material - z-cut_depth)` so it cuts in a single
 pass.
+
+*ramp-slope* (float, optional):: If specified, `ramp-slope` enables
+ramp entry into the cut.  The value is the Z depth per unit horizontal
+distance of the ramp entry move.  `ramp_slope` also enables a move at
+the end of the path to remove the entry ramp.  The ramp entry move may
+wrap around the path.  If `ramp-slope` is not specified it uses a full
+depth plunge entry.
 
 Example:
 
@@ -174,6 +181,13 @@ pocket in a single pass.
 *shoulder-max-depth-of-cut* (float):: Maximum depth of a shoulder milling
 pass, in mm.  Defaults to `(z-top-of-material - z-cut_depth)` so it cuts
 the pocket in a single pass.
+
+*ramp-slope* (float, optional):: If specified, `ramp-slope` enables
+ramp entry into the slotting cuts.  The value is the Z depth per unit
+horizontal distance of the ramp entry move.  `ramp_slope` also enables a
+move at the end of the slotting path to remove the entry ramp.  The ramp
+entry move may wrap around the path.  If `ramp-slope` is not specified
+it uses a full depth plunge entry.
 
 Example:
 
