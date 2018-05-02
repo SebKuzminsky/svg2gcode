@@ -1,0 +1,12 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": -5,
+            "ramp-slope": 0.01,
+            "work-holding-tabs": 10,
+            "work-holding-tab-height": 0.9,
+            "work-holding-tab-width": 9
+        }
+    ]
+}

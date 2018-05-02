@@ -1,0 +1,9 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": 2,
+            "work-holding-tabs": 4
+        }
+    ]
+}
