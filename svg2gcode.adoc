@@ -130,6 +130,19 @@ the end of the path to remove the entry ramp.  The ramp entry move may
 wrap around the path.  If `ramp-slope` is not specified it uses a full
 depth plunge entry.
 
+*work-holding-tabs* (integer, optional):: If specified, add this number of
+work-holding tabs.  The tabs will be evenly spaced around the offset path.
+The geometry of the tabs is specified by `work-holding-tabs-height` and
+`work-holding-tabs-width`.
+
+*work-holding-tabs-height* (float):: Height of work holding tabs, in mm.
+Defaults to 0.5mm if omitted.
+
+*work-holding-tabs-width* (float):: Width of work holding tabs, in mm.
+No cutter diameter compensation is performed when "stepping over" the
+tabs, so this value should be greater than one cutter diameter or the
+tabs will be cut away.  Defaults to 10mm if omitted.
+
 Example:
 
     {
@@ -138,6 +151,14 @@ Example:
 		"job-type": "offset",
 		"distance": 2.1,
                 "max-depth-of-cut": 3.1
+	    },
+	    {
+		"job-type": "offset",
+		"distance": 1.0,
+                "max-depth-of-cut": 3.1,
+                "work-holding-tabs": 4,
+                "work-holding-tabs-height": 1.5,
+                "work-holding-tabs-width": 12.5
 	    }
 	]
     }
