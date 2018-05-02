@@ -103,7 +103,7 @@ Examples:
 	"jobs": [
 	    {
 		"job-type": "engrave",
-                "ramp-entry": 0.1
+                "ramp-slope": 0.1
 	    }
 	]
     }
