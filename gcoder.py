@@ -790,7 +790,7 @@ def path_segment_to_gcode(svg, segment, z=None):
             g1(x=end_x, y=end_y)
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None):
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0):
 
     """Prints the G-code corresponding to the input `path`.
 
@@ -832,6 +832,18 @@ Arguments:
         specified max slightly, to cut to the specified depth in the
         smallest number of equal-depth passes.  If `max_depth_of_cut` is
         not specified, then the full depth will be cut in a single pass.
+
+    `work_holding_tabs` (integer, optional, default 0): Number of
+        work-holding tabs to add.
+
+    `work_holding_tab_height` (float, optional, default 1.0): Height
+        (above `z_cut_depth`) of the work holding tabs (if any).
+
+    `work_holding_tab_width` (float, optional, default 10.0): Width of
+        each work-holding tab (if any).  Note that this function does
+        not take into account the cutter diameter, so the width of the
+        actual material of the work-holding tabs will be one cutter
+        diameter smaller than this number.
 
     Motion:
 
@@ -936,12 +948,97 @@ Arguments:
 
 """
 
+    def cut_segment_skip_tabs(svg, seg_index, z_start, z_end, z_tab):
+        """We're about to cut the specified segment, while moving the
+        tool from `z_start` where it is now to `z_end` at the end of
+        the segment, except it shouldn't cut into any tabs."""
+
+        segment = path[seg_index]
+
+        if segment_is_in_tab[seg_index]:
+            # This segment is part of a tab.  If our Z
+            # makes us interact with it, adjust things
+            # to the tool goes over instead of through.
+            if current_z < z_tab:
+                # Feed up to clear the tab.
+                g1(z=z_tab)
+            if z_end < z_tab:
+                # Adjust segment end Z from to clear tab.
+                z_end = z_tab
+
+        else:
+            # Not in a tab.  If our Z is above where it should be
+            # (because we just cleared a tab), plunge down then cut.
+            if current_z > z_start:
+                # Plunge to catch up to ramp.
+                if plunge_feed is not None:
+                    set_feed_rate(plunge_feed)
+                g1(z=z_start)
+                if plunge_feed is not None and feed is not None:
+                    set_feed_rate(feed)
+
+        # Inhibit Z coordinate if it's not needed.
+        if z_end == current_z:
+            z_end = None
+        path_segment_to_gcode(svg, segment, z=z_end)
+
+
     absolute_arc_centers()
     (x, y) = svg.to_mm(path[0].start)
 
     if z_approach == None:
         z_approach = 0.5 + z_top_of_material
 
+    # This is only used if work_holding_tabs > 0.
+    z_tab = z_cut_depth + work_holding_tab_height
+
+    path_length = path.length()
+    length_between_tabs = path_length
+    if work_holding_tabs > 0:
+        # The user has requested N tabs.  There will be N sections of
+        # the path between the tabs.
+        length_between_tabs = (path_length - (work_holding_tabs * work_holding_tab_width)) / work_holding_tabs
+
+    # Find the start and end of each work-holding tab.
+    #
+    # Split the segments there so that tabs start and end on a segment
+    # boundary.
+    #
+    # Keep track of which segments are in tabs vs between tabs.
+
+    # This array has an entry for each segment in `path`.  The entry is
+    # True if the segment is entirely within a tab, False if the entry
+    # is entirely outside all tabs.
+    segment_is_in_tab = []
+
+    for tab in range(work_holding_tabs):
+        start = tab * (work_holding_tab_width + length_between_tabs)
+        start_T = start / path_length
+        seg_index, t = path.T2t(start_T)
+        seg = path[seg_index]
+        new_segments = seg.split(t)
+        path[seg_index] = new_segments[0]
+        path.insert(seg_index+1, new_segments[1])
+
+        # Everything from where the siit array ends, up to and including
+        # the first part of the split segment is *before* this tab starts.
+        segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [False]
+
+        end = start + work_holding_tab_width
+        end_T = end / path_length
+        seg_index, t = path.T2t(end_T)
+        seg = path[seg_index]
+        new_segments = seg.split(t)
+        path[seg_index] = new_segments[0]
+        path.insert(seg_index+1, new_segments[1])
+
+        # Everything from where the siit array ends, up to and including
+        # the first part of the split segment is *in* this tab.
+        segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [True]
+
+    # Everything from where the siit array ends, up to and including
+    # where the path ends, is after the final tab.
+    segment_is_in_tab += (len(path) - len(segment_is_in_tab)) * [False]
 
     #
     # Preliminary Motion
@@ -979,10 +1076,10 @@ Arguments:
 
     pass_num = 1
     while pass_num <= num_passes:
-        z_top = z_top_of_material - ((pass_num - 1) * depth_of_cut)
-        z_bottom = z_top_of_material - (pass_num * depth_of_cut)
+        z_top_of_pass = z_top_of_material - ((pass_num - 1) * depth_of_cut)
+        z_bottom_of_pass = z_top_of_material - (pass_num * depth_of_cut)
 
-        comment("path pass %d/%d, z from %f to %f" % (pass_num, num_passes, z_top, z_bottom))
+        comment("path pass %d/%d, z from %f to %f" % (pass_num, num_passes, z_top_of_pass, z_bottom_of_pass))
 
         pass_num += 1
 
@@ -1001,43 +1098,69 @@ Arguments:
             # Start the ramp at the top of material
             if lead_in == True:
                 set_feed_rate(feed)
-            g1(z=z_top)
+            g1(z=z_top_of_pass)
 
-            while current_z > z_bottom:
-                for i in range(len(path)):
+            # This variable shadows current_z, except that it does *not*
+            # raise to skip over work-holding tabs.  It's the ramping
+            # slope, ignoring tabs.
+            z_ignoring_tabs = current_z
+
+            while z_ignoring_tabs > z_bottom_of_pass:
+                # FIXME: we change the length of `path`, that's maybe problematic
+                i = 0
+                while i < len(path):
                     segment = path[i]
                     length = segment.length()
-                    z_at_segment_end = current_z - (ramp_slope * length)
-                    if z_at_segment_end >= z_bottom:
-                        # Not bottoming out on this segment.
-                        path_segment_to_gcode(svg, segment, z=z_at_segment_end)
+                    z_at_segment_start = z_ignoring_tabs
+                    z_at_segment_end = z_at_segment_start - (ramp_slope * length)
+                    z_ignoring_tabs = z_at_segment_end
+
+
+                    if z_at_segment_end >= z_bottom_of_pass:
+                        # Not bottoming out on this segment, it is in
+                        # the middle of the ramp somewhere.
+                        cut_segment_skip_tabs(svg, i, z_at_segment_start, z_at_segment_end, z_tab)
+                        i += 1
+
                     else:
-                        # Bottoming out on this segment!
+                        # Bottoming out somewhere on this segment!
+                        # This finishes the ramp.  Cut to the end of the
+                        # ramp, then break out of the ramping loop and let
+                        # the normal "bottom of pass" loop finish the cut.
                         #
-                        # Split the segment in two so the first part ends
-                        # at the end of the ramp.
+                        # Split the segment in two so the first part
+                        # ends at the end of the ramp.  Take care to
+                        # keep the segment_is_in_tab[] array up to date.
                         #
                         # In this segment, as t goes from 0.0 to 1.0:
-                        # z(t) = current_z - (ramp_slope * length * t)
+                        # z(t) = z_at_segment_start - (ramp_slope * length * t)
                         #
-                        # Setting z(t) equal to z_cut_depth and solving for
-                        # t gives us this equation:
-                        t = (current_z - z_bottom) / (ramp_slope * length)
+                        # Setting z(t) equal to z_bottom_of_pass and
+                        # solving for t gives us this equation:
+                        t = (z_at_segment_start - z_bottom_of_pass) / (ramp_slope * length)
                         new_segments = segment.split(t)
                         path[i] = new_segments[0]
-                        path_segment_to_gcode(svg, path[i], z=z_bottom)
+
                         path.insert(i+1, new_segments[1])
+                        segment_is_in_tab.insert(i+1, segment_is_in_tab[i])
                         segment_after_ramp = i+1
+
+                        cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+
                         break
 
         else:
             # Plunge in.
-            if current_z > z_bottom:
+            plunge_z = z_bottom_of_pass
+            if segment_is_in_tab[0]:
+                plunge_z = z_tab
+
+            if current_z > plunge_z:
                 if plunge_feed is not None:
                     set_feed_rate(plunge_feed)
                 elif feed is not None:
                     set_feed_rate(feed)
-                g1(z=z_bottom)
+                g1(z=plunge_z)
                 if plunge_feed is not None and feed is not None:
                     set_feed_rate(feed)
 
@@ -1047,8 +1170,7 @@ Arguments:
         #
 
         for i in range(segment_after_ramp, len(path)):
-            segment = path[i]
-            path_segment_to_gcode(svg, segment)
+            cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab)
 
     # Done with all cutting passes.
 
@@ -1058,8 +1180,7 @@ Arguments:
 
     # Clean up the final ramp (if any).
     for i in range(0, segment_after_ramp):
-        segment = path[i]
-        path_segment_to_gcode(svg, segment)
+        cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab)
 
     if lead_out:
         g1(z=z_approach)
