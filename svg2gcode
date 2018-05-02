@@ -316,6 +316,16 @@ if args.job:
             if "ramp-slope" in job.keys():
                 ramp_slope = job['ramp-slope']
 
+            work_holding_tabs = 0
+            work_holding_tab_height = 0.5
+            work_holding_tab_width = 10.0
+            if "work-holding-tabs" in job.keys():
+                work_holding_tabs = job['work-holding-tabs']
+            if "work-holding-tab-height" in job.keys():
+                work_holding_tab_height = job['work-holding-tab-height']
+            if "work-holding-tab-width" in job.keys():
+                work_holding_tab_width = job['work-holding-tab-width']
+
             for i in range(len(new_paths)):
                 gcoder.comment("offset path (%f offset) %d/%d" % (offset, i+1, len(new_paths)))
                 path = new_paths[i]
@@ -331,7 +341,10 @@ if args.job:
                     plunge_feed=args.plunge_feed,
                     feed=args.feed,
                     max_depth_of_cut=max_depth_of_cut,
-                    ramp_slope=ramp_slope
+                    ramp_slope=ramp_slope,
+                    work_holding_tabs=work_holding_tabs,
+                    work_holding_tab_height=work_holding_tab_height,
+                    work_holding_tab_width=work_holding_tab_width
                 )
 
         elif job['job-type'] == 'pocket':
