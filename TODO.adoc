@@ -6,13 +6,6 @@
 
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
-* Add work-holding tabs.  The user would specify the number, width,
-  and height of the tabs.  Walk along the offset path to find the start
-  and end of all the tabs.  If the current pass is below the height of
-  the top of the tabs, then when you come to the start of one, feed up
-  to the top of the tab, across to the end of the tab, then plunge back
-  down and continue.  Seems easy :-)
-
 * Pockets with islands.
 
 * Chain drilling.  Offset the path, walk along it in steps of (drill

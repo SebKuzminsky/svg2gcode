@@ -11,6 +11,12 @@ Supported operations are:
 
 * pocket (clear the interior of the path from the SVG)
 
+Features:
+
+* ramp or plunge entry moves
+
+* optionally add work-holding tabs
+
 ![Example generated tool path](example-toolpath.png)
 
 
