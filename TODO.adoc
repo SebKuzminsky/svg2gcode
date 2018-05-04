@@ -133,6 +133,8 @@ No arcs, we'd have to approximate using linear splines.
 
 FreeCAD 0.17's Path workbench uses clipper.
 
+There's python3-pyclipper in buster and sid, a python3 wrapper around Clipper.
+
 
 ==== libarea
 
