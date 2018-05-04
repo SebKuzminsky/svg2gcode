@@ -238,9 +238,11 @@ parser.add_argument("--z-traverse", type=float, help="The Z level for safe trave
 parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
+parser.add_argument("--path-num", type=int, help="Operate on the specified path from the input SVG file.  Path num 0 is the first path in the file, 1 is the second, etc.  (Default: 0)", default=0)
 parser.add_argument("-o", "--offset", type=float, action='append', help="(deprecated) The offset to use (may be specified multiple times).")
 parser.add_argument("--include-input", action="store_true", help="(deprecated) Emit g-code for input path too (in addition to emitting g-code for the offset path).")
 parser.add_argument("--pocket", action="store_true", help="(deprecated) Generate g-code to empty the pocket defined by the input path.")
+
 args = parser.parse_args()
 
 if args.speed == None:
@@ -262,7 +264,7 @@ if args.z_top_of_material <= args.z_cut_depth:
     raise ValueError, "--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth)
 
 svg = gcoder.svg(args.SVG)
-input_path = svg.paths[0]
+input_path = svg.paths[args.path_num]
 if not input_path.isclosed():
     raise ValueError, "path is not closed"
 
