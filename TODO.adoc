@@ -153,7 +153,7 @@ Contains an old copy of clipper aka libpolyclipping.
 Anders Wallin's project.  Not in debian.
 
 openvoronoi doesn't handle arcs, and Anders claims for 3d you should
-tesselate anyway, so maybe i should just abandon myquest for arcs.
+tesselate anyway, so maybe i should just abandon my quest for arcs.
 
 http://www.anderswallin.net/CAM/
 
