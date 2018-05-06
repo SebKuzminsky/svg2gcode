@@ -1,0 +1,120 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg"  xmlns:xlink="http://www.w3.org/1999/xlink" width='100.000mm' height='100.000mm' viewBox="0 0 100.000 100.000">
+
+<title>Exported SVG</title>
+
+<style><![CDATA[
+polygon {
+shape-rendering:crispEdges;
+stroke-width:0.100000;
+}
+.s1 {
+stroke:#000000;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s2 {
+stroke:#19b219;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s3 {
+stroke:#7f4c00;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s4 {
+stroke:#00cc00;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s5 {
+stroke:#000000;
+stroke-width:0.006161;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s6 {
+stroke:#bf0cbf;
+stroke-width:0.030805;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s7 {
+stroke:#ff0000;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s8 {
+stroke:#ffff00;
+stroke-width:0.009241;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.s9 {
+stroke:#001919;
+stroke-width:0.006161;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.sa {
+stroke:#006666;
+stroke-width:0.006161;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.sb {
+stroke:#00ffff;
+stroke-width:0.006161;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.sc {
+stroke:#ff0000;
+stroke-width:0.049287;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.sd {
+stroke:#191919;
+stroke-width:0.006161;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+.se {
+stroke:#000000;
+stroke-width:0.012322;
+stroke-linecap:round;
+stroke-linejoin:round;
+stroke-dasharray:0.092,0.092;
+fill:none;
+}
+.sf {
+stroke:#000000;
+stroke-width:0.018483;
+stroke-linecap:round;
+stroke-linejoin:round;
+fill:none;
+}
+]]></style>
+<path d='M2.921 98.999 L14.326,98.999 A4.763,4.763 0 0,1 12.484,95.237 L12.484,94.933 L4.762,94.933 L4.762,95.237 A4.762,4.762 0 0,1 2.921,98.999 ' class='s0' />
+
+</svg>
