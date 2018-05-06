@@ -19,6 +19,11 @@ single closed path), and produces the corresponding g-code.
 
 == OPTIONS
 
+*--debug*::
+
+    Print extra debugging info to stderr.  Useful for submitting bug
+    reports.
+
 *-s*, *--speed* _N_::
 
     The spindle speed to use, in RPM.  (Default: 1000 rpm)
