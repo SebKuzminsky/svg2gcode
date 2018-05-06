@@ -1012,33 +1012,115 @@ Arguments:
     segment_is_in_tab = []
 
     for tab in range(work_holding_tabs):
+
+        #
+        # First deal with the segment where the tab *starts*.
+        #
+
         start = tab * (work_holding_tab_width + length_between_tabs)
         start_T = start / path_length
         seg_index, t = path.T2t(start_T)
         seg = path[seg_index]
         new_segments = seg.split(t)
-        path[seg_index] = new_segments[0]
-        path.insert(seg_index+1, new_segments[1])
 
-        # Everything from where the siit array ends, up to and including
-        # the first part of the split segment is *before* this tab starts.
-        segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [False]
+        if close_enough(t, 0.0) or new_segments[0].length() <= 1e-2:
+            # The tab starts super close to the beginning of the segment,
+            # keep the segment unsplit and count the whole thing as
+            # "in the tab".
+
+            # Everything from where the siit array ends, up to and
+            # including the segment before this one is *before* this
+            # tab starts.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab)) * [False]
+
+            # This segment segment is *in* this tab.
+            segment_is_in_tab += [True]
+            if debug: print("tab %d starts at %f (at start of seg %d, t %f)" % (tab, start, seg_index, t), file=sys.stderr)
+
+        elif close_enough(t, 1.0) or new_segments[1].length() <= 1e-2:
+            # The tab starts super close to the end of the segment,
+            # keep the segment unsplit and count the whole thing as
+            # "not in the tab".
+
+            # Everything from where the siit array ends, up to and
+            # including the segment before this one is *before* this
+            # tab starts.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [False]
+
+            if debug: print("tab %d starts at %f (at end of seg %d, t %f)" % (tab, start, seg_index, t), file=sys.stderr)
+
+        else:
+            # The tab starts somewhere in the middle of the segment,
+            # split it.
+            path[seg_index] = new_segments[0]
+            path.insert(seg_index+1, new_segments[1])
+
+            # Everything from where the siit array ends, up to and including
+            # the first part of the split segment is *before* this tab starts.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [False]
+
+            if debug:
+                print("tab %d starts at %f (in middle of seg %d, t %f)" % (tab, start, seg_index, t), file=sys.stderr)
+                print("    original seg (%f): %s" % (seg.length(), seg), file=sys.stderr)
+                print("    split seg 0 (%f): %s" % (new_segments[0].length(), new_segments[0]), file=sys.stderr)
+                print("    split seg 1 (%f): %s" % (new_segments[1].length(), new_segments[1]), file=sys.stderr)
+
+        #
+        # Next deal with the segment where the tab *ends*.
+        #
 
         end = start + work_holding_tab_width
         end_T = end / path_length
         seg_index, t = path.T2t(end_T)
         seg = path[seg_index]
         new_segments = seg.split(t)
-        path[seg_index] = new_segments[0]
-        path.insert(seg_index+1, new_segments[1])
 
-        # Everything from where the siit array ends, up to and including
-        # the first part of the split segment is *in* this tab.
-        segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [True]
+        if close_enough(t, 0.0) or new_segments[0].length() <= 1e-2:
+            # The tab end super close to the beginning of the segment,
+            # keep the segment unsplit and count the whole thing as
+            # "not in the tab".
+
+            # Everything from where the siit array ends, up to and
+            # including the segment before this one is *in* this tab.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab)) * [True]
+
+            # This segment segment is *not* in this tab.
+            segment_is_in_tab += [False]
+
+            if debug: print("tab %d ends at %f (at start of seg %d, t %f)" % (tab, end, seg_index, t), file=sys.stderr)
+
+        elif close_enough(t, 1.0) or new_segments[1].length() <= 1e-2:
+            # The tab ends super close to the end of the segment,
+            # keep the segment unsplit and count the whole thing as
+            # "in the tab".
+
+            # Everything from where the siit array ends, up to and
+            # including this segment is *in* this tab.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [True]
+
+            if debug: print("tab %d ends at %f (at end of seg %d, t %f)" % (tab, end, seg_index, t), file=sys.stderr)
+
+        else:
+            # The tab ends somewhere in the middle of the segment,
+            # split it.
+            path[seg_index] = new_segments[0]
+            path.insert(seg_index+1, new_segments[1])
+
+            # Everything from where the siit array ends, up to and
+            # including the first part of the split segment is *in*
+            # this tab.
+            segment_is_in_tab += (seg_index - len(segment_is_in_tab) + 1) * [True]
+
+            if debug:
+                print("tab %d ends at %f (in middle of seg %d, t %f)" % (tab, end, seg_index, t), file=sys.stderr)
+                print("    original seg (%f): %s" % (seg.length(), seg), file=sys.stderr)
+                print("    split seg 0 (%f): %s" % (new_segments[0].length(), new_segments[0]), file=sys.stderr)
+                print("    split seg 1 (%f): %s" % (new_segments[1].length(), new_segments[1]), file=sys.stderr)
 
     # Everything from where the siit array ends, up to and including
     # where the path ends, is after the final tab.
     segment_is_in_tab += (len(path) - len(segment_is_in_tab)) * [False]
+
 
     #
     # Preliminary Motion
@@ -1106,7 +1188,6 @@ Arguments:
             z_ignoring_tabs = current_z
 
             while z_ignoring_tabs > z_bottom_of_pass:
-                # FIXME: we change the length of `path`, that's maybe problematic
                 i = 0
                 while i < len(path):
                     segment = path[i]
@@ -1114,7 +1195,6 @@ Arguments:
                     z_at_segment_start = z_ignoring_tabs
                     z_at_segment_end = z_at_segment_start - (ramp_slope * length)
                     z_ignoring_tabs = z_at_segment_end
-
 
                     if z_at_segment_end >= z_bottom_of_pass:
                         # Not bottoming out on this segment, it is in
@@ -1139,14 +1219,35 @@ Arguments:
                         # solving for t gives us this equation:
                         t = (z_at_segment_start - z_bottom_of_pass) / (ramp_slope * length)
                         new_segments = segment.split(t)
-                        path[i] = new_segments[0]
 
-                        path.insert(i+1, new_segments[1])
-                        segment_is_in_tab.insert(i+1, segment_is_in_tab[i])
-                        segment_after_ramp = i+1
+                        if close_enough(t, 0.0) or new_segments[0].length() <= 1e-2:
+                            # Bottoming out right at the start of this segment, don't split.
+                            segment_after_ramp = i;
+                            if debug: print("ramp bottoms out at start of seg %d, t %f" % (i, t), file=sys.stderr)
+                            break
 
-                        cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+                        elif close_enough(t, 1.0) or new_segments[1].length() <= 1e-2:
+                            # Bottoming out right at the end of this segment, don't split.
+                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+                            segment_after_ramp = i+1;
+                            if debug: print("ramp bottoms out at end of seg %d, t %f" % (i, t), file=sys.stderr)
 
+                        else:
+                            # Bottoming out in the middle of this segment, split.
+                            path[i] = new_segments[0]
+                            path.insert(i+1, new_segments[1])
+                            segment_is_in_tab.insert(i+1, segment_is_in_tab[i])
+                            segment_after_ramp = i+1
+                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+                            if debug:
+                                print("ramp bottoms out in middle of seg %d, t %f" % (i, t), file=sys.stderr)
+                                print("    original seg (%f): %s" % (segment.length(), segment), file=sys.stderr)
+                                print("    split seg 0 (%f): %s" % (new_segments[0].length(), new_segments[0]), file=sys.stderr)
+                                print("    split seg 1 (%f): %s" % (new_segments[1].length(), new_segments[1]), file=sys.stderr)
+
+                        # In any case we hit the bottom of the ramp,
+                        # so we're done with Entry Motion and move on
+                        # to Main Motion.
                         break
 
         else:
