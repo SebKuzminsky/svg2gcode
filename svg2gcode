@@ -345,7 +345,8 @@ if args.job:
                     ramp_slope=ramp_slope,
                     work_holding_tabs=work_holding_tabs,
                     work_holding_tab_height=work_holding_tab_height,
-                    work_holding_tab_width=work_holding_tab_width
+                    work_holding_tab_width=work_holding_tab_width,
+                    debug=args.debug
                 )
 
         elif job['job-type'] == 'pocket':
