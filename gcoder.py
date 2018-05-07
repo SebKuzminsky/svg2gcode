@@ -790,7 +790,7 @@ def path_segment_to_gcode(svg, segment, z=None):
             g1(x=end_x, y=end_y)
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, debug=False):
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[], debug=False):
 
     """Prints the G-code corresponding to the input `path`.
 
@@ -844,6 +844,12 @@ Arguments:
         not take into account the cutter diameter, so the width of the
         actual material of the work-holding tabs will be one cutter
         diameter smaller than this number.
+
+    `work_holding_tab_locations` (list of float, optional): Starting
+        locations of the work holding tabs, specified as distances
+        along the path.  The length of the list must be the same as
+        `work_holding_tabs`.  If omitted, the first tab starts at 0.0
+        and all the tabs are evenly spaced along the path.
 
     Motion:
 
@@ -993,6 +999,7 @@ Arguments:
     z_tab = z_cut_depth + work_holding_tab_height
 
     path_length = path.length()
+    if debug: print("path length: %f" % path_length, file=sys.stderr)
     length_between_tabs = path_length
     if work_holding_tabs > 0:
         # The user has requested N tabs.  There will be N sections of
@@ -1018,6 +1025,12 @@ Arguments:
         #
 
         start = tab * (work_holding_tab_width + length_between_tabs)
+        if debug: print("default start of tab %d: %f" % (tab, start), file=sys.stderr)
+        if len(work_holding_tab_locations) == work_holding_tabs:
+            start = work_holding_tab_locations[tab]
+            if debug: print("user-specified start of tab %d: %f" % (tab, start), file=sys.stderr)
+
+
         start_T = start / path_length
         seg_index, t = path.T2t(start_T)
         seg = path[seg_index]

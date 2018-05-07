@@ -241,6 +241,11 @@ diameter compensation is performed when "stepping over" the tabs, so
 this value should be greater than one cutter diameter or the tabs will
 be cut away.  Defaults to 10mm if omitted.
 
+*locations* (list of float, optional):: This is a list of locations along
+the path where the tabs should start.  If specified, the length of the
+list must be the same as `number-of-tabs`.  If the `locations` list is not
+specified, the tabs will be automatically placed evenly around the path.
+
 
 === Job type: pocket
 

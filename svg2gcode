@@ -320,6 +320,7 @@ if args.job:
             work_holding_tabs = 0
             work_holding_tab_height = 0.5
             work_holding_tab_width = 10.0
+            work_holding_tab_locations = []
             if "work-holding-tabs" in job.keys():
                 tabs = job['work-holding-tabs']
                 if "number-of-tabs" in tabs.keys():
@@ -328,6 +329,12 @@ if args.job:
                     work_holding_tab_height = tabs['height']
                 if "width" in tabs.keys():
                     work_holding_tab_width = tabs['width']
+                if "locations" in tabs.keys():
+                    work_holding_tab_locations = tabs['locations']
+
+                if work_holding_tabs > 0 and len(work_holding_tab_locations) != 0:
+                    if work_holding_tabs != len(work_holding_tab_locations):
+                        raise ValueError, "number of work holding tabs requested (%d) does not match number of locations specified (%d)" % (work_holding_tabs, len(work_holding_tab_locations))
 
             for i in range(len(new_paths)):
                 gcoder.comment("offset path (%f offset) %d/%d" % (offset, i+1, len(new_paths)))
@@ -348,6 +355,7 @@ if args.job:
                     work_holding_tabs=work_holding_tabs,
                     work_holding_tab_height=work_holding_tab_height,
                     work_holding_tab_width=work_holding_tab_width,
+                    work_holding_tab_locations=work_holding_tab_locations,
                     debug=args.debug
                 )
 
