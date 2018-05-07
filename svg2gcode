@@ -321,11 +321,13 @@ if args.job:
             work_holding_tab_height = 0.5
             work_holding_tab_width = 10.0
             if "work-holding-tabs" in job.keys():
-                work_holding_tabs = job['work-holding-tabs']
-            if "work-holding-tab-height" in job.keys():
-                work_holding_tab_height = job['work-holding-tab-height']
-            if "work-holding-tab-width" in job.keys():
-                work_holding_tab_width = job['work-holding-tab-width']
+                tabs = job['work-holding-tabs']
+                if "number-of-tabs" in tabs.keys():
+                    work_holding_tabs = tabs['number-of-tabs']
+                if "height" in tabs.keys():
+                    work_holding_tab_height = tabs['height']
+                if "width" in tabs.keys():
+                    work_holding_tab_width = tabs['width']
 
             for i in range(len(new_paths)):
                 gcoder.comment("offset path (%f offset) %d/%d" % (offset, i+1, len(new_paths)))

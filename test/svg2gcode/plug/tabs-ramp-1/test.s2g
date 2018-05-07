@@ -5,9 +5,11 @@
             "distance": -1.5875,
             "max-depth-of-cut": 1.5,
             "ramp-slope": 0.1,
-            "work-holding-tabs": 5,
-            "work-holding-tab-height": 0.5,
-            "work-holding-tab-width": 5.5
+            "work-holding-tabs": {
+                "number-of-tabs": 5,
+                "height": 0.5,
+                "width": 5.5
+            }
         }
     ]
 }
