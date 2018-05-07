@@ -167,7 +167,41 @@ class svg():
         else:
             raise SystemExit, "weird result from re"
 
-        self.paths, self.attributes = svgpathtools.svg2paths(self.svg_file)
+        raw_paths, self.attributes = svgpathtools.svg2paths(self.svg_file)
+        self.paths = []
+        for raw_path in raw_paths:
+            path = svgpathtools.path.Path()
+            for seg in raw_path:
+                if type(seg) == svgpathtools.path.Line:
+                    path.append(seg)
+                else:
+                    # FIXME: Steps should probably be computed dynamically to make
+                    #     the length of the *offset* line segments manageable.
+                    steps = 2
+                    points = []
+                    t = 0.0
+                    point = seg.start
+                    print("original line: %s" % (seg), file=sys.stderr)
+                    for k in range(1, steps+1):
+                        old_t = t
+                        old_point = point
+                        t = k / float(steps)
+                        point = seg.point(t)
+                        line = svgpathtools.Line(old_point, point)
+                        print("interpolated line %d/%d (t=%f): %s" % (k, steps, t, line), file=sys.stderr)
+                        path.append(line)
+                    path[-1].end = seg.end
+            path.closed = True
+            self.paths.append(path)
+
+            print("closed?  %s" % path.isclosed(), file=sys.stderr)
+            prev_seg = path[-1]
+            for seg in path:
+                print("    %s" % seg, file=sys.stderr)
+                if seg.start != prev_seg.end:
+                    print("        Doesn't start where prev ends! err=%f" % abs(seg.start-prev_seg.end), file=sys.stderr)
+                    raise ValueError
+                prev_seg = seg
 
 
     def to_mm_x(self, x_mm):
