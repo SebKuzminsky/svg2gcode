@@ -1030,8 +1030,9 @@ Arguments:
             start = work_holding_tab_locations[tab]
             if debug: print("user-specified start of tab %d: %f" % (tab, start), file=sys.stderr)
 
-
         start_T = start / path_length
+        if start_T > 1.0:
+            raise ValueError, "error: tab %d start at %f, past end of path at %f" % (tab, start, path_length)
         seg_index, t = path.T2t(start_T)
         seg = path[seg_index]
         new_segments = seg.split(t)
@@ -1084,6 +1085,8 @@ Arguments:
 
         end = start + work_holding_tab_width
         end_T = end / path_length
+        if end_T > 1.0:
+            raise ValueError, "error: tab %d ends at %f, past end of path at %f" % (tab, end, path_length)
         seg_index, t = path.T2t(end_T)
         seg = path[seg_index]
         new_segments = seg.split(t)
