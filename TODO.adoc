@@ -43,8 +43,7 @@
 * If gcoder.path_to_gcode() wraps the path while ramping, we can just
   keep ramping to the final cut depth.
 
-* Let the user specify locations of work-holding tabs as an array of
-  distances along the offset path.
+* Let work-holding tabs span the path end.
 
 
 == Smart transitions
