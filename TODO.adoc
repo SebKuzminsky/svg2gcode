@@ -45,6 +45,14 @@
 
 * Let work-holding tabs span the path end.
 
+* Make tabs that apply to multiple jobs...  A typical use case is to
+  machine a part by cutting an 'offset' with a distance larger than
+  the cutter radius (roughing it out), then a second operation operation
+  finishes the part at the proper offset distance.  (Then manually cutting
+  the tabs.)  Getting the two sets of tabs to line up is pretty fiddly.
+  Maybe specify them as percentages along the path, rather than millimeter
+  distances?
+
 
 == Smart transitions
 
