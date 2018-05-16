@@ -114,19 +114,18 @@ Possible fix: http://www.wykobi.com/tutorial.html#CircleToCircleIntersections
 
 == Look into replacing svgpathtools with something else
 
+I currently use svgpathtools (and cairosvg a little bit) to do two things:
+
+* Read and parse the paths from an SVG file.
+
+* Provide some of the low-level computational geometry primitives for path
+  offsetting (the rest i do by hand in gcoder.offset_paths() and friends).
+
+I like svgpathtools.svg2paths(), and i like that svgpathtools supports
+arcs.
+
+
 === Possible options
-
-==== pythonocc/liboce
-
-pythonocc isn't packaged, liboce doesn't have python bindings in stretch
-
-
-==== occmodel
-
-A python front-end to the OpenCASCADE modelling kernel.  Jeff used it
-for CAD in python.
-
-Not packaged in Stretch (though liboce is).
 
 
 ==== libpolyclipping
@@ -144,6 +143,19 @@ No arcs, we'd have to approximate using linear splines.
 FreeCAD 0.17's Path workbench uses clipper.
 
 There's python3-pyclipper in buster and sid, a python3 wrapper around Clipper.
+
+
+==== pythonocc/liboce
+
+pythonocc isn't packaged, liboce doesn't have python bindings in stretch
+
+
+==== occmodel
+
+A python front-end to the OpenCASCADE modelling kernel.  Jeff used it
+for CAD in python.
+
+Not packaged in Stretch (though liboce is).
 
 
 ==== libarea
@@ -221,3 +233,31 @@ No arcs.
 ==== gpc
 
 Not libre.
+
+
+
+
+=== SVG reading libraries
+
+
+==== svg.path
+
+API is similar to svgpathutils, but svg.path doesn't have svg2paths().
+
+
+==== python-rsvg
+
+Uses gobject introspection.
+
+
+==== cairosvg
+
+
+==== svglib
+
+Not in Stretch.
+
+
+==== svgutils
+
+Not in Stretch.
