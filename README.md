@@ -17,7 +17,9 @@ Features:
 
 * optionally add work-holding tabs
 
-![Example generated tool path](example-toolpath.png)
+![Example generated tool path](example-toolpath-0.png)
+
+![Example generated tool path](example-toolpath-1.png)
 
 
 ## Installation
