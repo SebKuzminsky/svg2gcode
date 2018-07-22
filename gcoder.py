@@ -1374,6 +1374,20 @@ def relative_arc_centers():
     print("G91.1")
 
 
+def return_to_old_z():
+    """After finishing a canned cycle, return the tool to the old Z
+    coordinate (before starting the canned cycle)."""
+
+    print("G98   ; after canned cycle, return to the old Z")
+
+
+def return_to_r():
+    """After finishing a canned cycle, return the tool to the R-word
+    (retract level) of the canned cycle."""
+
+    print("G99   ; after canned cycle, return to the R-word")
+
+
 def spindle_on():
     print("M3")
 
