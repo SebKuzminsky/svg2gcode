@@ -53,6 +53,11 @@
   Maybe specify them as percentages along the path, rather than millimeter
   distances?
 
+* "Rest machining": Machine the initial part of the pocket with a
+  large-diameter cutter, then do cleanup/finishing with a small-diameter
+  cutter.  It would have to keep track of the 'remaining material contour'
+  and not cut too deep.
+
 
 == Smart transitions
 
