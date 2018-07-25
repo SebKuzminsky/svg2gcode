@@ -762,10 +762,8 @@ def path_segment_to_gcode(svg, segment, z=None):
         (start_x, start_y) = svg.to_mm(segment.start)
         (end_x, end_y) = svg.to_mm(segment.end)
         g1(x=end_x, y=end_y, z=z)
-    elif type(segment) == svgpathtools.path.Arc:
+    elif type(segment) is svgpathtools.path.Arc and (segment.radius.real == segment.radius.imag):
         # FIXME: g90.1 or g91.1?
-        if segment.radius.real != segment.radius.imag:
-            raise ValueError, "arc radii differ: %s", segment
         (end_x, end_y) = svg.to_mm(segment.end)
         (center_x, center_y) = svg.to_mm(segment.center)
         if segment.sweep:
