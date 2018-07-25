@@ -17,6 +17,9 @@
   the cutter so there's room for it.  "Entry" and "exit" moves (or maybe
   "approach" and "departure" moves?) would be important here.
 
+* Some way to deal with multiple paths.  Probably just iterate over them
+  and do the same operations on each.
+
 * GUI (optional, the program must still be scriptable).  The GUI displays
   the input SVG and the computed tool path, and lets you export the
   toolpath as g-code.  Something like cambam.  Maybe start with dxf2gcode,
