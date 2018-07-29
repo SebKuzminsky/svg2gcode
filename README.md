@@ -21,6 +21,8 @@ Features:
 
 ![Example generated tool path](example-toolpath-1.png)
 
+![Cut part](cut-part.jpg)
+
 
 ## Installation
 
