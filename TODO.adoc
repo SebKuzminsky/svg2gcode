@@ -11,6 +11,9 @@
 * Chain drilling.  Offset the path, walk along it in steps of (drill
   diameter - overlap), g81 or g83.
 
+* Plunge mill roughing.  Rough a pocket by plunging a twist drill (or
+  center-cutting endmill).
+
 * Some way to deal with open paths - sometimes you want to machine one
   side of a part, not the whole perimeter.  You could include free space
   return path in the drawing, but you would need to know the size of
@@ -60,6 +63,9 @@
   large-diameter cutter, then do cleanup/finishing with a small-diameter
   cutter.  It would have to keep track of the 'remaining material contour'
   and not cut too deep.
+
+* Make the runtests script parallelize the tests.  Or make s2g parallelize
+  the work.
 
 
 == Smart transitions
