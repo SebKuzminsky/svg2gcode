@@ -409,25 +409,6 @@ def split_path_at_intersections(path_list, debug=False):
     return paths
 
 
-def approximate_path_area(path):
-
-    """Approximates the path area by converting each Arc to 1,000
-    Lines."""
-
-    assert(path.isclosed())
-    tmp = svgpathtools.path.Path()
-    for seg in path:
-        if type(seg) == svgpathtools.path.Arc:
-            for i in range(0, 1000):
-                t0 = i/1000.0
-                t1 = (i+1)/1000.0
-                l = svgpathtools.path.Line(start=seg.point(t0), end=seg.point(t1))
-                tmp.append(l)
-        else:
-            tmp.append(seg)
-    return tmp.area()
-
-
 def offset_paths(path, offset_distance, steps=100, debug=False):
     """Takes an svgpathtools.path.Path object, `path`, and a float
     distance, `offset_distance`, and returns the parallel offset curves
@@ -754,7 +735,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
     if debug: print("pruning false paths...", file=sys.stderr)
 
-    path_area = approximate_path_area(path)
+    path_area = path.area()
     if debug: print("input path area:", path_area, file=sys.stderr)
 
     keepers = []
@@ -764,7 +745,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         # direction from input path.
         for offset_path in offset_paths:
             if debug: print("checking path:", offset_path, file=sys.stderr)
-            offset_path_area = approximate_path_area(offset_path)
+            offset_path_area = offset_path.area()
             if debug: print("offset path area:", offset_path_area, file=sys.stderr)
             if path_area * offset_path_area < 0.0:
                 # Input path and offset path go in the opposite directions,
@@ -782,7 +763,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             if is_enclosed(offset_path, offset_paths):
                 if debug: print("    enclosed", file=sys.stderr)
                 # This path is enclosed, check the winding direction.
-                offset_path_area = approximate_path_area(offset_path)
+                offset_path_area = offset_path.area()
                 if debug: print("offset path area:", offset_path_area, file=sys.stderr)
                 if path_area * offset_path_area > 0.0:
                     if debug: print("    winding is the same as input, dropping", file=sys.stderr)
