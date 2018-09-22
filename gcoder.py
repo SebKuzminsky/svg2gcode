@@ -440,6 +440,9 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     offset_path_list = []
     for seg in path:
         if type(seg) == svgpathtools.path.Line:
+            if complex_close_enough(seg.point(0), seg.point(1)):
+                if debug: print("    skipping zero-length line segment", file=sys.stderr)
+                continue
             start = seg.point(0) + (offset_distance * seg.normal(0))
             end = seg.point(1) + (offset_distance * seg.normal(1))
             offset_path_list.append(svgpathtools.Line(start, end))
