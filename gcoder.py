@@ -1046,10 +1046,6 @@ Arguments:
         if start_T > 1.0:
             raise ValueError, "error: tab %d start at %f, past end of path at %f" % (tab, start, path_length)
         seg_index, t = path.T2t(start_T)
-        seg = path[seg_index]
-        new_segments = seg.split(t)
-
-        print("t=%f, 0.len=%f 1.len=%f" % (t, new_segments[0].length(), new_segments[1].length()), file=sys.stderr)
 
         if close_enough(t, 0.0):
             # The tab starts super close to the beginning of the segment,
@@ -1080,6 +1076,12 @@ Arguments:
         else:
             # The tab starts somewhere in the middle of the segment,
             # split it.
+
+            seg = path[seg_index]
+            new_segments = seg.split(t)
+
+            print("t=%f, 0.len=%f 1.len=%f" % (t, new_segments[0].length(), new_segments[1].length()), file=sys.stderr)
+
             path[seg_index] = new_segments[0]
             path.insert(seg_index+1, new_segments[1])
 
