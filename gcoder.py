@@ -651,7 +651,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
     if debug: print("splitting path at intersections...", file=sys.stderr)
 
-    offset_paths_list = split_path_at_intersections(offset_path_list)
+    offset_paths_list = split_path_at_intersections(offset_path_list, debug=debug)
 
 
     #
