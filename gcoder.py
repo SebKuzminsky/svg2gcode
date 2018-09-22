@@ -224,6 +224,9 @@ def split_path_at_intersections(path_list, debug=False):
                 if complex_close_enough(intersection[0], 0.0) or complex_close_enough(intersection[0], 1.0):
                     continue
 
+                if intersection[0] > 1.0 or intersection[0] < 0.0:
+                    continue
+
                 if (earliest_this_t == None) or (intersection[0] < earliest_this_t):
                     if debug: print("        earliest!", file=sys.stderr)
                     earliest_this_t = intersection[0]
