@@ -147,6 +147,7 @@ class svg():
         # svg coordinate * scale == mm
         self.scale = 1.0
 
+        # FIXME: drop cairo, use svgpathtools.svg2paths2() and get svg attributes out of [2]
         self.cairo = cairosvg.parser.Tree(url=self.svg_file)
 
         m = re.match('([0-9.]+)([a-zA-Z]*)', self.cairo['height'])
