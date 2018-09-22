@@ -1043,7 +1043,7 @@ Arguments:
         seg = path[seg_index]
         new_segments = seg.split(t)
 
-        if close_enough(t, 0.0) or new_segments[0].length() <= 1e-2:
+        if close_enough(t, 0.0):
             # The tab starts super close to the beginning of the segment,
             # keep the segment unsplit and count the whole thing as
             # "in the tab".
@@ -1057,7 +1057,7 @@ Arguments:
             segment_is_in_tab += [True]
             if debug: print("tab %d starts at %f (at start of seg %d, t %f)" % (tab, start, seg_index, t), file=sys.stderr)
 
-        elif close_enough(t, 1.0) or new_segments[1].length() <= 1e-2:
+        elif close_enough(t, 1.0):
             # The tab starts super close to the end of the segment,
             # keep the segment unsplit and count the whole thing as
             # "not in the tab".
