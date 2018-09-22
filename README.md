@@ -1,7 +1,7 @@
 # svg2gcode
 
-svg2gcode reads an SVG file (containing a single closed path) and produces
-g-code machining operations from it.
+svg2gcode reads an SVG file and produces g-code machining operations
+from the paths in it.
 
 Supported operations are:
 

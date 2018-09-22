@@ -68,6 +68,12 @@ single closed path), and produces the corresponding g-code.
     The Z level to cut down to, in mm.  Must be lower than
     *--z-top-of-material*.  (Default: -1)
 
+*--path* N::
+
+    Operate on the Nth path from the input SVG file.  Maybe be specified
+    multiple times to operate on multiple paths.  If no --path is
+    specified, operates on *all* paths from the input SVG file.
+
 
 == Job File Format
 
