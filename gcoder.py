@@ -1012,11 +1012,17 @@ Arguments:
 
     path_length = path.length()
     if debug: print("path length: %f" % path_length, file=sys.stderr)
+    if work_holding_tabs > 0:
+        # The user has requested N tabs.
+        if (work_holding_tabs * work_holding_tab_width) > (0.5 * path_length):
+            print("path length (%f) too short for %d tabs (each %f wide)" % (path_length, work_holding_tabs, work_holding_tab_width), file=sys.stderr)
+            work_holding_tabs = int(math.floor((0.5 * path_length) / work_holding_tab_width))
+            print("falling back to %d tabs" % work_holding_tabs, file=sys.stderr)
+
     length_between_tabs = path_length
     if work_holding_tabs > 0:
-        # The user has requested N tabs.  There will be N sections of
-        # the path between the tabs.
         length_between_tabs = (path_length - (work_holding_tabs * work_holding_tab_width)) / work_holding_tabs
+        if debug: print("length between tabs: %f" % length_between_tabs, file=sys.stderr)
 
     # Find the start and end of each work-holding tab.
     #
