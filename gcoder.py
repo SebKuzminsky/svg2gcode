@@ -252,15 +252,18 @@ def split_path_at_intersections(path_list, debug=False):
         if this_t == None:
             this_seg_index += 1
             continue
+        other_seg = path_list[other_seg_index]
 
         # Found the next intersection.  Split the segments and note
         # the intersection.
 
         if debug: print("intersection:", file=sys.stderr)
-        if debug: print("    this: %d @ %f" % (this_seg_index, this_t), file=sys.stderr)
-        if debug: print("    other: %d @ %f" % (other_seg_index, other_t), file=sys.stderr)
-
-        other_seg = path_list[other_seg_index]
+        if debug: print("    this:", file=sys.stderr)
+        if debug: print("        %d @ %f" % (this_seg_index, this_t), file=sys.stderr)
+        if debug: print("        %s" % this_seg, file=sys.stderr)
+        if debug: print("    other:", file=sys.stderr)
+        if debug: print("        %d @ %f" % (other_seg_index, other_t), file=sys.stderr)
+        if debug: print("        %s" % other_seg, file=sys.stderr)
 
         this_first_seg, this_second_seg = this_seg.split(this_t)
         other_first_seg, other_second_seg = other_seg.split(other_t)
