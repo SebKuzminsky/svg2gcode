@@ -1043,6 +1043,8 @@ Arguments:
         seg = path[seg_index]
         new_segments = seg.split(t)
 
+        print("t=%f, 0.len=%f 1.len=%f" % (t, new_segments[0].length(), new_segments[1].length()), file=sys.stderr)
+
         if close_enough(t, 0.0):
             # The tab starts super close to the beginning of the segment,
             # keep the segment unsplit and count the whole thing as
@@ -1240,15 +1242,15 @@ Arguments:
                         # Setting z(t) equal to z_bottom_of_pass and
                         # solving for t gives us this equation:
                         t = (z_at_segment_start - z_bottom_of_pass) / (ramp_slope * length)
-                        new_segments = segment.split(t)
+                        print("ramp bottom, t=%f" % (t), file=sys.stderr)
 
-                        if close_enough(t, 0.0) or new_segments[0].length() <= 1e-2:
+                        if close_enough(t, 0.0):
                             # Bottoming out right at the start of this segment, don't split.
                             segment_after_ramp = i;
                             if debug: print("ramp bottoms out at start of seg %d, t %f" % (i, t), file=sys.stderr)
                             break
 
-                        elif close_enough(t, 1.0) or new_segments[1].length() <= 1e-2:
+                        elif close_enough(t, 1.0):
                             # Bottoming out right at the end of this segment, don't split.
                             cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
                             segment_after_ramp = i+1;
@@ -1256,6 +1258,7 @@ Arguments:
 
                         else:
                             # Bottoming out in the middle of this segment, split.
+                            new_segments = segment.split(t)
                             path[i] = new_segments[0]
                             path.insert(i+1, new_segments[1])
                             segment_is_in_tab.insert(i+1, segment_is_in_tab[i])
