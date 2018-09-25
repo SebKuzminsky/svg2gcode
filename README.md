@@ -11,6 +11,8 @@ Supported operations are:
 
 * pocket (clear the interior of the path from the SVG)
 
+* drill (in the center of circular paths)
+
 Features:
 
 * ramp or plunge entry moves

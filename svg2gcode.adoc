@@ -231,6 +231,16 @@ Example:
     }
 
 
+=== Job type: drill
+
+Drill at the center of a circular path.  The input path must consist
+of two Arc segments that make up one complete circle.  The output will
+be a drilling operation (G81) at the center of the circle.  The plunge
+feed rate will be used.
+
+This job type takes no arguments.
+
+
 === Work-holding tabs
 
 Key/value pairs in the `work-holding-tabs` object of the `offset` job
