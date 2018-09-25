@@ -238,6 +238,9 @@ def handle_path(input_path):
                 else:
                     raise ValueError('drill job on non-circle path!')
 
+            else:
+                raise ValueError('unknown job type %s' % job['job-type'])
+
     else:
         if args.pocket:
             offset = args.offset[0]
