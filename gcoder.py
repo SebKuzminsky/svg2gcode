@@ -987,7 +987,7 @@ Arguments:
         else:
             # Not in a tab.  If our Z is above where it should be
             # (because we just cleared a tab), plunge down then cut.
-            if current_z > z_start:
+            if not close_enough(abs(current_z - z_start), 0.0):
                 # Plunge to catch up to ramp.
                 if plunge_feed is not None:
                     set_feed_rate(plunge_feed)
@@ -996,7 +996,7 @@ Arguments:
                     set_feed_rate(feed)
 
         # Inhibit Z coordinate if it's not needed.
-        if z_end == current_z:
+        if close_enough(current_z, z_end):
             z_end = None
         path_segment_to_gcode(svg, segment, z=z_end)
 
