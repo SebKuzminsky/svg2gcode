@@ -1464,6 +1464,15 @@ def speed(spindle_rpm):
     print("S %d" % spindle_rpm)
 
 
+def coord_to_str(val=None):
+    if val == None:
+        return ""
+    if close_enough(val, 0.0):
+        # This avoids the "0.000"/"-0.000" confusion, mostly to make the tests consistent.
+        val = 0.000
+    return "%.4f" % val
+
+
 # FIXME: g0(path) should be merged or replaced by z_path() somehow
 def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None, w=None):
     global current_x
@@ -1486,31 +1495,31 @@ def g0(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
         print("G0", end='')
         if x is not None:
             current_x = x
-            print(" X%.4f" % x, end='')
+            print(" X%s" % coord_to_str(x), end='')
         if y is not None:
             current_y = y
-            print(" Y%.4f" % y, end='')
+            print(" Y%s" % coord_to_str(y), end='')
         if z is not None:
             current_z = z
-            print(" Z%.4f" % z, end='')
+            print(" Z%s" % coord_to_str(z), end='')
         if a is not None:
             current_a = a
-            print(" A%.4f" % a, end='')
+            print(" A%s" % coord_to_str(a), end='')
         if b is not None:
             current_b = b
-            print(" B%.4f" % b, end='')
+            print(" B%s" % coord_to_str(b), end='')
         if c is not None:
             current_c = c
-            print(" C%.4f" % c, end='')
+            print(" C%s" % coord_to_str(c), end='')
         if u is not None:
             current_u = u
-            print(" U%.4f" % u, end='')
+            print(" U%s" % coord_to_str(u), end='')
         if v is not None:
             current_v = v
-            print(" V%.4f" % v, end='')
+            print(" V%s" % coord_to_str(v), end='')
         if w is not None:
             current_w = w
-            print(" W%.4f" % w, end='')
+            print(" W%s" % coord_to_str(w), end='')
         print()
 
 
@@ -1535,31 +1544,31 @@ def g1(path=None, x=None, y=None, z=None, a=None, b=None, c=None, u=None, v=None
         print("G1", end='')
         if x is not None:
             current_x = x
-            print(" X%.4f" % x, end='')
+            print(" X%s" % coord_to_str(x), end='')
         if y is not None:
             current_y = y
-            print(" Y%.4f" % y, end='')
+            print(" Y%s" % coord_to_str(y), end='')
         if z is not None:
             current_z = z
-            print(" Z%.4f" % z, end='')
+            print(" Z%s" % coord_to_str(z), end='')
         if a is not None:
             current_a = a
-            print(" A%.4f" % a, end='')
+            print(" A%s" % coord_to_str(a), end='')
         if b is not None:
             current_b = b
-            print(" B%.4f" % b, end='')
+            print(" B%s" % coord_to_str(b), end='')
         if c is not None:
             current_c = c
-            print(" C%.4f" % c, end='')
+            print(" C%s" % coord_to_str(c), end='')
         if u is not None:
             current_u = u
-            print(" U%.4f" % u, end='')
+            print(" U%s" % coord_to_str(u), end='')
         if v is not None:
             current_v = v
-            print(" V%.4f" % v, end='')
+            print(" V%s" % coord_to_str(v), end='')
         if w is not None:
             current_w = w
-            print(" W%.4f" % w, end='')
+            print(" W%s" % coord_to_str(w), end='')
         print()
 
 
@@ -1574,16 +1583,16 @@ def g2(x=None, y=None, z=None, i=None, j=None, p=None):
     print("G2", end='')
     if x is not None:
         current_x = x
-        print(" X%.4f" % x, end='')
+        print(" X%s" % coord_to_str(x), end='')
     if y is not None:
         current_y = y
-        print(" Y%.4f" % y, end='')
+        print(" Y%s" % coord_to_str(y), end='')
     if z is not None:
         current_z = z
-        print(" Z%.4f" % z, end='')
-    if i is not None: print(" I%.4f" % i, end='')
-    if j is not None: print(" J%.4f" % j, end='')
-    if p is not None: print(" P%.4f" % p, end='')
+        print(" Z%s" % coord_to_str(z), end='')
+    if i is not None: print(" I%s" % coord_to_str(i), end='')
+    if j is not None: print(" J%s" % coord_to_str(j), end='')
+    if p is not None: print(" P%s" % coord_to_str(p), end='')
     print()
 
 
@@ -1598,16 +1607,16 @@ def g3(x=None, y=None, z=None, i=None, j=None, p=None):
     print("G3", end='')
     if x is not None:
         current_x = x
-        print(" X%.4f" % x, end='')
+        print(" X%s" % coord_to_str(x), end='')
     if y is not None:
         current_y = y
-        print(" Y%.4f" % y, end='')
+        print(" Y%s" % coord_to_str(y), end='')
     if z is not None:
         current_z = z
-        print(" Z%.4f" % z, end='')
-    if i is not None: print(" I%.4f" % i, end='')
-    if j is not None: print(" J%.4f" % j, end='')
-    if p is not None: print(" P%.4f" % p, end='')
+        print(" Z%s" % coord_to_str(z), end='')
+    if i is not None: print(" I%s" % coord_to_str(i), end='')
+    if j is not None: print(" J%s" % coord_to_str(j), end='')
+    if p is not None: print(" P%s" % coord_to_str(p), end='')
     print()
 
 
@@ -1683,13 +1692,13 @@ def g81(retract, x=None, y=None, z=None):
     print("G81", end='')
     if x is not None:
         current_x = x
-        print(" X%.4f" % x, end='')
+        print(" X%s" % coord_to_str(x), end='')
     if y is not None:
         current_y = y
-        print(" Y%.4f" % y, end='')
+        print(" Y%s" % coord_to_str(y), end='')
     if z is not None:
-        print(" Z%.4f" % z, end='')
-    print(" R%.4f" % retract, end='')
+        print(" Z%s" % coord_to_str(z), end='')
+    print(" R%s" % coord_to_str(retract), end='')
     print()
     # FIXME: keep track of retract mode, set Z correctly here
     current_z = None
@@ -1703,14 +1712,14 @@ def g83(retract, delta, x=None, y=None, z=None):
     print("G83", end='')
     if x is not None:
         current_x = x
-        print(" X%.4f" % x, end='')
+        print(" X%s" % coord_to_str(x), end='')
     if y is not None:
         current_y = y
-        print(" Y%.4f" % y, end='')
+        print(" Y%s" % coord_to_str(y), end='')
     if z is not None:
-        print(" Z%.4f" % z, end='')
-    print(" R%.4f" % retract, end='')
-    print(" Q%.4f" % delta, end='')
+        print(" Z%s" % coord_to_str(z), end='')
+    print(" R%s" % coord_to_str(retract), end='')
+    print(" Q%s" % coord_to_str(delta), end='')
     print()
     # FIXME: keep track of retract mode, set Z correctly here
     current_z = None
