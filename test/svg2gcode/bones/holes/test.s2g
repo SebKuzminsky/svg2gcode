@@ -1,0 +1,10 @@
+{
+    "jobs": [
+        {
+            "job-type": "engrave"
+        },
+        {
+            "job-type": "drill"
+        }
+    ]
+}

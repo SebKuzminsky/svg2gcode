@@ -1,0 +1,21 @@
+--z-traverse=25
+--z-approach=2.0
+--speed=3500
+--plunge-feed=279.4
+--feed=10000
+--z-top-of-material=0
+--z-cut-depth=-2
+--debug
+--path 5
+--path 6
+--path 7
+--path 8
+--path 9
+--path 10
+--path 11
+--path 12
+--path 13
+--path 14
+--path 15
+--path 16
+--path 17
