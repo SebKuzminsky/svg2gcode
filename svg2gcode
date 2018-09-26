@@ -234,6 +234,7 @@ def handle_path(input_path):
             elif job['job-type'] == 'drill':
                 if input_is_circle:
                     gcoder.comment("drilling (hole diameter %.4f)" % (input_path[0].radius.real * 2))
+                    gcoder.spindle_on()
                     (x, y) = svg.to_mm(input_path[0].center)
                     gcoder.g0(z=args.z_traverse)
                     gcoder.g0(x=x, y=y)
