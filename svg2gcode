@@ -37,9 +37,13 @@ import svgpathtools
 def handle_path(input_path):
     output_paths = []
 
+    print("path before closing: %s" % input_path, file=sys.stderr)
+    print("continuous? %s" % input_path.iscontinuous(), file=sys.stderr)
+    print("closed? %s" % input_path.isclosed(), file=sys.stderr)
+
     input_path = gcoder.close_path(input_path)
 
-    print("path: %s" % input_path, file=sys.stderr)
+    print("path after closing: %s" % input_path, file=sys.stderr)
     print("continuous? %s" % input_path.iscontinuous(), file=sys.stderr)
     print("closed? %s" % input_path.isclosed(), file=sys.stderr)
 
@@ -533,8 +537,6 @@ output_paths = []
 for i in args.path:
     gcoder.comment("path %d" % i)
     input_path = svg.paths[i]
-    print("dealing with path %d:" % i, file=sys.stderr)
-    print(input_path, file=sys.stderr)
     output_paths.append(handle_path(input_path))
 
 #svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)
