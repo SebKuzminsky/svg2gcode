@@ -191,6 +191,43 @@ class svg():
         return (x, y)
 
 
+def close_path(p):
+    for i in range(len(p)-1):
+        this_seg = p[i]
+        next_seg = p[i+1]
+        if this_seg.end != next_seg.start:
+            if close_enough(this_seg.end, next_seg.start):
+                avg = (this_seg.end + next_seg.start) / 2.0
+                print("adjusting seg %d/%d: %s" % (i, i+1, avg), file=sys.stderr)
+                this_seg.end = avg
+                next_seg.start = avg
+                p[i] = this_seg
+                p[i+1] = next_seg
+                print("    %s" % this_seg.end, file=sys.stderr)
+                print("    %s" % next_seg.start, file=sys.stderr)
+            else:
+                raise ValueError, "path is not even close to closed"
+
+    this_seg = p[-1]
+    next_seg = p[0]
+    if this_seg.end != next_seg.start:
+        if close_enough(this_seg.end, next_seg.start):
+            avg = (this_seg.end + next_seg.start) / 2.0
+            print("adjusting seg %d/%d: %s" % (-1, 0, avg), file=sys.stderr)
+            this_seg.end = avg
+            next_seg.start = avg
+            p[-1] = this_seg
+            p[0] = next_seg
+            print("    %s" % this_seg.end, file=sys.stderr)
+            print("    %s" % next_seg.start, file=sys.stderr)
+        else:
+            raise ValueError, "path is not even close to closed"
+
+    p.closed = True
+
+    return p
+
+
 def split_path_at_intersections(path_list, debug=False):
 
     """`path_list` is a list of connected path segments.  This function
