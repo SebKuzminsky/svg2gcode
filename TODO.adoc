@@ -65,6 +65,8 @@
 * Make the runtests script parallelize the tests.  Or make s2g parallelize
   the work.
 
+* Let 'engrave' jobs have work-holding tabs.
+
 
 == Smart transitions
 
