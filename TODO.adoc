@@ -62,8 +62,17 @@
   cutter.  It would have to keep track of the 'remaining material contour'
   and not cut too deep.
 
-* Make the runtests script parallelize the tests.  Or make s2g parallelize
-  the work.
+* Make it faster
+
+    * Profile & optimize.
+    
+        * Generate a profile: python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug --job test.s2g $(cat test.args) test.svg >| result.ngc 2>| stderr
+
+        * Analyze the profile: runsnake out.prof
+
+    * Make the runtests script parallelize the tests.
+    
+    * Make s2g parallelize the work.
 
 * Let 'engrave' jobs have work-holding tabs.
 
