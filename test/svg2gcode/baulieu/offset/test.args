@@ -1,0 +1,7 @@
+--z-traverse=25
+--z-approach=2.54
+--speed=18000
+--plunge-feed=279.4
+--feed=596.9
+--z-top-of-material=0
+--z-cut-depth=-18

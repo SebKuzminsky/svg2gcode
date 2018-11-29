@@ -1,0 +1,16 @@
+{
+    "jobs": [
+        {
+            "job-type": "offset",
+            "distance": -4,
+            "max-depth-of-cut": 3.1,
+            "ramp-slope": 0.1,
+            "work-holding-tabs": {
+                "number-of-tabs": 4,
+                "height": 10.0,
+                "width": 20.0,
+                "locations": [ 30, 1382, 2430, 3525 ]
+            }
+        }
+    ]
+}
