@@ -581,7 +581,6 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         else:
             next_seg = offset_path_list[0]
 
-        # FIXME: I'm not sure about this part.
         if debug: print("intersecting", file=sys.stderr)
         if debug: print("    this", this_seg, file=sys.stderr)
         if debug: print("    next", next_seg, file=sys.stderr)
@@ -589,6 +588,9 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         if debug: print("    intersections:", intersections, file=sys.stderr)
         if len(intersections) > 0:
             intersection = intersections[0]
+            if close_enough(intersection[0], 1.0) or close_enough(intersection[0], 0.0):
+                if debug: print("    intersection is at end of this segment, ignoring", file=sys.stderr)
+                continue
             point = this_seg.point(intersection[0])
             if debug: print("    intersection point:", point, file=sys.stderr)
             if not complex_close_enough(point, this_seg.end):
