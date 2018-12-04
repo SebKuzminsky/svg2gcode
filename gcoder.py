@@ -363,11 +363,14 @@ def split_path_at_intersections(path_list, debug=False):
         # part of the split).
         this_seg_index += 1
 
-    if debug: print("found some intersections:", file=sys.stderr)
-    for i in intersections:
-        if debug: print("    ", i, file=sys.stderr)
-        if debug: print("        ", path_list[i[0]], file=sys.stderr)
-        if debug: print("        ", path_list[i[1]], file=sys.stderr)
+    if len(intersections) > 0:
+        if debug: print("found some intersections:", file=sys.stderr)
+        for i in intersections:
+            if debug: print("    ", i, file=sys.stderr)
+            if debug: print("        ", path_list[i[0]], file=sys.stderr)
+            if debug: print("        ", path_list[i[1]], file=sys.stderr)
+    else:
+        if debug: print("path does not self-intersect", file=sys.stderr)
 
     paths = []
     while True:
