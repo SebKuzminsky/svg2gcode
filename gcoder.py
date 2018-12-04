@@ -243,25 +243,30 @@ def split_path_at_intersections(path_list, debug=False):
         earliest_other_seg_index = None
         earliest_other_t = None
 
-        # FIXME: Should probably consider this_seg_index+1, it might
-        # intersect at an interesting point, in addition to the
-        # un-interesting point at the ends.
-        for other_seg_index in range(this_seg_index+2, len(path_list)):
+        for other_seg_index in range(this_seg_index+1, len(path_list)):
             other_seg = path_list[other_seg_index]
             if debug: print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
             if len(intersections) == 0:
                 continue
+
             if debug: print("        intersect!", file=sys.stderr)
 
             # The intersection that comes earliest in `this_seg` is
             # the interesting one, except that intersections at the
             # segments' endpoints don't count.
             for intersection in intersections:
-                if complex_close_enough(intersection[0], 0.0) or complex_close_enough(intersection[0], 1.0):
+                if (other_seg_index == this_seg_index + 1) and (intersection == (1.0, 0.0)):
+                    # This intersection is the end of the current segment
+                    # touching the start of the following segment, ignore.
+                    if debug: print("        this.end touching next.start, boring", file=sys.stderr)
                     continue
 
-                if intersection[0] > 1.0 or intersection[0] < 0.0:
+                if (this_seg_index == 0) and (other_seg_index == len(path_list) - 1) and (intersection == (0.0, 1.0)):
+                    # This intersection is the start of the first
+                    # (current) segment touching the end of the last
+                    # segment, ignore.
+                    if debug: print("        first.start touching last.end, boring", file=sys.stderr)
                     continue
 
                 if (earliest_this_t == None) or (intersection[0] < earliest_this_t):
@@ -287,12 +292,17 @@ def split_path_at_intersections(path_list, debug=False):
 
         this_t, other_seg_index, other_t = find_earliest_intersection(path_list, this_seg_index)
         if this_t == None:
+            # This segment has no interesting intersections.
             this_seg_index += 1
             continue
+
         other_seg = path_list[other_seg_index]
 
         # Found the next intersection.  Split the segments and note
         # the intersection.
+
+        # FIXME: If the intersection point is at one of the ends of either
+        #     of the segments, then don't split that/those segment(s).
 
         if debug: print("intersection:", file=sys.stderr)
         if debug: print("    this:", file=sys.stderr)
