@@ -167,7 +167,7 @@ def handle_path(input_path):
                     finishing_allowance = job['finishing-allowance']
 
                 offset = finishing_allowance + tool_radius
-                new_paths = gcoder.offset_paths(input_path, offset)
+                new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
                 if not new_paths:
                     break
                 gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
@@ -186,7 +186,7 @@ def handle_path(input_path):
 
                 while True:
                     offset += width_of_cut
-                    new_paths = gcoder.offset_paths(input_path, offset)
+                    new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
                     if not new_paths:
                         break
                     for path in new_paths:
@@ -256,7 +256,7 @@ def handle_path(input_path):
         if args.pocket:
             offset = args.offset[0]
             while True:
-                new_paths = gcoder.offset_paths(input_path, offset)
+                new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
                 if not new_paths:
                     break
                 for path in new_paths:
@@ -275,7 +275,7 @@ def handle_path(input_path):
                 offset += args.offset[0]
         else:
             for offset in args.offset:
-                new_paths = gcoder.offset_paths(input_path, offset)
+                new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
                 output_paths += new_paths
                 for path in new_paths:
                     gcoder.comment("offset path (%.4f offset)" % offset)
@@ -327,7 +327,7 @@ def remove_island(island, tool_radius, width_of_cut, debug=False):
         else:
             # Multiple islands, recurse on each one.
             for island in remaining_material_contours:
-                island_output_paths += remove_island(island, tool_radius, width_of_cut)
+                island_output_paths += remove_island(island, tool_radius, width_of_cut, debug=debug)
             return island_output_paths
 
 
@@ -419,7 +419,7 @@ def pocket(input_path, job, debug=False):
         remaining_material_contours = gcoder.offset_paths(slot, tool_radius, debug=debug)
         # FIXME: sort the remaining islands, nearest first
         for island in remaining_material_contours:
-            shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
+            shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut, debug=debug)
     output_paths += shoulder_milling_paths
 
 
