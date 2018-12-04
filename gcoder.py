@@ -243,6 +243,9 @@ def split_path_at_intersections(path_list, debug=False):
         earliest_other_seg_index = None
         earliest_other_t = None
 
+        # FIXME: Should probably consider this_seg_index+1, it might
+        # intersect at an interesting point, in addition to the
+        # un-interesting point at the ends.
         for other_seg_index in range(this_seg_index+2, len(path_list)):
             other_seg = path_list[other_seg_index]
             if debug: print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
