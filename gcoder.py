@@ -243,7 +243,7 @@ def split_path_at_intersections(path_list, debug=False):
             if debug: print("    other[%d]:" % other_seg_index, other_seg, file=sys.stderr)
             intersections = this_seg.intersect(other_seg)
             if len(intersections) == 0:
-                continue;
+                continue
             if debug: print("        intersect!", file=sys.stderr)
 
             # The intersection that comes earliest in `this_seg` is
