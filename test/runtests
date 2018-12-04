@@ -45,7 +45,7 @@ do_test() {
         return 1
     fi
 
-    if [ -f expected.ngc ]; then
+    if [ -f expected.ngc -a -f result.ngc ]; then
         diff -u expected.ngc result.ngc
         if [ $? -ne 0 ]; then
             echo "FAILED: unexpected G-code result"
@@ -53,10 +53,12 @@ do_test() {
         fi
     fi
 
-    rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
-    if [ $? -ne 0 ]; then
-        echo "FAILED: resulting g-code rejected by SAI"
-        return 1
+    if [ -f result.ngc ]; then
+        rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
+        if [ $? -ne 0 ]; then
+            echo "FAILED: resulting g-code rejected by SAI"
+            return 1
+        fi
     fi
 
     return 0
@@ -71,7 +73,7 @@ fi
 
 FAILED=""
 SKIPPED=""
-for TEST in $(find ${TEST_DIRS} -name 'test.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
+for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
     TEST_DIR=$(dirname ${TEST})
     TEST_NAME=$(realpath --relative-to=${PWD}/.. ${TEST_DIR})
     ORIG_DIR=${PWD}
