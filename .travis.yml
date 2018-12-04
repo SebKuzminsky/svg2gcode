@@ -1,0 +1,20 @@
+language: python
+
+python:
+  - "2.7"
+#  - "3.5"
+#  - "3.6"
+
+before_install:
+    - sudo apt-get update
+    - sudo apt-get install -y asciidoc docbook-xml docbook-xsl xsltproc
+    - sudo apt-get install -y coreutils || true
+    - sudo apt-get install -y realpath || true
+
+install:
+    - pip install numpy scipy svgwrite
+
+script:
+    - make svg2gcode.1
+    - cd test
+    - ./runtests
