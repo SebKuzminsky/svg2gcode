@@ -75,7 +75,9 @@ FAILED=""
 SKIPPED=""
 for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
     TEST_DIR=$(dirname ${TEST})
-    TEST_NAME=$(realpath --relative-to=${PWD}/.. ${TEST_DIR})
+    TEST_NAME=$(realpath ${TEST_DIR})
+    HERE=$(realpath ${PWD})
+    TEST_NAME=${TEST_DIR#${HERE}/}
     ORIG_DIR=${PWD}
 
     echo "running ${TEST_NAME}"
