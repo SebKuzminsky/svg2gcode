@@ -222,13 +222,21 @@ def close_path(p):
 
 def split_path_at_intersections(path_list, debug=False):
 
-    """`path_list` is a list of connected path segments.  This function
-    identifies each place where the path intersects intself, and splits
-    each non-self-intersecting subset of the path into a separate
-    path list.  This may involve splitting segments.
+    """`path_list` is a list of connected path segments, or a
+    svgpathtools.path.Path() object.  This function identifies
+    each place where the path intersects intself, and splits each
+    non-self-intersecting subset of the path into a separate path list.
+    This may involve splitting segments.
 
     Returns a list of path lists."""
 
+    # If path_list is a Path object, convert it to a regular list (of
+    # segments), because it's easier to work with.
+    if type(path_list) == svgpathtools.path.Path:
+        l = []
+        for i in range(len(path_list)):
+            l.append(path_list[i])
+        path_list = l
 
     def find_earliest_intersection(path_list, this_seg_index):
         this_seg = path_list[this_seg_index]
