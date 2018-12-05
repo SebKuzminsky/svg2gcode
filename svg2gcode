@@ -48,7 +48,7 @@ def handle_path(input_path):
     print("closed? %s" % input_path.isclosed(), file=sys.stderr)
 
     if not input_path.isclosed():
-        raise ValueError, "path is not closed"
+        raise ValueError("path is not closed")
 
     input_is_circle = False
     if len(input_path) == 2 and \
@@ -124,7 +124,7 @@ def handle_path(input_path):
 
                     if work_holding_tabs > 0 and len(work_holding_tab_locations) != 0:
                         if work_holding_tabs != len(work_holding_tab_locations):
-                            raise ValueError, "number of work holding tabs requested (%d) does not match number of locations specified (%d)" % (work_holding_tabs, len(work_holding_tab_locations))
+                            raise ValueError("number of work holding tabs requested (%d) does not match number of locations specified (%d)" % (work_holding_tabs, len(work_holding_tab_locations)))
 
                 for i in range(len(new_paths)):
                     gcoder.comment("offset path (%f offset) %d/%d" % (job['distance'], i+1, len(new_paths)))
@@ -520,7 +520,7 @@ if args.z_approach == None:
     args.z_approach = 0.5 + args.z_top_of_material
 
 if args.z_top_of_material <= args.z_cut_depth:
-    raise ValueError, "--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth)
+    raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
 
 svg = gcoder.svg(args.SVG)
 

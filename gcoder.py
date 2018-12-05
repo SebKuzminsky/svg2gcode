@@ -151,7 +151,7 @@ class svg():
 
         m = re.match('([0-9.]+)([a-zA-Z]*)', self.svg_attributes['height'])
         if m == None:
-            raise SystemExit, "failed to parse SVG height: %s" % self.svg_attributes['height']
+            raise SystemExit("failed to parse SVG height: %s" % self.svg_attributes['height'])
 
         self.height = float(m.group(1))
 
@@ -163,26 +163,26 @@ class svg():
                 # 1 inch/96 units * 25.4 mm/1 inch = 25.4/96 mm/unit
                 self.scale = 25.4/96
             else:
-                raise SystemExit, "unhandled SVG units '%s'" % m.group(2)
+                raise SystemExit("unhandled SVG units '%s'" % m.group(2))
         else:
-            raise SystemExit, "weird result from re"
+            raise SystemExit("weird result from re")
 
 
     def to_mm_x(self, x_mm):
         if type(x_mm) != float:
-            raise SystemExit, 'non-float input'
+            raise SystemExit('non-float input')
         return x_mm * self.scale
 
 
     def to_mm_y(self, y_mm):
         if type(y_mm) != float:
-            raise SystemExit, 'non-float input'
+            raise SystemExit('non-float input')
         return self.height - y_mm * self.scale
 
 
     def to_mm(self, xy):
         if type(xy) != complex:
-            raise SystemExit, 'non-complex input'
+            raise SystemExit('non-complex input')
         x = self.to_mm_x(xy.real)
         y = self.to_mm_y(xy.imag)
         return (x, y)
@@ -196,7 +196,7 @@ def close_path(p):
                 this_seg.end = avg
                 next_seg.start = avg
             else:
-                raise ValueError, "segments are not even close to closed: %s, %s" % (this_seg, next_seg)
+                raise ValueError("segments are not even close to closed: %s, %s" % (this_seg, next_seg))
         return (this_seg, next_seg)
 
     for i in range(len(p)-1):
@@ -830,7 +830,7 @@ def path_segment_to_gcode(svg, segment, z=None):
         #     adjusted to make the length of the *offset* line
         #     segments manageable.
         if z is not None:
-            raise ValueError, "Z value specified for non-Line, non-circular-Arc segment: %s", segment
+            raise ValueError("Z value specified for non-Line, non-circular-Arc segment: %s", segment)
         steps = 1000
         for k in range(steps+1):
             t = k / float(steps)
@@ -1081,7 +1081,7 @@ Arguments:
 
         start_T = start / path_length
         if start_T > 1.0:
-            raise ValueError, "error: tab %d start at %f, past end of path at %f" % (tab, start, path_length)
+            raise ValueError("error: tab %d start at %f, past end of path at %f" % (tab, start, path_length))
         seg_index, t = path.T2t(start_T)
 
         if close_enough(t, 0.0):
@@ -1139,7 +1139,7 @@ Arguments:
         end = start + work_holding_tab_width
         end_T = end / path_length
         if end_T > 1.0:
-            raise ValueError, "error: tab %d ends at %f, past end of path at %f" % (tab, end, path_length)
+            raise ValueError("error: tab %d ends at %f, past end of path at %f" % (tab, end, path_length))
         seg_index, t = path.T2t(end_T)
         seg = path[seg_index]
         new_segments = seg.split(t)
@@ -1616,7 +1616,7 @@ def g2(x=None, y=None, z=None, i=None, j=None, p=None):
 
     """Clockwise arc feed."""
     if i is None and j is None:
-        raise TypeError, "gcoder.g2() without i or j"
+        raise TypeError("gcoder.g2() without i or j")
     print("G2", end='')
     if x is not None:
         current_x = x
@@ -1640,7 +1640,7 @@ def g3(x=None, y=None, z=None, i=None, j=None, p=None):
 
     """Counter-clockwise arc feed."""
     if i is None and j is None:
-        raise TypeError, "gcoder.g3() without i or j"
+        raise TypeError("gcoder.g3() without i or j")
     print("G3", end='')
     if x is not None:
         current_x = x
