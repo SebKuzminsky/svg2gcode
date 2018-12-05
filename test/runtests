@@ -42,6 +42,7 @@ do_test() {
     fi
     if [ $? -ne 0 ]; then
         echo "FAILED: non-zero exit code"
+        cat stderr
         return 1
     fi
 
