@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/SebKuzminsky/svg2gcode.svg?branch=master)](https://travis-ci.org/SebKuzminsky/svg2gcode)
+
 # svg2gcode
 
 svg2gcode reads an SVG file and produces g-code machining operations
