@@ -54,7 +54,7 @@ do_test() {
         fi
     fi
 
-    if [ -f result.ngc ]; then
+    if [ -f result.ngc -a -x rs274 ]; then
         rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
         if [ $? -ne 0 ]; then
             echo "FAILED: resulting g-code rejected by SAI"
