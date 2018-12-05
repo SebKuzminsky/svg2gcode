@@ -21,7 +21,6 @@
 
 from __future__ import print_function
 
-import cairosvg.parser
 import math
 import os
 import re
@@ -147,12 +146,12 @@ class svg():
         # svg coordinate * scale == mm
         self.scale = 1.0
 
-        # FIXME: drop cairo, use svgpathtools.svg2paths2() and get svg attributes out of [2]
-        self.cairo = cairosvg.parser.Tree(url=self.svg_file)
+        self.paths, self.attributes, self.svg_attributes = svgpathtools.svg2paths2(self.svg_file)
+        print("svgpathtools attributes: %s" % self.svg_attributes, file=sys.stderr)
 
-        m = re.match('([0-9.]+)([a-zA-Z]*)', self.cairo['height'])
+        m = re.match('([0-9.]+)([a-zA-Z]*)', self.svg_attributes['height'])
         if m == None:
-            raise SystemExit, "failed to parse SVG height: %s" % c['height']
+            raise SystemExit, "failed to parse SVG height: %s" % self.svg_attributes['height']
 
         self.height = float(m.group(1))
 
@@ -167,8 +166,6 @@ class svg():
                 raise SystemExit, "unhandled SVG units '%s'" % m.group(2)
         else:
             raise SystemExit, "weird result from re"
-
-        self.paths, self.attributes = svgpathtools.svg2paths(self.svg_file)
 
 
     def to_mm_x(self, x_mm):
