@@ -121,7 +121,7 @@ To select which of "raise, traverse, plunge" and "feed" to use:
 
 
 
-# computational geometry
+== computational geometry
 
 lots of pdf papers here:
 https://www.geometrictools.com/Documentation/Documentation.html
@@ -129,7 +129,7 @@ https://www.geometrictools.com/Documentation/Documentation.html
 
 
 
-# svgpathtools bugs
+== svgpathtools bugs
 
 
 ## Arc.intersect(Arc)
