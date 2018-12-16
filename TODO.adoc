@@ -83,7 +83,7 @@
 * Plate different parts together.
 
 
-== Smart transitions
+== Pocket: smarter pass-to-pass transitions
 
 I want better transitions from a finished pass to the start of the
 next pass.
