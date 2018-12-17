@@ -60,19 +60,6 @@ def handle_path(input_path):
     if gcoder.approximate_path_area(input_path) > 0:
         input_path = input_path.reversed()
 
-    if args.include_input:
-        gcoder.comment("input path")
-        gcoder.path_to_gcode(
-            svg,
-            input_path,
-            z_traverse=args.z_traverse,
-            z_approach=args.z_approach,
-            z_top_of_material=args.z_top_of_material,
-            z_cut_depth=args.z_cut_depth,
-            plunge_feed=args.plunge_feed,
-            feed=args.feed
-        )
-
     if args.job:
         data = json.load(open(args.job))
 
@@ -491,7 +478,6 @@ parser.add_argument("--z-top-of-material", type=float, help="The Z level where t
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
 parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
 parser.add_argument("-o", "--offset", type=float, action='append', help="(deprecated) The offset to use (may be specified multiple times).")
-parser.add_argument("--include-input", action="store_true", help="(deprecated) Emit g-code for input path too (in addition to emitting g-code for the offset path).")
 parser.add_argument("--pocket", action="store_true", help="(deprecated) Generate g-code to empty the pocket defined by the input path.")
 args = parser.parse_args()
 
