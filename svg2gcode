@@ -37,16 +37,7 @@ import svgpathtools
 def handle_path(input_path):
     output_paths = []
 
-    print("path before closing: %s" % input_path, file=sys.stderr)
-    print("continuous? %s" % input_path.iscontinuous(), file=sys.stderr)
-    print("closed? %s" % input_path.isclosed(), file=sys.stderr)
-
     input_path = gcoder.close_path(input_path)
-
-    print("path after closing: %s" % input_path, file=sys.stderr)
-    print("continuous? %s" % input_path.iscontinuous(), file=sys.stderr)
-    print("closed? %s" % input_path.isclosed(), file=sys.stderr)
-
     if not input_path.isclosed():
         raise ValueError("path is not closed")
 
