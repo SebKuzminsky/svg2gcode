@@ -231,42 +231,8 @@ def handle_path(input_path):
                 raise ValueError('unknown job type %s' % job['job-type'])
 
     else:
-        if args.pocket:
-            offset = args.offset[0]
-            while True:
-                new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-                if not new_paths:
-                    break
-                for path in new_paths:
-                    gcoder.comment("pocket path (%.4f offset)" % offset)
-                    gcoder.path_to_gcode(
-                        svg,
-                        path,
-                        z_traverse=args.z_traverse,
-                        z_approach=args.z_approach,
-                        z_top_of_material=args.z_top_of_material,
-                        z_cut_depth=args.z_cut_depth,
-                        plunge_feed=args.plunge_feed,
-                        feed=args.feed
-                    )
-                output_paths += new_paths
-                offset += args.offset[0]
-        else:
-            for offset in args.offset:
-                new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-                output_paths += new_paths
-                for path in new_paths:
-                    gcoder.comment("offset path (%.4f offset)" % offset)
-                    gcoder.path_to_gcode(
-                        svg,
-                        path,
-                        z_traverse=args.z_traverse,
-                        z_approach=args.z_approach,
-                        z_top_of_material=args.z_top_of_material,
-                        z_cut_depth=args.z_cut_depth,
-                        plunge_feed=args.plunge_feed,
-                        feed=args.feed
-                    )
+        raise ValueError('no job file')
+
 
     return output_paths
 
@@ -477,8 +443,6 @@ parser.add_argument("--z-approach", type=float, help="The Z level down to which 
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
 parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
-parser.add_argument("-o", "--offset", type=float, action='append', help="(deprecated) The offset to use (may be specified multiple times).")
-parser.add_argument("--pocket", action="store_true", help="(deprecated) Generate g-code to empty the pocket defined by the input path.")
 args = parser.parse_args()
 
 if args.speed == None:

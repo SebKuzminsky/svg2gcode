@@ -261,8 +261,3 @@ be cut away.  Defaults to 10mm if omitted.
 the path where the tabs should start.  If specified, the length of the
 list must be the same as `number-of-tabs`.  If the `locations` list is not
 specified, the tabs will be automatically placed evenly around the path.
-
-
-=== Job type: pocket
-
-Old simple pocketing algorithm.  Obsolete, use pocket2 instead.
