@@ -63,9 +63,6 @@ def handle_path(input_path):
     if args.job:
         data = json.load(open(args.job))
 
-        if "tool" in data.keys():
-            print("tool:", data["tool"], file=sys.stderr)
-
         for job in data['jobs']:
             print("job:", job, file=sys.stderr)
 
