@@ -13,8 +13,8 @@ svg2gcode - produce g-code tool paths from SVG files
 
 == DESCRIPTION
 
-svg2gcode reads a job description file and an SVG file (containing a
-single closed path), and produces the corresponding g-code.
+svg2gcode reads a job description file and an SVG file (containing one
+or more closed paths), and produces the corresponding g-code.
 
 
 == OPTIONS
