@@ -8,7 +8,7 @@ svg2gcode - produce g-code tool paths from SVG files
 
 == SYNOPSIS
 
-*svg2gcode* [_OPTIONS_] --job JOBFILE FILE.SVG
+*svg2gcode* [_OPTIONS_] JOBFILE FILE.SVG
 
 
 == DESCRIPTION

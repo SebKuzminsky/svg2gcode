@@ -60,8 +60,8 @@ def handle_path(input_path):
     if gcoder.approximate_path_area(input_path) > 0:
         input_path = input_path.reversed()
 
-    if args.job:
-        data = json.load(open(args.job))
+    if args.JOBFILE:
+        data = json.load(open(args.JOBFILE))
 
         for job in data['jobs']:
             print("job:", job, file=sys.stderr)
@@ -427,9 +427,9 @@ def pocket(input_path, job, debug=False):
 
 
 parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
+parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-p", "--path", type=int, action='append', help="Apply the machining operations to this path (specified as an index into the list of paths in the input SVG).  May be used multiple times to apply the operations to multiple paths.  (Default: apply to all paths.)")
-parser.add_argument("-j", "--job", type=str, help="Read machining job parameters from the specified file.")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
 parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket2' job type.  (Default: 90.0 mm/min)")

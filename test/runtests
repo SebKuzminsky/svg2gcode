@@ -33,7 +33,7 @@ do_test() {
     rm -f stderr
     if [ -f expected.ngc ]; then
         if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
-            svg2gcode --debug --job ${TEST_FILE} $(cat test.args 2> /dev/null) test.svg >| result.ngc 2>> stderr
+            svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg >| result.ngc 2>> stderr
         else
             ./${TEST_FILE} > result.ngc 2>> stderr
         fi
