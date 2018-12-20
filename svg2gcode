@@ -34,6 +34,27 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpat
 import svgpathtools
 
 
+def do_engrave(op_args, input_path):
+    ramp_slope = None
+    if "ramp-slope" in op_args.keys():
+        ramp_slope = op_args['ramp-slope']
+
+    gcoder.comment("engrave path")
+    gcoder.path_to_gcode(
+        svg,
+        input_path,
+        z_traverse=args.z_traverse,
+        z_approach=args.z_approach,
+        z_top_of_material=args.z_top_of_material,
+        z_cut_depth=args.z_cut_depth,
+        plunge_feed=args.plunge_feed,
+        feed=args.feed,
+        ramp_slope=ramp_slope
+    )
+
+    return [input_path]
+
+
 def v1_handle_path(job, input_path):
     output_paths = []
 
@@ -190,22 +211,7 @@ def v1_handle_path(job, input_path):
         print("output paths:", output_paths, file=sys.stderr)
 
     elif job['job-type'] == 'engrave':
-        ramp_slope = None
-        if "ramp-slope" in job.keys():
-            ramp_slope = job['ramp-slope']
-
-        gcoder.comment("engrave path")
-        gcoder.path_to_gcode(
-            svg,
-            input_path,
-            z_traverse=args.z_traverse,
-            z_approach=args.z_approach,
-            z_top_of_material=args.z_top_of_material,
-            z_cut_depth=args.z_cut_depth,
-            plunge_feed=args.plunge_feed,
-            feed=args.feed,
-            ramp_slope=ramp_slope
-        )
+        output_paths = do_engrave(job, input_path)
 
     elif job['job-type'] == 'drill':
         if input_is_circle:
