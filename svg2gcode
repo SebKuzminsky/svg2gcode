@@ -144,6 +144,67 @@ def do_drill(op_args, input_path):
     return []
 
 
+def do_pocket(op_args, input_path):
+    output_paths = []
+
+    # FIXME: get these from a different tool info section of the json data
+    if "tool-diameter" in op_args.keys():
+        tool_diameter = op_args['tool-diameter']
+    else:
+        raise ValueError('no "tool-diameter" specified in "pocket" operation')
+    tool_radius = tool_diameter / 2.0
+
+    if "width-of-cut" in op_args.keys():
+        width_of_cut = op_args['width-of-cut']
+    else:
+        raise ValueError('no "width-of-cut" specified in "pocket" operation')
+
+    finishing_allowance = 0.0
+    if "finishing-allowance" in op_args.keys():
+        finishing_allowance = op_args['finishing-allowance']
+
+    offset = finishing_allowance + tool_radius
+    output_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
+    if not output_paths:
+        # can't fit the tool into this path, nothing to do
+        print("pocket fails: tool too large to fit into path", file=sys.stderr)
+        return []
+
+    gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
+    for path in output_paths:
+        gcoder.path_to_gcode(
+            svg,
+            path,
+            z_traverse=args.z_traverse,
+            z_approach=args.z_approach,
+            z_top_of_material=args.z_top_of_material,
+            z_cut_depth=args.z_cut_depth,
+            plunge_feed=args.plunge_feed,
+            feed=args.feed
+        )
+
+    while True:
+        offset += width_of_cut
+        new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
+        if not new_paths:
+            break
+        for path in new_paths:
+            gcoder.comment("pocket path (%.4f offset)" % offset)
+            gcoder.path_to_gcode(
+                svg,
+                path,
+                z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=args.z_cut_depth,
+                plunge_feed=args.plunge_feed,
+                feed=args.feed
+            )
+        output_paths += new_paths
+
+    return output_paths
+
+
 def v1_handle_path(job, input_path):
     output_paths = []
 
@@ -162,61 +223,7 @@ def v1_handle_path(job, input_path):
         output_paths = do_offset(job, input_path)
 
     elif job['job-type'] == 'pocket':
-        # FIXME: get these from a different tool info section of the json data
-        if "tool-diameter" in job.keys():
-            tool_diameter = job['tool-diameter']
-        else:
-            raise ValueError('no "tool-diameter" specified in "pocket" job')
-        tool_radius = tool_diameter / 2.0
-
-        if "width-of-cut" in job.keys():
-            width_of_cut = job['width-of-cut']
-        else:
-            raise ValueError('no "width-of-cut" specified in "pocket" job')
-
-        finishing_allowance = 0.0
-        if "finishing-allowance" in job.keys():
-            finishing_allowance = job['finishing-allowance']
-
-        offset = finishing_allowance + tool_radius
-        new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-        if not new_paths:
-            # can't fit the tool into this path, nothing to do
-            print("pocket fails: tool too large to fit into path", file=sys.stderr)
-            return []
-
-        gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
-        for path in new_paths:
-            gcoder.path_to_gcode(
-                svg,
-                path,
-                z_traverse=args.z_traverse,
-                z_approach=args.z_approach,
-                z_top_of_material=args.z_top_of_material,
-                z_cut_depth=args.z_cut_depth,
-                plunge_feed=args.plunge_feed,
-                feed=args.feed
-            )
-        output_paths += new_paths
-
-        while True:
-            offset += width_of_cut
-            new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-            if not new_paths:
-                break
-            for path in new_paths:
-                gcoder.comment("pocket path (%.4f offset)" % offset)
-                gcoder.path_to_gcode(
-                    svg,
-                    path,
-                    z_traverse=args.z_traverse,
-                    z_approach=args.z_approach,
-                    z_top_of_material=args.z_top_of_material,
-                    z_cut_depth=args.z_cut_depth,
-                    plunge_feed=args.plunge_feed,
-                    feed=args.feed
-                )
-            output_paths += new_paths
+        output_paths = do_pocket(job, input_path)
 
     elif job['job-type'] == 'pocket2':
         if args.slot_feed == None:
