@@ -226,7 +226,7 @@ def v1_handle_path(job, input_path):
         output_paths = do_pocket(job, input_path)
 
     elif job['job-type'] == 'pocket2':
-        output_paths = pocket(input_path, job, debug=args.debug)
+        output_paths = do_pocket2(job, input_path)
 
     elif job['job-type'] == 'engrave':
         output_paths = do_engrave(job, input_path)
@@ -278,7 +278,7 @@ def remove_island(island, tool_radius, width_of_cut):
             return island_output_paths
 
 
-def pocket(input_path, job, debug=False):
+def do_pocket2(op_args, input_path):
     # Alternative pocketing algorithm.
     #
     # Inset the material contour by the finishing allowance to
@@ -307,42 +307,42 @@ def pocket(input_path, job, debug=False):
     material_contour = input_path
 
     # FIXME: get these from a different tool info section of the json data
-    if "tool-diameter" in job.keys():
-        tool_diameter = job['tool-diameter']
+    if "tool-diameter" in op_args.keys():
+        tool_diameter = op_args['tool-diameter']
     else:
-        raise ValueError('no "tool-diameter" specified in "pocket" job')
+        raise ValueError('no "tool-diameter" specified in "pocket" operation')
     tool_radius = tool_diameter / 2.0
 
-    if "width-of-cut" in job.keys():
-        width_of_cut = job['width-of-cut']
+    if "width-of-cut" in op_args.keys():
+        width_of_cut = op_args['width-of-cut']
     else:
-        raise ValueError('no "width-of-cut" specified in "pocket" job')
+        raise ValueError('no "width-of-cut" specified in "pocket" operation')
 
     finishing_allowance = 0.0
-    if "finishing-allowance" in job.keys():
-        finishing_allowance = job['finishing-allowance']
+    if "finishing-allowance" in op_args.keys():
+        finishing_allowance = op_args['finishing-allowance']
 
     pocket_depth = args.z_top_of_material - args.z_cut_depth
 
     slot_max_depth_of_cut = pocket_depth
-    if "slot-max-depth-of-cut" in job.keys():
-        slot_max_depth_of_cut = job['slot-max-depth-of-cut']
+    if "slot-max-depth-of-cut" in op_args.keys():
+        slot_max_depth_of_cut = op_args['slot-max-depth-of-cut']
     else:
-        print("WARNING: no 'slot-max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
+        print("WARNING: no 'slot-max-depth-of-cut' specified in pocket operation, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
 
     shoulder_max_depth_of_cut = pocket_depth
-    if "shoulder-max-depth-of-cut" in job.keys():
-        shoulder_max_depth_of_cut = job['shoulder-max-depth-of-cut']
+    if "shoulder-max-depth-of-cut" in op_args.keys():
+        shoulder_max_depth_of_cut = op_args['shoulder-max-depth-of-cut']
     else:
-        print("WARNING: no 'shoulder-max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
+        print("WARNING: no 'shoulder-max-depth-of-cut' specified in pocket operation, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
 
     max_depth_of_cut = min(slot_max_depth_of_cut, shoulder_max_depth_of_cut)
     num_passes = math.ceil(pocket_depth / max_depth_of_cut)
     depth_of_cut = pocket_depth / num_passes
 
     ramp_slope = None
-    if "ramp-slope" in job.keys():
-        ramp_slope = job['ramp-slope']
+    if "ramp-slope" in op_args.keys():
+        ramp_slope = op_args['ramp-slope']
 
 
     #
