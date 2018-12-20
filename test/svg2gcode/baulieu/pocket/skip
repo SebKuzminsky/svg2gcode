@@ -1,0 +1,3 @@
+Skipping because of a known bug with Arc.intersect(Arc).
+
+https://github.com/mathandy/svgpathtools/issues/43

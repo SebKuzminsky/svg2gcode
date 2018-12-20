@@ -1,0 +1,12 @@
+{
+    "jobs": [
+        {
+            "job-type": "pocket2",
+            "tool-diameter": 8,
+            "width-of-cut": 4,
+            "finishing-allowance": 0,
+            "slot-max-depth-of-cut": 3.1,
+            "shoulder-max-depth-of-cut": 3.1
+        }
+    ]
+}
