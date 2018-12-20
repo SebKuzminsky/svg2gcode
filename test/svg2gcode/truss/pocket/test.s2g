@@ -1,0 +1,53 @@
+{
+    "jobs": [
+        {
+            "paths": [ 6, 7, 8, 9, 10, 11, 12 ],
+            "operations": [
+                {
+                    "drill": { }
+                }
+            ]
+        },
+        {
+            "paths": [ 1, 2, 3, 4, 5 ],
+            "operations": [
+		{
+		    "pocket2": {
+			"tool-diameter": 3.175,
+                        "finishing-allowance": 0.825,
+                        "width-of-cut": 1.0,
+                        "slot-max-depth-of-cut": 0.5,
+                        "shoulder-max-depth-of-cut": 2.0,
+			"ramp-slope": 0.1
+		    }
+		},
+                {
+		    "offset": {
+			"distance": 3.175,
+			"ramp-slope": 0.1,
+			"max-depth-of-cut": 2.5
+		    }
+                }
+	    ]
+	},
+        {
+            "paths": [ 0 ],
+            "operations": [
+		{
+		    "offset": {
+			"distance": -4,
+			"ramp-slope": 0.1,
+			"max-depth-of-cut": 2.5
+		    }
+		},
+                {
+		    "offset": {
+			"distance": -3.175,
+			"ramp-slope": 0.1,
+			"max-depth-of-cut": 2.5
+		    }
+                }
+	    ]
+	}
+    ]
+}
