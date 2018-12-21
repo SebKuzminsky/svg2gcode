@@ -35,6 +35,39 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpat
 import svgpathtools
 
 
+def handle_operation(op, path_index):
+    print("operation:", op, file=sys.stderr)
+    print("path:", path_index, file=sys.stderr)
+
+    input_path = svg.paths[path_index]
+
+    input_path = gcoder.close_path(input_path)
+    if not input_path.isclosed():
+        raise ValueError("path is not closed")
+
+    # positive area == clockwise path
+    # negative area == counter-clockwise path
+    # Make sure the input path is counter-clockwise.
+    # FIXME: Only process counter-clockwise paths.  Clockwise paths are islands.  (Or the other way around)
+    if gcoder.approximate_path_area(input_path) > 0:
+        input_path = input_path.reversed()
+
+    if 'engrave' in op:
+        return do_engrave(op['engrave'], input_path)
+
+    elif 'offset' in op:
+        return do_offset(op['offset'], input_path)
+
+    elif 'pocket2' in op:
+        return do_pocket2(op['pocket2'], input_path)
+
+    elif 'drill' in op:
+        return do_drill(op['drill'], input_path)
+
+    else:
+        raise SystemExit('unknown operation %s' % op)
+
+
 def do_engrave(op_args, input_path):
     ramp_slope = None
     if "ramp-slope" in op_args.keys():
@@ -504,18 +537,104 @@ def load_job_file(jobfile):
         'additionalProperties': False
     }
 
+    v2_schema = {
+        'type': 'object',
+        'properties': {
+            'jobs': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'paths': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'number'
+                            }
+                        },
+                        'operations': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'engrave': {
+                                        'type': 'object',
+                                        'properties': { },
+                                        'additionalProperties': False
+                                    },
+                                    'offset': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'distance': {
+                                                'type': 'number'
+                                            },
+                                            'max-depth-of-cut': {
+                                                'type': 'number'
+                                            },
+                                            'ramp-slope': {
+                                                'type': 'number'
+                                            },
+                                            'work-holding-tabs': work_holding_tabs_schema
+                                        },
+                                        'additionalProperties': False
+                                    },
+                                    'pocket2': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'tool-diameter': {
+                                                'type': 'number'
+                                            },
+                                            'width-of-cut': {
+                                                'type': 'number'
+                                            },
+                                            'finishing-allowance': {
+                                                'type': 'number'
+                                            },
+                                            'slot-max-depth-of-cut': {
+                                                'type': 'number'
+                                            },
+                                            'shoulder-max-depth-of-cut': {
+                                                'type': 'number'
+                                            },
+                                            'ramp-slope': {
+                                                'type': 'number'
+                                            }
+                                        },
+                                        'additionalProperties': False
+                                    },
+                                    'drill': {
+                                        'type': 'object',
+                                        'properties': { },
+                                        'additionalProperties': False
+                                    }
+                                },
+                                'additionalProperties': False
+                            }
+                        }
+                    },
+                    'additionalProperties': False
+                }
+            }
+        },
+        'additionalProperties': False
+    }
+
     jobs = json.load(open(jobfile))
 
     jobfile_schema = None
     try:
         jsonschema.validate(jobs, v1_schema)
         jobfile_schema = 1
-        print("jobfile schema is v1", file=sys.stderr)
-
-    except Exception as e:
-        print("json fails schema validation!", file=sys.stderr)
-        print(e, file=sys.stderr)
-        raise SystemExit(1)
+    except Exception as v1_e:
+        try:
+            jsonschema.validate(jobs, v2_schema)
+            jobfile_schema = 2
+        except Exception as v2_e:
+            print("json fails schema validation (both v1 and v2)!", file=sys.stderr)
+            print("v1 schema failure:", file=sys.stderr)
+            print(v1_e, file=sys.stderr)
+            print("v2 schema failure:", file=sys.stderr)
+            print(v2_e, file=sys.stderr)
+            raise SystemExit(1)
 
     return jobs, jobfile_schema
 
@@ -570,21 +689,36 @@ gcoder.metric()
 gcoder.path_blend(tolerance=0.01)
 gcoder.speed(args.speed)
 
-if args.path == None:
-    args.path = range(0, len(svg.paths))
-
 output_paths = []
 
 
 # Old-style job files have a single top-level property named "jobs",
-# which is an array of job objects.  Iterate over the paths from the
+# which is an array of v1 job objects.  Iterate over the paths from the
 # command line, and run all jobs on each.
 if jobfile_schema == 1:
+    if args.path == None:
+        args.path = range(0, len(svg.paths))
     for i in args.path:
         gcoder.comment("path %d" % i)
         input_path = svg.paths[i]
         for job in jobs['jobs']:
             output_paths.append(v1_handle_path(job, input_path))
+
+# New-style job files have a single top-level property named "jobs",
+# which is an array of v2 job objects.
+elif jobfile_schema == 2:
+    for job in jobs['jobs']:
+        input_paths = None
+        if type(args.path) is list and len(args.path) > 0:
+            input_paths = args.path
+        elif 'paths' in job:
+            input_paths = job['paths']
+        else:
+            input_paths = range(0, len(svg.paths))
+        for path in input_paths:
+            gcoder.comment("path %d" % path)
+            for op in job['operations']:
+                output_paths.append(handle_operation(op, path))
 
 
 #svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)

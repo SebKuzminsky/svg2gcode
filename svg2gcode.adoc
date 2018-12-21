@@ -71,8 +71,10 @@ or more closed paths), and produces the corresponding g-code.
 *--path* N::
 
     Operate on the Nth path from the input SVG file.  May be specified
-    multiple times to operate on multiple paths.  If no --path is
-    specified, operates on *all* paths from the input SVG file.
+    multiple times to operate on multiple paths.  The path(s) specified
+    using --path override any paths specified in the job file.  If no
+    --path is specified and no paths are specified in the job file,
+    operate on *all* paths from the input SVG file.
 
 
 == Job File Format
