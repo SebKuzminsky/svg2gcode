@@ -12,7 +12,7 @@ before_install:
     - sudo apt-get install -y realpath || true
 
 install:
-    - pip install numpy scipy svgwrite
+    - pip install numpy scipy svgwrite jsonschema
 
 script:
     - make svg2gcode.1

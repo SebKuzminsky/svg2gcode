@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import argparse
 import json
+import jsonschema
 import math
 import os
 import sys
@@ -432,6 +433,91 @@ def do_pocket2(op_args, input_path):
     return output_paths
 
 
+def load_job_file(jobfile):
+    v1_schema = {
+        'type': 'object',
+        'properties': {
+            'jobs': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'job-type': {
+                            'type': 'string'
+                        },
+                        'comment': {
+                            'type': 'string'
+                        },
+                        'ramp-slope': {
+                            'type': 'number'
+                        },
+                        'distance': {
+                            'type': 'number'
+                        },
+                        'max-depth-of-cut': {
+                            'type': 'number'
+                        },
+                        'tool-diameter': {
+                            'type': 'number'
+                        },
+                        'width-of-cut': {
+                            'type': 'number'
+                        },
+                        'slot-max-depth-of-cut': {
+                            'type': 'number'
+                        },
+                        'shoulder-max-depth-of-cut': {
+                            'type': 'number'
+                        },
+                        'finishing-allowance': {
+                            'type': 'number'
+                        },
+                        'work-holding-tabs': {
+                            'type': 'object',
+                            'properties': {
+                                'number-of-tabs': {
+                                    'type': 'number'
+                                },
+                                'height': {
+                                    'type': 'number'
+                                },
+                                'width': {
+                                    'type': 'number'
+                                },
+                                'locations': {
+                                    'type': 'array',
+                                    'items': {
+                                        'type': 'number'
+                                    }
+                                }
+                            },
+                            'additionalProperties': False
+                        },
+                    },
+                    'required': [ 'job-type' ],
+                    'additionalProperties': False
+                }
+            }
+        },
+        'additionalProperties': False
+    }
+
+    jobs = json.load(open(jobfile))
+
+    jobfile_schema = None
+    try:
+        jsonschema.validate(jobs, v1_schema)
+        jobfile_schema = 1
+        print("jobfile schema is v1", file=sys.stderr)
+
+    except Exception as e:
+        print("json fails schema validation!", file=sys.stderr)
+        print(e, file=sys.stderr)
+        raise SystemExit(1)
+
+    return jobs, jobfile_schema
+
+
 parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
 parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
@@ -474,7 +560,7 @@ if args.z_approach == None:
 if args.z_top_of_material <= args.z_cut_depth:
     raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
 
-jobs = json.load(open(args.JOBFILE))
+jobs, jobfile_schema = load_job_file(args.JOBFILE)
 svg = gcoder.svg(args.SVG)
 
 # G-code preamble
@@ -491,7 +577,7 @@ output_paths = []
 # Old-style job files have a single top-level property named "jobs",
 # which is an array of job objects.  Iterate over the paths from the
 # command line, and run all jobs on each.
-if 'jobs' in jobs:
+if jobfile_schema == 1:
     for i in args.path:
         gcoder.comment("path %d" % i)
         input_path = svg.paths[i]
