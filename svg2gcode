@@ -434,6 +434,28 @@ def do_pocket2(op_args, input_path):
 
 
 def load_job_file(jobfile):
+    work_holding_tabs_schema = {
+        'type': 'object',
+        'properties': {
+            'number-of-tabs': {
+                'type': 'number'
+            },
+            'height': {
+                'type': 'number'
+            },
+            'width': {
+                'type': 'number'
+            },
+            'locations': {
+                'type': 'array',
+                'items': {
+                    'type': 'number'
+                }
+            }
+        },
+        'additionalProperties': False
+    }
+
     v1_schema = {
         'type': 'object',
         'properties': {
@@ -472,27 +494,7 @@ def load_job_file(jobfile):
                         'finishing-allowance': {
                             'type': 'number'
                         },
-                        'work-holding-tabs': {
-                            'type': 'object',
-                            'properties': {
-                                'number-of-tabs': {
-                                    'type': 'number'
-                                },
-                                'height': {
-                                    'type': 'number'
-                                },
-                                'width': {
-                                    'type': 'number'
-                                },
-                                'locations': {
-                                    'type': 'array',
-                                    'items': {
-                                        'type': 'number'
-                                    }
-                                }
-                            },
-                            'additionalProperties': False
-                        },
+                        'work-holding-tabs': work_holding_tabs_schema
                     },
                     'required': [ 'job-type' ],
                     'additionalProperties': False
