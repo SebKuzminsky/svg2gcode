@@ -70,8 +70,9 @@
         * Analyze the profile: runsnake out.prof
 
     * Make the runtests script parallelize the tests.
-    
-    * Make s2g parallelize the work.
+
+    * Make s2g parallelize the work.  Run handle_operation() calls in
+      parallel maybe?
 
 * Let 'engrave' jobs have work-holding tabs.
 
