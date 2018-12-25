@@ -1,0 +1,25 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0, 1, 2, 3, 4 ],
+            "operations": [
+                {
+                    "engrave": { }
+                }
+            ]
+        },
+        {
+            "paths": [ 2 ],
+            "operations": [
+                {
+                    "pocket2": {
+                        "tool-diameter": 5.0,
+                        "width-of-cut": 2.0,
+                        "finishing-allowance": 2.0,
+                        "ramp-slope": 0.1
+                    }
+                }
+            ]
+        }
+    ]
+}
