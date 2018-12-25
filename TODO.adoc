@@ -79,7 +79,9 @@
 * Auto-detect pockets/islands/outline, mill all in one op?  Some way to
   make one big g-code file with all the ops for one tool.
 
-* Plate lots of copies of a single part.
+* Plate lots of copies of a single part.  Have handle_operation() return
+  a list of the path_to_gcode() calls it currently makes, and run them
+  multiple times with X & Y offsets.
 
 * Plate different parts together.
 
