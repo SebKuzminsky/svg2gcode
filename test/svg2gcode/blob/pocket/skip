@@ -1,0 +1,23 @@
+Skipping because of a known bug with Arc.intersect(Arc).
+
+https://github.com/mathandy/svgpathtools/issues/43
+
+intersecting
+    this Arc(start=(-13.3240138471+73.5143173665j), radius=(43.029+43.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.090692916+76.1177918091j))
+    next Arc(start=(-60.0906376347+76.117751406j), radius=(43.029+43.029j), rotation=0.0, large_arc=False, sweep=False, end=(-76.7713295292+119.886761691j))
+Traceback (most recent call last):
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 737, in <module>
+    output_paths.append(handle_operation(op, path))
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 59, in handle_operation
+    return do_offset(op['offset'], input_path)
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 94, in do_offset
+    output_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
+  File "/home/seb/svg2gcode/gcoder.py", line 596, in offset_paths
+    intersections = this_seg.intersect(next_seg)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/path.py", line 1914, in intersect
+    tol=tol, tol_deC=tol)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 320, in bezier_intersections
+    (c11, c12) = halve_bezier(pair.bez1)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 157, in halve_bezier
+    if len(p) == 4:
+TypeError: object of type 'Arc' has no len()
