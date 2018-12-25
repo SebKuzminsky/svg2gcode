@@ -36,12 +36,12 @@ or more closed paths), and produces the corresponding g-code.
  *--shoulder-feed* _N_::
 
     The tool feed rate to use for shoulder milling, in mm/minute.
-    Used by the 'pocket2' job type.  (Default: 90.0 mm/min)
+    Used by the 'pocket' operation.  (Default: 90.0 mm/min)
 
 *--slot-feed* _N_::
 
     The tool feed rate to use for slot milling, in mm/minute.  Used by
-    the 'pocket2' job type.  (Default: 75.0 mm/min)
+    the 'pocket' operation.  (Default: 75.0 mm/min)
 
 *--plunge-feed* _N_::
 
@@ -190,12 +190,12 @@ Example:
     }
 
 
-=== Operation: pocket2
+=== Operation: pocket
 
 Make a pocket from the SVG path.
 
 svg2gcode uses the SVG path (optionally offset inwards by a finishing
-allowance argument) as the material contour of the wall of the pocket,
+allowance argument) as the material contour of the wall of the pocket.
 
 It cuts a slot around the inside of this adjusted material contour.
 
@@ -244,7 +244,7 @@ Example:
                 "paths": [ 0 ],
                 "operations": [
                     {
-                        "pocket2": {
+                        "pocket": {
                             "tool-diameter": 15.25,
                             "width-of-cut": 5.125
                         }
@@ -255,7 +255,7 @@ Example:
                 "paths": [ 1 ],
                 "operations": [
                     {
-                        "pocket2": {
+                        "pocket": {
                             "tool-diameter": 15.25,
                             "width-of-cut": 5.125,
                             "finishing-allowance": 5.0,

@@ -58,8 +58,8 @@ def handle_operation(op, path_index):
     elif 'offset' in op:
         return do_offset(op['offset'], input_path)
 
-    elif 'pocket2' in op:
-        return do_pocket2(op['pocket2'], input_path)
+    elif 'pocket' in op:
+        return do_pocket(op['pocket'], input_path)
 
     elif 'drill' in op:
         return do_drill(op['drill'], input_path)
@@ -178,67 +178,6 @@ def do_drill(op_args, input_path):
     return []
 
 
-def do_pocket(op_args, input_path):
-    output_paths = []
-
-    # FIXME: get these from a different tool info section of the json data
-    if "tool-diameter" in op_args.keys():
-        tool_diameter = op_args['tool-diameter']
-    else:
-        raise ValueError('no "tool-diameter" specified in "pocket" operation')
-    tool_radius = tool_diameter / 2.0
-
-    if "width-of-cut" in op_args.keys():
-        width_of_cut = op_args['width-of-cut']
-    else:
-        raise ValueError('no "width-of-cut" specified in "pocket" operation')
-
-    finishing_allowance = 0.0
-    if "finishing-allowance" in op_args.keys():
-        finishing_allowance = op_args['finishing-allowance']
-
-    offset = finishing_allowance + tool_radius
-    output_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-    if not output_paths:
-        # can't fit the tool into this path, nothing to do
-        print("pocket fails: tool too large to fit into path", file=sys.stderr)
-        return []
-
-    gcoder.comment("slotting the largest profile, %.4f finishing allowance + %.4f tool radius" % (finishing_allowance, tool_radius))
-    for path in output_paths:
-        gcoder.path_to_gcode(
-            svg,
-            path,
-            z_traverse=args.z_traverse,
-            z_approach=args.z_approach,
-            z_top_of_material=args.z_top_of_material,
-            z_cut_depth=args.z_cut_depth,
-            plunge_feed=args.plunge_feed,
-            feed=args.feed
-        )
-
-    while True:
-        offset += width_of_cut
-        new_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-        if not new_paths:
-            break
-        for path in new_paths:
-            gcoder.comment("pocket path (%.4f offset)" % offset)
-            gcoder.path_to_gcode(
-                svg,
-                path,
-                z_traverse=args.z_traverse,
-                z_approach=args.z_approach,
-                z_top_of_material=args.z_top_of_material,
-                z_cut_depth=args.z_cut_depth,
-                plunge_feed=args.plunge_feed,
-                feed=args.feed
-            )
-        output_paths += new_paths
-
-    return output_paths
-
-
 def v1_handle_path(job, input_path):
     if args.debug: print("doing v1 job", file=sys.stderr)
     if args.debug: print("    job: %s" % job['job-type'], file=sys.stderr)
@@ -262,9 +201,6 @@ def v1_handle_path(job, input_path):
 
     elif job['job-type'] == 'pocket':
         output_paths = do_pocket(job, input_path)
-
-    elif job['job-type'] == 'pocket2':
-        output_paths = do_pocket2(job, input_path)
 
     elif job['job-type'] == 'engrave':
         output_paths = do_engrave(job, input_path)
@@ -316,8 +252,7 @@ def remove_island(island, tool_radius, width_of_cut):
             return island_output_paths
 
 
-def do_pocket2(op_args, input_path):
-    # Alternative pocketing algorithm.
+def do_pocket(op_args, input_path):
     #
     # Inset the material contour by the finishing allowance to
     # get the rough material contour.
@@ -584,7 +519,7 @@ def load_job_file(jobfile):
                                         },
                                         'additionalProperties': False
                                     },
-                                    'pocket2': {
+                                    'pocket': {
                                         'type': 'object',
                                         'properties': {
                                             'tool-diameter': {
@@ -652,8 +587,8 @@ parser.add_argument("SVG", help="The name of the SVG file to read.")
 parser.add_argument("-p", "--path", type=int, action='append', help="Apply the machining operations to this path (specified as an index into the list of paths in the input SVG).  May be used multiple times to apply the operations to multiple paths.  (Default: apply to all paths.)")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
-parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket2' job type.  (Default: 90.0 mm/min)")
-parser.add_argument("--slot-feed", type=float, help="The tool feed rate to use for slot milling, in mm/minute.  Used by the 'pocket2' job type'.  (Default: 75.0 mm/min)")
+parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket' operation.  (Default: 90.0 mm/min)")
+parser.add_argument("--slot-feed", type=float, help="The tool feed rate to use for slot milling, in mm/minute.  Used by the 'pocket' operation'.  (Default: 75.0 mm/min)")
 parser.add_argument("--plunge-feed", type=float, help="The tool feed rate to use for plunging cuts, in mm/minute.  Used by all job types.  (Default: 50.0 mm/min)")
 parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
 parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
