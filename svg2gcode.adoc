@@ -81,16 +81,21 @@ or more closed paths), and produces the corresponding g-code.
 
 The job file is a json document.
 
-At the top level there's a hash with a key named "jobs", whose value
-is a list of job descriptions.  svg2gcode writes g-code for each job
-description in the list.
+At the top level there's an object with a single property named "jobs",
+whose value is an array of job descriptions.
 
-Each job description is a hash, and has a key named "job-type" whose
-value is the type of the job.  The supported job types and their arguments
-(provided as additional key/value pairs in the job description hash) are:
+Each job description is an object with two properties, named "paths"
+and "operations".
+
+"paths" is an array of path indexes (can be overridden using the
+command-line argument --path, see above).  If the "paths" array is
+empty and no --path argument is given, operate on all paths in the input
+SVG file.
+
+"operations" is an array of operation descriptions, as enumerated below.
 
 
-=== Job type: engrave
+=== Operation: engrave
 
 The toolpath follows the path in the SVG.
 
@@ -108,21 +113,28 @@ Examples:
     {
         "jobs": [
             {
-                "job-type": "engrave"
-            }
-    }
-
-    {
-        "jobs": [
+                "paths": [ 0 ],
+                "operations": [
+                    {
+                        "engrave": { }
+                    }
+                ]
+            },
             {
-                "job-type": "engrave",
-                "ramp-slope": 0.1
+                "paths": [ 1, 2 ],
+                "operations": [
+                    {
+                        "engrave": {
+                            "ramp-slope": 0.1
+                        }
+                    }
+                ]
             }
         ]
     }
 
 
-=== Job type: offset
+=== Operation: offset
 
 The toolpath is offset inwards or outwards from the path in the SVG.
 
@@ -132,9 +144,9 @@ Arguments:
 Positive distances are in the interior of the SVG path, negative distances
 are on the outside of the SVG path.
 
-*max-depth-of-cut* (float):: Maximum depth of a milling pass, in mm.
-Defaults to `(--z-top-of-material - --z-cut-depth)` so it cuts in a
-single pass.
+*max-depth-of-cut* (float, optional):: Maximum depth of a milling pass,
+in mm.  Defaults to `(--z-top-of-material - --z-cut-depth)` so it cuts
+in a single pass.
 
 *ramp-slope* (float, optional):: If specified, `ramp-slope` enables
 ramp entry into the cut.  The value is the Z depth per unit horizontal
@@ -153,25 +165,32 @@ Example:
     {
         "jobs": [
             {
-                "job-type": "offset",
-                "distance": 2.1,
-                "max-depth-of-cut": 3.1
-            },
-            {
-                "job-type": "offset",
-                "distance": 1.0,
-                "max-depth-of-cut": 3.1,
-                "work-holding-tabs": {
-                    "number-of-tabs": 4,
-                    "height": 1.5,
-                    "width": 12.5
-                }
+                "paths": [ 0, 1 ],
+                "operations: [
+                    {
+                        "offset": {
+                            "distance": 2.1
+                        }
+                    },
+                    {
+                        "offset": {
+                            "distance": 1.0,
+                            "max-depth-of-cut": 3.1,
+                            "ramp-slope": 0.05,
+                            "work-holding-tabs": {
+                                "number-of-tabs": 4,
+                                "height": 1.5,
+                                "width": 12.5
+                            }
+                        }
+                    }
+                ]
             }
         ]
     }
 
 
-=== Job type: pocket2
+=== Operation: pocket2
 
 Make a pocket from the SVG path.
 
@@ -222,18 +241,36 @@ Example:
     {
         "jobs": [
             {
-                "job-type": "pocket2",
-                "tool-diameter": 15.25,
-                "width-of-cut": 5.125,
-                "finishing-allowance": 5.0,
-                "slot-max-depth-of-cut": 1.2,
-                "shoulder-max-depth-of-cut": 2.8
+                "paths": [ 0 ],
+                "operations": [
+                    {
+                        "pocket2": {
+                            "tool-diameter": 15.25,
+                            "width-of-cut": 5.125
+                        }
+                    }
+                ]
+            },
+            {
+                "paths": [ 1 ],
+                "operations": [
+                    {
+                        "pocket2": {
+                            "tool-diameter": 15.25,
+                            "width-of-cut": 5.125,
+                            "finishing-allowance": 5.0,
+                            "slot-max-depth-of-cut": 1.2,
+                            "shoulder-max-depth-of-cut": 2.8,
+                            "ramp-slope": 0.1
+                        }
+                    }
+                ]
             }
         ]
     }
 
 
-=== Job type: drill
+=== Operation: drill
 
 Drill at the center of a circular path.  The input path must consist
 of two Arc segments that make up one complete circle.  The output will
@@ -242,11 +279,26 @@ feed rate will be used.
 
 This job type takes no arguments.
 
+Example:
+
+    {
+        "jobs": [
+            {
+                "paths": [ 0, 1, 2 ],
+                "operations": [
+                    {
+                        "drill": { }
+                    }
+                ]
+            }
+        ]
+    }
+
 
 === Work-holding tabs
 
-Key/value pairs in the `work-holding-tabs` object of the `offset` job
-type are:
+Properties in the `work-holding-tabs` object of the `offset` operation
+are:
 
 *number-of-tabs* (integer, required):: Add this number of work-holding
 tabs.
@@ -263,3 +315,9 @@ be cut away.  Defaults to 10mm if omitted.
 the path where the tabs should start.  If specified, the length of the
 list must be the same as `number-of-tabs`.  If the `locations` list is not
 specified, the tabs will be automatically placed evenly around the path.
+
+
+== Old jobfile format (obsolete)
+
+An older jobfile format is still accepted, but no longer recommended
+or documented.  Use the new jobfile format described above.
