@@ -611,6 +611,12 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 this_seg.end = this_seg.point(intersection[0])
                 next_seg.start = this_seg.end
 
+            # If you change an Arc you have to re-parameterize it.
+            if type(this_seg) is svgpathtools.path.Arc:
+                this_seg._parameterize()
+            if type(next_seg) is svgpathtools.path.Arc:
+                next_seg._parameterize()
+
 
     #
     # Find all the places where adjacent segments do not end/start close
