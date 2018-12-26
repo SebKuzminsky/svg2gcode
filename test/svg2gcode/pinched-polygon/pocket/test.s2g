@@ -1,7 +1,7 @@
 {
     "jobs": [
         {
-            "job-type": "pocket2",
+            "job-type": "pocket",
             "tool-diameter": 15,
             "width-of-cut": 5,
             "finishing-allowance": 5

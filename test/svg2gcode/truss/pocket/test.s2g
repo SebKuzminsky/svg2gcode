@@ -12,7 +12,7 @@
             "paths": [ 1, 2, 3, 4, 5 ],
             "operations": [
 		{
-		    "pocket2": {
+		    "pocket": {
 			"tool-diameter": 3.175,
                         "finishing-allowance": 0.825,
                         "width-of-cut": 1.0,

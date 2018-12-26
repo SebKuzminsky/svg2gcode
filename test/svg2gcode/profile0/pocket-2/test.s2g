@@ -8,7 +8,7 @@
             "distance": 1.0
         },
         {
-            "job-type": "pocket2",
+            "job-type": "pocket",
             "tool-diameter": 10,
             "width-of-cut": 1,
             "finishing-allowance": 1,
