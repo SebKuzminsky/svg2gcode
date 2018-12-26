@@ -601,7 +601,13 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             intersection = intersections[0]
             point = this_seg.point(intersection[0])
             if debug: print("    intersection point:", point, file=sys.stderr)
-            if not close_enough(point, this_seg.end):
+            if close_enough(point, this_seg.end):
+                # Adjust the endpoints so the segments touch.
+                p = (this_seg.end + next_seg.start) / 2.0
+                this_seg.end = p
+                next_seg.start = p
+            else:
+                # Trim the ends off both segment so they end at their intersection.
                 this_seg.end = this_seg.point(intersection[0])
                 next_seg.start = this_seg.end
 
