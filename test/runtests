@@ -24,6 +24,7 @@ export PATH=$(dirname $(realpath $0))/..:${PATH}
 
 do_test() {
     TEST_FILE=$(basename "$1")
+    TEST_NAME="$2"
 
     if [ -f skip ]; then
         echo SKIPPED
@@ -31,25 +32,22 @@ do_test() {
     fi
 
     rm -f stderr
-    if [ -f expected.ngc ]; then
-        if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
-            svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg >| result.ngc 2>> stderr
-        else
-            ./${TEST_FILE} > result.ngc 2>> stderr
-        fi
+
+    if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
+        svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg >| result.ngc 2>> stderr
     else
-        ./${TEST_FILE} 2>> stderr
+        ./${TEST_FILE} > result.ngc 2>> stderr
     fi
     if [ $? -ne 0 ]; then
-        echo "FAILED: non-zero exit code"
         cat stderr
+        echo "FAILED ${TEST_NAME}: non-zero exit code"
         return 1
     fi
 
     if [ -f expected.ngc -a -f result.ngc ]; then
         diff -u expected.ngc result.ngc
         if [ $? -ne 0 ]; then
-            echo "FAILED: unexpected G-code result"
+            echo "FAILED ${TEST_NAME}: unexpected G-code result"
             return 1
         fi
     fi
@@ -57,7 +55,7 @@ do_test() {
     if [ -f result.ngc -a -x rs274 ]; then
         rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
         if [ $? -ne 0 ]; then
-            echo "FAILED: resulting g-code rejected by SAI"
+            echo "FAILED ${TEST_NAME}: resulting g-code rejected by SAI"
             return 1
         fi
     fi
@@ -83,7 +81,7 @@ for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'te
 
     echo "running ${TEST_NAME}"
     cd ${TEST_DIR}
-    do_test ${TEST}
+    do_test ${TEST} ${TEST_NAME}
     R=$?
     if [ $R -eq 0 ]; then
         rm -f result.ngc
