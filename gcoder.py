@@ -255,7 +255,7 @@ def split_path_at_intersections(path_list, debug=False):
             # the interesting one, except that intersections at the
             # segments' endpoints don't count.
             for intersection in intersections:
-                if complex_close_enough(intersection[0], 0.0) or complex_close_enough(intersection[0], 1.0):
+                if close_enough(intersection[0], 0.0) or close_enough(intersection[0], 1.0):
                     if debug: print("            at end of this segment, ignoring", file=sys.stderr)
                     continue
 
@@ -318,15 +318,15 @@ def split_path_at_intersections(path_list, debug=False):
         other_first_seg.end = this_first_seg.end
         other_second_seg.start = other_first_seg.end
 
-        assert(complex_close_enough(this_first_seg.end, this_second_seg.start))
-        assert(complex_close_enough(this_first_seg.end, other_first_seg.end))
-        assert(complex_close_enough(this_first_seg.end, other_second_seg.start))
+        assert(close_enough(this_first_seg.end, this_second_seg.start))
+        assert(close_enough(this_first_seg.end, other_first_seg.end))
+        assert(close_enough(this_first_seg.end, other_second_seg.start))
 
-        assert(complex_close_enough(this_first_seg.start, this_seg.start))
-        assert(complex_close_enough(this_second_seg.end, this_seg.end))
+        assert(close_enough(this_first_seg.start, this_seg.start))
+        assert(close_enough(this_second_seg.end, this_seg.end))
 
-        assert(complex_close_enough(other_first_seg.start, other_seg.start))
-        assert(complex_close_enough(other_second_seg.end, other_seg.end))
+        assert(close_enough(other_first_seg.start, other_seg.start))
+        assert(close_enough(other_second_seg.end, other_seg.end))
 
         # Replace the old (pre-split) this_seg with the first sub-segment.
         path_list[this_seg_index] = this_first_seg
@@ -485,7 +485,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     offset_path_list = []
     for seg in path:
         if type(seg) == svgpathtools.path.Line:
-            if complex_close_enough(seg.point(0), seg.point(1)):
+            if close_enough(seg.point(0), seg.point(1)):
                 if debug: print("    skipping zero-length line segment", file=sys.stderr)
                 continue
             start = seg.point(0) + (offset_distance * seg.normal(0))
@@ -601,7 +601,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             intersection = intersections[0]
             point = this_seg.point(intersection[0])
             if debug: print("    intersection point:", point, file=sys.stderr)
-            if not complex_close_enough(point, this_seg.end):
+            if not close_enough(point, this_seg.end):
                 this_seg.end = this_seg.point(intersection[0])
                 next_seg.start = this_seg.end
 
@@ -621,7 +621,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         else:
             next_seg = offset_path_list[0]
 
-        if complex_close_enough(this_seg.end, next_seg.start):
+        if close_enough(this_seg.end, next_seg.start):
             joined_offset_path_list.append(this_seg)
             continue
 
@@ -723,7 +723,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 next_seg = path_list[i+1]
             else:
                 next_seg = path_list[0]
-            if complex_close_enough(this_seg.end, next_seg.start):
+            if close_enough(this_seg.end, next_seg.start):
                 next_seg.start = this_seg.end
             else:
                 if debug: print("gap in the path (seg %d and following):" % i, file=sys.stderr)
@@ -1383,15 +1383,6 @@ def close_enough(a, b):
     """Returns True if the two numbers `a` and `b` are within `epsilon`
     (1e-6) of each other, False if they're farther apart."""
     return abs(a - b) < epsilon
-
-def complex_close_enough(a, b):
-    """Returns True if the two complex numbers `a` and `b` are within
-    `epsilon` (1e-6) of each other, False if they're farther apart."""
-    diff = complex(a.real - b.real, a.imag - b.imag)
-    mag = math.sqrt(pow(diff.real, 2) + pow(diff.imag, 2))
-    if mag < epsilon:
-        return True
-    return False
 
 
 def init():
