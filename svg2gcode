@@ -240,6 +240,10 @@ def do_pocket(op_args, input_path):
 
 
 def v1_handle_path(job, input_path):
+    if args.debug: print("doing v1 job", file=sys.stderr)
+    if args.debug: print("    job: %s" % job['job-type'], file=sys.stderr)
+    if args.debug: print("    path: %s" % input_path, file=sys.stderr)
+
     output_paths = []
 
     input_path = gcoder.close_path(input_path)
@@ -278,7 +282,7 @@ def remove_island(island, tool_radius, width_of_cut):
     offset = -tool_radius + width_of_cut
     island_output_paths = []
 
-    print("removing an island", file=sys.stderr)
+    print("removing an island: %s" % island, file=sys.stderr)
 
     while island != None:
         print("remaining material:", island, file=sys.stderr)
@@ -389,6 +393,7 @@ def do_pocket2(op_args, input_path):
         print("no slotting path!", file=sys.stderr)
         return []
     output_paths += slotting_paths
+    print("initial slotting path(s): %s" % slotting_paths, file=sys.stderr)
 
 
     #
@@ -398,6 +403,8 @@ def do_pocket2(op_args, input_path):
     shoulder_milling_paths = []
     for slot in slotting_paths:
         remaining_material_contours = gcoder.offset_paths(slot, tool_radius, debug=args.debug)
+        print("remaining material contours (islands): %s" % remaining_material_contours, file=sys.stderr)
+        output_paths += remaining_material_contours
         # FIXME: sort the remaining islands, nearest first
         for island in remaining_material_contours:
             shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
@@ -702,7 +709,7 @@ if jobfile_schema == 1:
         gcoder.comment("path %d" % i)
         input_path = svg.paths[i]
         for job in jobs['jobs']:
-            output_paths.append(v1_handle_path(job, input_path))
+            output_paths += v1_handle_path(job, input_path)
 
 # New-style job files have a single top-level property named "jobs",
 # which is an array of v2 job objects.
@@ -718,10 +725,13 @@ elif jobfile_schema == 2:
         for path in input_paths:
             gcoder.comment("path %d" % path)
             for op in job['operations']:
-                output_paths.append(handle_operation(op, path))
+                output_paths += handle_operation(op, path)
 
 
-#svgpathtools.paths2svg.wsvg(paths=[input_path] + output_paths)
+if args.debug:
+    print("output paths: %s" % output_paths, file=sys.stderr)
+    if len(output_paths) > 0:
+        svgpathtools.paths2svg.wsvg(paths=output_paths)
 
 # G-code postamble
 gcoder.m2()
