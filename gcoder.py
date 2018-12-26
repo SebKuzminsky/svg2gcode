@@ -249,16 +249,18 @@ def split_path_at_intersections(path_list, debug=False):
             intersections = this_seg.intersect(other_seg)
             if len(intersections) == 0:
                 continue
-            if debug: print("        intersect!", file=sys.stderr)
+            if debug: print("        intersect!  %s" % intersections, file=sys.stderr)
 
             # The intersection that comes earliest in `this_seg` is
             # the interesting one, except that intersections at the
             # segments' endpoints don't count.
             for intersection in intersections:
                 if complex_close_enough(intersection[0], 0.0) or complex_close_enough(intersection[0], 1.0):
+                    if debug: print("            at end of this segment, ignoring", file=sys.stderr)
                     continue
 
                 if intersection[0] > 1.0 or intersection[0] < 0.0:
+                    if debug: print("            off the end of this segment?!  ignoring", file=sys.stderr)
                     continue
 
                 if (earliest_this_t == None) or (intersection[0] < earliest_this_t):
@@ -489,7 +491,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             start = seg.point(0) + (offset_distance * seg.normal(0))
             end = seg.point(1) + (offset_distance * seg.normal(1))
             offset_path_list.append(svgpathtools.Line(start, end))
-            if debug: print("    ", offset_path_list[-1], file=sys.stderr)
+            if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
 
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
             # Circular arcs remain arcs, elliptical arcs become linear
@@ -553,7 +555,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 # Zero-radius Arc, it disappeared.
                 if debug: print("    arc way too small, removing", file=sys.stderr)
                 continue
-            if debug: print("    ", offset_path_list[-1], file=sys.stderr)
+            if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
 
         else:
             # Deal with any segment that's not a line or a circular arc.
@@ -626,7 +628,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         if debug: print("these segments don't touch end to end:", file=sys.stderr)
         if debug: print(this_seg, file=sys.stderr)
         if debug: print(next_seg, file=sys.stderr)
-        if debug: print("    error:", this_seg.end-next_seg.start, file=sys.stderr)
+        if debug: print("    error: %s (%.7f)" % (this_seg.end-next_seg.start, abs(this_seg.end-next_seg.start)), file=sys.stderr)
 
         # FIXME: Choose values for `large_arc` and `sweep` correctly here.
         # I think the goal is to make the joining arc tangent to the segments it joins.
