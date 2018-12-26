@@ -519,8 +519,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             else:
                 new_radius = seg.radius.real + offset_distance
 
-            start = seg.point(0) + (offset_distance * seg.normal(0))
-            end = seg.point(1) + (offset_distance * seg.normal(1))
+            start = seg.start + (offset_distance * seg.normal(0))
+            end = seg.end + (offset_distance * seg.normal(1))
             sweep = seg.sweep
 
             flipped = False
