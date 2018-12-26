@@ -1,0 +1,22 @@
+This test triggers an infinite loop in Arc.intersect(Arc).
+
+Traceback (most recent call last):
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 647, in <module>
+    output_paths += v1_handle_path(job, input_path)
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 203, in v1_handle_path
+    output_paths = do_pocket(job, input_path)
+  File "/home/seb/svg2gcode/test/../svg2gcode", line 340, in do_pocket
+    remaining_material_contours = gcoder.offset_paths(slot, tool_radius, debug=args.debug)
+  File "/home/seb/svg2gcode/gcoder.py", line 719, in offset_paths
+    offset_paths_list = split_path_at_intersections(offset_path_list, debug=debug)
+  File "/home/seb/svg2gcode/gcoder.py", line 287, in split_path_at_intersections
+    this_t, other_seg_index, other_t = find_earliest_intersection(path_list, this_seg_index)
+  File "/home/seb/svg2gcode/gcoder.py", line 249, in find_earliest_intersection
+    intersections = this_seg.intersect(other_seg)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/path.py", line 1914, in intersect
+    tol=tol, tol_deC=tol)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 302, in bezier_intersections
+    bbox1 = bezier_bounding_box(pair.bez1)
+  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 210, in bezier_bounding_box
+    if len(bez) == 4:
+TypeError: object of type 'Arc' has no len()
