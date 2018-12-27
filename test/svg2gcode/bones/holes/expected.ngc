@@ -1,7 +1,7 @@
 G21
 G64 P0.0100 (enable path blending with tolerance)
 S 3500
-; path 5
+; engrave, path 5
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -16,7 +16,8 @@ G3 X3.5000 Y536.2412 I0.0000 J536.2412
 G3 X-3.5000 Y536.2412 I0.0000 J536.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 5
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X0.0000 Y536.2412
@@ -24,7 +25,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 6
+; engrave, path 6
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -39,7 +40,8 @@ G3 X42.5000 Y536.2412 I39.0000 J536.2412
 G3 X35.5000 Y536.2412 I39.0000 J536.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 6
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X39.0000 Y536.2412
@@ -47,7 +49,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 7
+; engrave, path 7
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -62,7 +64,8 @@ G3 X81.5000 Y536.2412 I78.0000 J536.2412
 G3 X74.5000 Y536.2412 I78.0000 J536.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 7
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X78.0000 Y536.2412
@@ -70,7 +73,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 8
+; engrave, path 8
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -85,7 +88,8 @@ G3 X120.5000 Y536.2412 I117.0000 J536.2412
 G3 X113.5000 Y536.2412 I117.0000 J536.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 8
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X117.0000 Y536.2412
@@ -93,7 +97,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 9
+; engrave, path 9
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -108,7 +112,8 @@ G3 X159.5000 Y536.2412 I156.0000 J536.2412
 G3 X152.5000 Y536.2412 I156.0000 J536.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 9
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X156.0000 Y536.2412
@@ -116,7 +121,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 10
+; engrave, path 10
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -131,7 +136,8 @@ G3 X3.5000 Y261.2412 I0.0000 J261.2412
 G3 X-3.5000 Y261.2412 I0.0000 J261.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 10
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X0.0000 Y261.2412
@@ -139,7 +145,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 11
+; engrave, path 11
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -154,7 +160,8 @@ G3 X42.5000 Y236.2412 I39.0000 J236.2412
 G3 X35.5000 Y236.2412 I39.0000 J236.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 11
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X39.0000 Y236.2412
@@ -162,7 +169,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 12
+; engrave, path 12
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -177,7 +184,8 @@ G3 X81.5000 Y186.2412 I78.0000 J186.2412
 G3 X74.5000 Y186.2412 I78.0000 J186.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 12
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X78.0000 Y186.2412
@@ -185,7 +193,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 13
+; engrave, path 13
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -200,7 +208,8 @@ G3 X81.5000 Y261.2412 I78.0000 J261.2412
 G3 X74.5000 Y261.2412 I78.0000 J261.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 13
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X78.0000 Y261.2412
@@ -208,7 +217,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 14
+; engrave, path 14
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -223,7 +232,8 @@ G3 X120.5000 Y231.2412 I117.0000 J231.2412
 G3 X113.5000 Y231.2412 I117.0000 J231.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 14
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X117.0000 Y231.2412
@@ -231,7 +241,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 15
+; engrave, path 15
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -246,7 +256,8 @@ G3 X120.5000 Y136.2412 I117.0000 J136.2412
 G3 X113.5000 Y136.2412 I117.0000 J136.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 15
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X117.0000 Y136.2412
@@ -254,7 +265,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 16
+; engrave, path 16
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -269,7 +280,8 @@ G3 X159.5000 Y106.2412 I156.0000 J106.2412
 G3 X152.5000 Y106.2412 I156.0000 J106.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 16
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X156.0000 Y106.2412
@@ -277,7 +289,7 @@ F 279.4000
 G0 Z2.0000
 G81 Z-2.0000 R2.0000
 G0 Z25.0000
-; path 17
+; engrave, path 17
 ; engrave path
 G90.1
 G0 Z25.0000
@@ -292,7 +304,8 @@ G3 X159.5000 Y36.2412 I156.0000 J36.2412
 G3 X152.5000 Y36.2412 I156.0000 J36.2412
 G1 Z2.0000
 G0 Z25.0000
-; drilling (hole diameter 7.0000)
+; drill, path 17
+; hole diameter 7.0000
 M3
 G0 Z25.0000
 G0 X156.0000 Y36.2412
