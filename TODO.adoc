@@ -37,6 +37,9 @@
   the mini-liner svg in the griptilian scales project uses inch(?) units
   and the result is the wrong size.
 
+* Add support for SVG group transforms.  See "scaled" test.  This probably
+  requires support in svgpathtools for "<g transform>".
+
 * Add user units handling.  Currently all numbers the user specifies
   are SI (mm for offsets, doc, etc; mm/min for feeds).  Accept units
   with numbers, like "0.375inch" or "5mm/min"(?).  Some default applies
