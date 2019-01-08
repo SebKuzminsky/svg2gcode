@@ -33,10 +33,6 @@
   There must be literature on this topic.  Anders' Wallin's opencamlib
   does something smarter.
 
-* Fix SVG units handling.  When the SVG uses mm everything's fine, but
-  the mini-liner svg in the griptilian scales project uses inch(?) units
-  and the result is the wrong size.
-
 * Add support for SVG group transforms.  See "scaled" test.  This probably
   requires support in svgpathtools for "<g transform>".
 
