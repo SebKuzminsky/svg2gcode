@@ -85,6 +85,11 @@
 * Add a property to the items in the jobs array specifying whether to
   do all ops on each path in turn, or each op on all paths?
 
+* Just like we have plunge, slot, and shoulder feeds, we need different
+  speeds for each.
+
+* offset_paths() takes an optional `steps` argument, let user choose.
+
 
 
 
