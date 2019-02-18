@@ -1,0 +1,12 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "engrave": { }
+                }
+            ]
+        }
+    ]
+}
