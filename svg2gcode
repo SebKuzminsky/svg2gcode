@@ -279,7 +279,7 @@ def do_drill(op_args, input_path):
     else:
         raise ValueError('drill job on non-circle path!')
 
-    (x, y) = svg.to_mm(input_path[0].center)
+    (x, y) = svg.xy_to_mm(input_path[0].center)
     result = ResultDrill(
         x=x,
         y=y,
@@ -498,7 +498,7 @@ def do_pocket(op_args, input_path):
 
             # FIXME: if we can reach it without gouging, just feed there
             # else this:
-            (x, y) = svg.to_mm(path[0].start)
+            (x, y) = svg.xy_to_mm(path[0].start)
             if gcoder.current_z < args.z_approach:
                 results.append(ResultGCode("G1 Z%.4f" % args.z_approach))
             if gcoder.current_z < args.z_traverse:

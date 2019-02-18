@@ -141,50 +141,140 @@ class arc_ccw(arc):
 class svg():
     def __init__(self, svg_file):
         self.svg_file = svg_file
-        self.height = 0.0
 
-        # svg coordinate * scale == mm
-        self.scale = 1.0
+        #
+        # We need to convert from whatever units the SVG input file
+        # (self) is in, to mm for the output gcode.
+        #
+        # The SVG spec lets SVG files program paths in arbitrary "user"
+        # units.  The conversion from user units to mm is done as follows:
+        #
+        # The SVG file specifies its width and height in one of the
+        # accepted "real-world" units, all of which can be converted
+        # to mm with a straight-forward linear scale (see the viewport
+        # handling below).
+        #
+        # The SVG file *may* specify a viewBox.
+        #
+        # If no viewBox is specified, the viewport units are used for
+        # the user units.
+        #
+        # If a viewBox is specified, it provides the (X, Y) coordinates
+        # (in user units) of the lower left corner of the viewport and
+        # the width and height (again in user units) of the viewport.
+        #
+        # From all this we compute an x_scale and y_scale, such that:
+        #
+        # x_gcode(mm) = x_svg * x_scale
+        # y_gcode(mm) = y_svg * y_scale
+        #
+        # (This ignores the fact that SVG specifies Y upside-down compared
+        # to gcode, and that the viewBox can be offset from the origin,
+        # see svg.x_to_mm() and svg.y_to_mm() below.)
+        #
 
         self.paths, self.attributes, self.svg_attributes = svgpathtools.svg2paths2(self.svg_file)
         print("svgpathtools attributes: %s" % self.svg_attributes, file=sys.stderr)
 
-        m = re.match('([0-9.]+)([a-zA-Z]*)', self.svg_attributes['height'])
-        if m == None:
-            raise SystemExit("failed to parse SVG height: %s" % self.svg_attributes['height'])
 
-        self.height = float(m.group(1))
+        #
+        # Deal with the viewport.
+        #
 
-        if len(m.groups()) == 2:
-            if m.group(2) == "mm":
-                self.height = float(m.group(1))
-            elif m.group(2) == '':
-                # no units on the height implies 96 dpi
-                # 1 inch/96 units * 25.4 mm/1 inch = 25.4/96 mm/unit
-                self.scale = 25.4/96
-            else:
-                raise SystemExit("unhandled SVG units '%s'" % m.group(2))
+        val, units, scale = self._parse_height_width(self.svg_attributes['height'])
+        self.viewport_height = val
+        self.viewport_y_units = units
+        self.x_scale = scale
+
+        val, units, scale = self._parse_height_width(self.svg_attributes['width'])
+        self.viewport_width = val
+        self.viewport_x_units = units
+        self.y_scale = scale
+
+        print("svg viewport:", file=sys.stderr)
+        print("    width: %.3f%s" % (self.viewport_width, self.viewport_x_units), file=sys.stderr)
+        print("    height: %.3f%s" % (self.viewport_height, self.viewport_y_units), file=sys.stderr)
+
+
+        #
+        # Deal with the viewBox.
+        #
+
+        if 'viewBox' in self.svg_attributes:
+            print("svg viewBox:", self.svg_attributes['viewBox'], file=sys.stderr)
+            (x_min, y_min, width, height) = re.split(',|(?: +(?:, *)?)', self.svg_attributes['viewBox'])
+            print("    x_min:", x_min, file=sys.stderr)
+            print("    y_min:", y_min, file=sys.stderr)
+            print("    width:", width, file=sys.stderr)
+            print("    height:", height, file=sys.stderr)
+            self.viewBox_x = float(x_min)
+            self.viewBox_y = float(y_min)
+            self.viewBox_width = float(width)
+            self.viewBox_height = float(height)
+
+            self.x_scale *= self.viewport_width / self.viewBox_width
+            self.y_scale *= self.viewport_height / self.viewBox_height
+
         else:
-            raise SystemExit("weird result from re")
+            self.viewBox_x = 0.0
+            self.viewBox_y = 0.0
+            self.viewBox_width = self.viewport_width
+            self.viewBox_height = self.viewport_height
 
 
-    def to_mm_x(self, x_mm):
-        if type(x_mm) != float:
+    def _parse_height_width(self, s):
+        m = re.match('^([0-9.]+)([a-zA-Z]*)$', s)
+        if m == None or len(m.groups()) != 2:
+            raise SystemExit("failed to parse SVG viewport height/width: %s" % s)
+
+        val = float(m.group(1))
+        unit = m.group(2)
+
+        units = {
+            # "px" (or "no units") is 96 dpi: 1 inch/96 px * 25.4 mm/1 inch = 25.4/96 mm/px
+            '': 25.4/96,
+            'px': 25.4/96,
+
+            # "pt" is 72 dpi: 1 inch/72 pt * 25.4 mm/1 inch = 25.4/72 mm/pt
+            'pt': 25.4/72,
+
+            # Units are Picas "pc", 6 dpi: 1 inch/6 pc * 25.4 mm/1 inch = 25.4/6 mm/pc
+            'pc': 25.4/6,
+
+            'cm': 10.0,
+            'mm': 1.0,
+
+            # Units are inches: 25.4 mm/1 inch
+            'in': 25.4
+        }
+
+        if unit not in units:
+            raise SystemExit("unknwn SVG viewport units: '%s'" % unit)
+
+        scale = units[unit]
+
+        return (val, unit, scale)
+
+
+    def x_to_mm(self, x):
+        if type(x) != float:
             raise SystemExit('non-float input')
-        return x_mm * self.scale
+        out = (x - self.viewBox_x) * self.x_scale
+        return out
 
 
-    def to_mm_y(self, y_mm):
-        if type(y_mm) != float:
+    def y_to_mm(self, y):
+        if type(y) != float:
             raise SystemExit('non-float input')
-        return self.height - y_mm * self.scale
+        out = (self.viewBox_height - (y - self.viewBox_y)) * self.y_scale
+        return out
 
 
-    def to_mm(self, xy):
+    def xy_to_mm(self, xy):
         if type(xy) != complex:
             raise SystemExit('non-complex input')
-        x = self.to_mm_x(xy.real)
-        y = self.to_mm_y(xy.imag)
+        x = self.x_to_mm(xy.real)
+        y = self.y_to_mm(xy.imag)
         return (x, y)
 
 
@@ -824,13 +914,13 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 def path_segment_to_gcode(svg, segment, z=None):
     if type(segment) == svgpathtools.path.Line:
-        (start_x, start_y) = svg.to_mm(segment.start)
-        (end_x, end_y) = svg.to_mm(segment.end)
+        (start_x, start_y) = svg.xy_to_mm(segment.start)
+        (end_x, end_y) = svg.xy_to_mm(segment.end)
         g1(x=end_x, y=end_y, z=z)
     elif type(segment) is svgpathtools.path.Arc and (segment.radius.real == segment.radius.imag):
         # FIXME: g90.1 or g91.1?
-        (end_x, end_y) = svg.to_mm(segment.end)
-        (center_x, center_y) = svg.to_mm(segment.center)
+        (end_x, end_y) = svg.xy_to_mm(segment.end)
+        (center_x, center_y) = svg.xy_to_mm(segment.center)
         if segment.sweep:
             g2(x=end_x, y=end_y, z=z, i=center_x, j=center_y)
         else:
@@ -849,7 +939,7 @@ def path_segment_to_gcode(svg, segment, z=None):
         for k in range(steps+1):
             t = k / float(steps)
             end = segment.point(t)
-            (end_x, end_y) = svg.to_mm(end)
+            (end_x, end_y) = svg.xy_to_mm(end)
             g1(x=end_x, y=end_y)
 
 
@@ -1053,7 +1143,7 @@ Arguments:
 
 
     absolute_arc_centers()
-    (x, y) = svg.to_mm(path[0].start)
+    (x, y) = svg.xy_to_mm(path[0].start)
 
     if z_approach == None:
         z_approach = 0.5 + z_top_of_material
