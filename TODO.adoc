@@ -42,9 +42,6 @@
   to numbers without specific units, and the default can be specified
   (imperial/metric).
 
-* If gcoder.path_to_gcode() wraps the path while ramping, we can just
-  keep ramping to the final cut depth.
-
 * Let work-holding tabs span the path end.
 
 * Make tabs that apply to multiple jobs...  A typical use case is to
