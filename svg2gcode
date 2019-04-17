@@ -621,7 +621,11 @@ def load_job_file(jobfile):
                                 'properties': {
                                     'engrave': {
                                         'type': 'object',
-                                        'properties': { },
+                                        'properties': {
+                                            'ramp-slope': {
+                                                'type': 'number'
+                                            }
+                                        },
                                         'additionalProperties': False
                                     },
                                     'offset': {
