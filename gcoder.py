@@ -1360,6 +1360,8 @@ Arguments:
             # slope, ignoring tabs.
             z_ignoring_tabs = current_z
 
+            # Ramp down, segment by segment, until we come to the bottom
+            # of the pass or the end of the path.
             while z_ignoring_tabs > z_bottom_of_pass:
                 i = 0
                 while i < len(path):
