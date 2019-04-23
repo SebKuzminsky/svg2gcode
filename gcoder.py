@@ -1351,7 +1351,7 @@ Arguments:
             # Ramp in.
 
             # Start the ramp at the top of material
-            if lead_in == True:
+            if lead_in == True and feed is not None:
                 set_feed_rate(feed)
             g1(z=z_top_of_pass)
 
