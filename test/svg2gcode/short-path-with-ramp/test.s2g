@@ -1,0 +1,41 @@
+{
+    "jobs": [
+        {
+            "paths": [ 1 ],
+            "operations": [
+                {
+                    "offset": {
+                        "distance": 3.175,
+                        "max-depth-of-cut": 5.0,
+                        "ramp-slope": 0.1
+                    }
+                }
+            ]
+        },
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "offset": {
+                        "distance": -3.175,
+                        "max-depth-of-cut": 6.0,
+                        "ramp-slope": 0.1,
+                        "work-holding-tabs": {
+                            "number-of-tabs": 6,
+                            "height": 1.5,
+                            "width": 13,
+                            "locations": [
+                                40,
+                                100,
+                                175,
+                                250,
+                                310,
+                                390
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
