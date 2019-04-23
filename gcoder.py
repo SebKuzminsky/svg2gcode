@@ -1046,6 +1046,14 @@ Arguments:
             the per-pass depth of cut is as large as possible without
             exceeding `max_depth_of_cut`.
 
+            If `ramp_slope` is specified, then the combination of
+            `ramp_slope`, `max_depth_of_cut` (or its default of "full
+            depth"), and the length of the path may be overconstrained.
+            If the specified ramp doesn't reach the target depth of cut
+            before the end of the path, then the ramp slope is increased
+            so the ramp reaches the target depth of cut exactly at the
+            end of the path.
+
             A cutting pass consists of Entry Motion to get the tool into
             the work, followed by Main Motion cutting the path.
 
@@ -1058,12 +1066,11 @@ Arguments:
                     * Feed Z to the top of this pass (at `feed` feed
                       rate).
 
-                    * Move X and Y along the path while ramping Z down
-                      to the bottom of this pass at the specified slope
-                      rate.  The bottom of the pass is depth-of-cut
-                      below the top of the pass.  The ramp may span
-                      segments, may wrap around the path, and may
-                      terminate anywhere in any segment.  The segment
+                    * Move X and Y along the path while ramping Z down to
+                      the bottom of this pass at the specified slope rate.
+                      The bottom of the pass is depth-of-cut below the
+                      top of the pass.  The ramp may span segments, and
+                      may terminate anywhere in any segment.  The segment
                       and location-within-the-segment where the ramp
                       finishes is noted for later cleanup.
 
@@ -1355,6 +1362,16 @@ Arguments:
                 set_feed_rate(feed)
             g1(z=z_top_of_pass)
 
+            # If the path is so short that the ramp doesn't reach the
+            # full requested depth of cut, then increase the ramp slope
+            # so it does.
+            # FIXME: maybe throw an exception here and force the user
+            # to reconcile ramp_slope, depth_of_cut, and path length?
+            full_path_ramp_slope = depth_of_cut / path.length()
+            if full_path_ramp_slope > ramp_slope:
+                print("WARNING: adjusting ramp slope from %.3f to %.3f to reach target depth of cut %.3f by the end of the path (length=%.3f)" % (ramp_slope, full_path_ramp_slope, depth_of_cut, path.length()), file=sys.stderr)
+                ramp_slope = full_path_ramp_slope
+
             # During ramping, mix plunge_feed and feed according to
             # the slope.
             if feed is not None and plunge_feed is not None:
@@ -1372,7 +1389,7 @@ Arguments:
 
             # Ramp down, segment by segment, until we come to the bottom
             # of the pass or the end of the path.
-            while z_ignoring_tabs > z_bottom_of_pass:
+            while (z_ignoring_tabs - 1e-6) > z_bottom_of_pass:
                 i = 0
                 while i < len(path):
                     segment = path[i]
@@ -1381,7 +1398,7 @@ Arguments:
                     z_at_segment_end = z_at_segment_start - (ramp_slope * length)
                     z_ignoring_tabs = z_at_segment_end
 
-                    if z_at_segment_end >= z_bottom_of_pass:
+                    if (z_at_segment_end - 1e-6) > z_bottom_of_pass:
                         # Not bottoming out on this segment, it is in
                         # the middle of the ramp somewhere.
                         cut_segment_skip_tabs(svg, i, z_at_segment_start, z_at_segment_end, z_tab)
