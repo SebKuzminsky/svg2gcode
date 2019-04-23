@@ -79,7 +79,8 @@
   a list of the path_to_gcode() calls it currently makes, and run them
   multiple times with X & Y offsets.
 
-* Plate different parts together.
+* Plate different parts together.  This will need support for
+  translations, and sorting the different parts' operations by tool.
 
 * Add a property to the items in the jobs array specifying whether to
   do all ops on each path in turn, or each op on all paths?
