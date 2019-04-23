@@ -1438,13 +1438,14 @@ Arguments:
                 elif feed is not None:
                     set_feed_rate(feed)
                 g1(z=plunge_z)
-                if plunge_feed is not None and feed is not None:
-                    set_feed_rate(feed)
 
 
         #
         # Main Motion
         #
+
+        if feed is not None:
+            set_feed_rate(feed)
 
         for i in range(segment_after_ramp, len(path)):
             cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab)
