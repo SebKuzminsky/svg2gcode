@@ -1355,6 +1355,16 @@ Arguments:
                 set_feed_rate(feed)
             g1(z=z_top_of_pass)
 
+            # During ramping, mix plunge_feed and feed according to
+            # the slope.
+            if feed is not None and plunge_feed is not None:
+                ramp_feed = ((ramp_slope * plunge_feed) + feed) / (1.0 + ramp_slope)
+                set_feed_rate(ramp_feed)
+            elif plunge_feed is not None:
+                set_feed_rate(plunge_feed)
+            elif feed is not None:
+                set_feed_rate(feed)
+
             # This variable shadows current_z, except that it does *not*
             # raise to skip over work-holding tabs.  It's the ramping
             # slope, ignoring tabs.
