@@ -110,6 +110,9 @@
        G1 Z-1.0000
       FAILED ./5-shapes/path-override: unexpected G-code result
 
+* Expand the job file to include the command line arguments (what
+  currently goes in `test.args` in the tests).
+
 
 == Pocket: smarter pass-to-pass transitions
 
