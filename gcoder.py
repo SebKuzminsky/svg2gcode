@@ -1409,7 +1409,6 @@ Arguments:
                             # Bottoming out right at the start of this segment, don't split.
                             segment_after_ramp = i;
                             if debug: print("ramp bottoms out at start of seg %d, t %f" % (i, t), file=sys.stderr)
-                            break
 
                         elif close_enough(t, 1.0):
                             # Bottoming out right at the end of this segment, don't split.
