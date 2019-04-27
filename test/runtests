@@ -86,7 +86,6 @@ for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'te
     if [ $R -eq 0 ]; then
         rm -f result.ngc
         rm -f result.canon
-        rm -f stderr
     elif [ $R -eq 1 ]; then
         FAILED="${FAILED} ${TEST_NAME}"
     elif [ $R -eq 2 ]; then
