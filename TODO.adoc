@@ -182,6 +182,7 @@ operations gain optional(?) args to control speeds & feeds and z-levels.
 The drilling jobsfile for the use case above might looks something
 like this:
 
+----------
 {
     "models": [
         {
@@ -229,9 +230,11 @@ like this:
         }
     ]
 }
+----------
 
 And the outline milling job file:
 
+----------
 {
     "models": [
         {
@@ -272,6 +275,7 @@ And the outline milling job file:
         }
     ]
 }
+----------
 
 Hm, maybe the models should move out to a separate file, to be specified
 on the command line along with the job file (or named in the job file).
