@@ -60,7 +60,7 @@
 * Make it faster
 
     * Profile & optimize.
-    
+
         * Generate a profile: python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug --job test.s2g $(cat test.args) test.svg >| result.ngc 2>| stderr
 
         * Analyze the profile: runsnake out.prof
@@ -70,7 +70,8 @@
     * Make s2g parallelize the work.  Run handle_operation() calls in
       parallel maybe?
 
-* Let 'engrave' jobs have work-holding tabs.
+* Let 'engrave' jobs have work-holding tabs.  This will be easy to do,
+  just add it to the jobfile schema and pass it through in do_engrave().
 
 * Plate lots of copies of a single part.  Have handle_operation() return
   a list of the path_to_gcode() calls it currently makes, and run them
