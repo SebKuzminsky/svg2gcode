@@ -160,8 +160,7 @@ https://www.geometrictools.com/Documentation/Documentation.html
 
 == svgpathtools bugs
 
-
-## Arc.intersect(Arc)
+=== Arc.intersect(Arc)
 
 https://github.com/mathandy/svgpathtools/issues/43
 
