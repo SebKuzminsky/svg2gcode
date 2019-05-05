@@ -1,9 +1,6 @@
 
 # Future embellishments
 
-* Override pocket cut params from command line.  Width of cut is a
-    function of depth of cut.
-
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Pockets with islands.
@@ -73,13 +70,6 @@
 * Let 'engrave' jobs have work-holding tabs.  This will be easy to do,
   just add it to the jobfile schema and pass it through in do_engrave().
 
-* Plate lots of copies of a single part.  Have handle_operation() return
-  a list of the path_to_gcode() calls it currently makes, and run them
-  multiple times with X & Y offsets.
-
-* Plate different parts together.  This will need support for
-  translations, and sorting the different parts' operations by tool.
-
 * Add a property to the items in the jobs array specifying whether to
   do all ops on each path in turn, or each op on all paths?
 
@@ -108,8 +98,186 @@
        G1 Z-1.0000
       FAILED ./5-shapes/path-override: unexpected G-code result
 
+
+== Plating
+
+Allow an operation to make multiple copies of a single part, or
+combinations of parts.
+
+A typical use case: "This thing I want to build is an assembly of 3
+copies of part A (machined slightly differently) and 2 copies of part B
+(machined slightly differently)."
+
+Define a job file that specifies the following information:
+
+* There are five models:
+
+    1. `A.svg`
+
+    2. `A.svg` translated by X=15
+
+    3. `A.svg` translated by X=30
+
+    4. `B.svg` translated by Y=25
+
+    5. `B.svg` translated by X=20 and Y=25
+
+* A full-depth drill operation applies to all the 1/4" circles in models
+  3, 4, and 5.
+
+* A partial depth drill operation applies to all the 1/4" circles in
+  model 2.
+
+* An offset operation applies to the outline paths of models 1-5.
+
+Some features I think I'll want in s2g to implement this:
+
+* Override pocket cut params from command line.  Width of cut is a
+    function of depth of cut.
+
+* Plate lots of copies of a single part.  Have handle_operation() return
+  a list of the path_to_gcode() calls it currently makes, and run them
+  multiple times with X & Y offsets.
+
+* Plate different parts together.  This will need support for
+  translations, and sorting the different parts' operations by tool.
+
 * Expand the job file to include the command line arguments (what
   currently goes in `test.args` in the tests).
+
+The job file schema might look something like this:
+
+job_file = {
+    "models": [ model ]
+    "jobs": [ job_description ]
+}
+
+model = {
+    "file": <str>
+    "translation":? {
+        "x": <float>
+        "y": <float>
+    }
+}
+
+job_description: {
+    "paths": [ path_identifier ]
+    "operations": [ operation_identifier ]
+}
+
+path_identifier: {
+    "model": <int>
+    "path": [<int>]
+}
+
+operation_identifier: {
+    operation_type: operation_type_args
+}
+
+operation_type is one of [ 'drill', 'engrave', 'offset', 'pocket' ]
+
+operation_type_args is as in the current v2 schema file, except that all
+operations gain optional(?) args to control speeds & feeds and z-levels.
+
+The drilling jobsfile for the use case above might looks something
+like this:
+
+{
+    "models": [
+        {
+            "file": "A.svg"
+        },
+        {
+            "file": "A.svg",
+            "translation": { "x": 15 }
+        },
+        {
+            "file": "A.svg",
+            "translation": { "x": 30 }
+        },
+        {
+            "file": "B.svg",
+            "translation": { "y": 25 }
+        },
+        {
+            "file": "B.svg",
+            "translation": { "x": 20, "y": 25 }
+        }
+    ],
+    "jobs": [
+        {
+            "paths": [
+                { "model": 3, "paths": [ 0, 1, 2 ] },
+                { "model": 4, "paths": [ 5, 6 ] },
+                { "model": 5, "paths": [ 5, 6 ] }
+            ],
+            "drill": {
+                "speed": 3500,
+                "feed": 11.0,
+                "z-cut-depth": -10.0
+            }
+        },
+        {
+            "paths": [
+                { "model": 2, "paths": [ 0, 1, 2 ] }
+            ],
+            "drill": {
+                "speed": 3500,
+                "feed": 11.0,
+                "z-cut-depth": -5.0
+            }
+        }
+    ]
+}
+
+And the outline milling job file:
+
+{
+    "models": [
+        {
+            "file": "A.svg"
+        },
+        {
+            "file": "A.svg",
+            "translation": { "x": 15 }
+        },
+        {
+            "file": "A.svg",
+            "translation": { "x": 30 }
+        },
+        {
+            "file": "B.svg",
+            "translation": { "y": 25 }
+        },
+        {
+            "file": "B.svg",
+            "translation": { "x": 20, "y": 25 }
+        }
+    ],
+    "jobs": [
+        {
+            "paths": [
+                { "model": 1, "paths": [ 3 ] },
+                { "model": 2, "paths": [ 3 ] },
+                { "model": 3, "paths": [ 3] },
+                { "model": 4, "paths": [ 7 ] },
+                { "model": 5, "paths": [ 7 ] }
+            ],
+            "offset": {
+                "distance": 3.5,
+                "speed": 3500,
+                "feed": 11.0,
+                "z-cut-depth": -10.0
+            }
+        }
+    ]
+}
+
+Hm, maybe the models should move out to a separate file, to be specified
+on the command line along with the job file (or named in the job file).
+Wouldn't want the translations to get out fo sync.
+
+
 
 
 == Pocket: smarter pass-to-pass transitions
