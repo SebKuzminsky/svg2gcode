@@ -1,0 +1,51 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "translate": {
+                        "x": 40,
+                        "y": 10,
+                        "operations": [
+                            {
+                                "offset": {
+                                    "distance": -2,
+                                    "max-depth-of-cut": 6.0,
+                                    "ramp-slope": 0.1,
+                                    "work-holding-tabs": {
+                                        "number-of-tabs": 3,
+                                        "height": 1.5,
+                                        "width": 13,
+                                        "locations": [
+                                            15,
+                                            78.5,
+                                            115
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "offset": {
+                        "distance": -2,
+                        "max-depth-of-cut": 6.0,
+                        "ramp-slope": 0.1,
+                        "work-holding-tabs": {
+                            "number-of-tabs": 3,
+                            "height": 1.5,
+                            "width": 13,
+                            "locations": [
+                                15,
+                                78.5,
+                                115
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
