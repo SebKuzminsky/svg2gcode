@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2019 Sebastian Kuzminsky
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+#
+# This is a fuzzy differ for gcode.  It behaves like `diff -u`, but the
+# corresponding lines of the two input files may differ slightly in the
+# numeric values without the lines being considered different.
+#
+
+import argparse
+import math
+import re
+import sys
+import typing
+
+
+def fuzzy_compare(expected: float, result: float) -> bool:
+    regex = "^[A-Za-z]?(([0-9]+)?\.?([0-9]+)?)$"
+    try:
+        e_match = re.match(regex, expected)
+        r_match = re.match(regex, result)
+        e_num = float(e_match[1])
+        r_num = float(r_match[1])
+        if math.isclose(e_num, r_num, rel_tol=0.0, abs_tol=args.fuzz):
+            return True
+    except Exception as e:
+        print(f"can't convert to float:")
+        print(f"e: {expected}")
+        print(f"r: {result}")
+
+    return False
+
+
+def err_add(*new_err: typing.List[str]) -> None:
+    global err
+    global line
+
+    if err != '':
+        err += '\n'
+    err += f"line {line}:\n"
+    for e in new_err:
+        err += e + '\n'
+
+
+parser = argparse.ArgumentParser(description="Diff two g-code files, while allowing slight variations in the numeric coordinate values.")
+parser.add_argument("EXPECTED", help="The file containing the expected g-code.")
+parser.add_argument("RESULT", help="The file containing the g-code to compare to EXPECTED.")
+parser.add_argument("-f", "--fuzz", type=float, default=0.00011, help="The amount of fuzz accepted.  If the difference betwee the EXPECTED coordinate and the RESULT coordinate is not greater than FUZZ, the coordinates are considered identical.  (Default: 0.00011 mm/min)")
+args = parser.parse_args()
+
+
+expected_file = open(args.EXPECTED)
+result_file = open(args.RESULT)
+
+line = 0
+err = ''
+
+while True:
+    line += 1
+    e_line = expected_file.readline()
+    r_line = result_file.readline()
+
+    if e_line == '' and r_line == '':
+        # EOF on both files
+        break
+    elif e_line == '':
+        err_add(f"unexpected EOF on {args.EXPECTED}")
+        break
+    elif r_line == '':
+        err_add(f"unexpected EOF on {args.RESULT}")
+        break
+
+    if e_line == r_line:
+        continue
+
+    # Lines are not identical, do finer-grained fuzzy comparison
+
+    e_line = e_line.strip()
+    r_line = r_line.strip()
+
+    e_words = e_line.split()
+    r_words = r_line.split()
+
+    if len(e_words) != len(r_words):
+        err_add(
+            f"    expected: '{e_line}'",
+            f"    result:   '{r_line}'",
+            f"    Wrong number of words!"
+        )
+        continue
+
+    for i in range(len(e_words)):
+        if e_words[i] == r_words[i]:
+            continue
+
+        if not fuzzy_compare(e_words[i], r_words[i]):
+            err_add(
+                f"    expected: '{e_line}'",
+                f"    result:   '{r_line}'",
+                f"    '{e_words[i]}' and '{r_words[i]}' differ by more than {args.fuzz}"
+            )
+
+if err != '':
+    raise SystemExit(f"expected file: {args.EXPECTED}\nresult file: {args.RESULT}\n\n" + err)

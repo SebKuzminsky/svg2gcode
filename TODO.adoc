@@ -78,26 +78,6 @@
 
 * offset_paths() takes an optional `steps` argument, let user choose.
 
-* Inconsistent rounding means i need fuzzy matching for
-  expected.ngc/result.ngc:
-
-      running ./5-shapes/path-override
-      --- expected.ngc        2019-01-07 20:03:47.003625394 -0700
-      +++ result.ngc  2019-02-24 16:09:39.832610643 -0700
-      @@ -381,9 +381,9 @@
-       G1 Z-1.0000
-       F 100.0000
-       G1 X158.7812 Y56.3185
-      -G3 X158.2441 Y58.3207 I154.7812 J56.3184
-      +G3 X158.2441 Y58.3207 I154.7812 J56.3185
-       G1 Z-0.1000
-      -G3 X154.7812 Y60.3185 I154.7812 J56.3184
-      +G3 X154.7812 Y60.3185 I154.7812 J56.3185
-       G1 X138.9675 Y60.3185
-       F 50.0000
-       G1 Z-1.0000
-      FAILED ./5-shapes/path-override: unexpected G-code result
-
 
 == Plating
 

@@ -19,8 +19,10 @@
 # 
 
 
-export PYTHONPATH=$(dirname $(realpath $0))/..:${PYTHONPATH}
-export PATH=$(dirname $(realpath $0))/..:${PATH}
+TEST_ROOT_DIR=$(realpath $(dirname "${0}"))
+
+export PYTHONPATH="${TEST_ROOT_DIR}/..:${PYTHONPATH}"
+export PATH="${TEST_ROOT_DIR}/..:${PATH}"
 
 do_test() {
     TEST_FILE=$(basename "$1")
@@ -45,8 +47,9 @@ do_test() {
     fi
 
     if [ -f expected.ngc -a -f result.ngc ]; then
-        diff -u expected.ngc result.ngc
+        "${TEST_ROOT_DIR}/diff-gcode" expected.ngc result.ngc
         if [ $? -ne 0 ]; then
+            diff -u expected.ngc result.ngc
             echo "FAILED ${TEST_NAME}: unexpected G-code result"
             return 1
         fi
