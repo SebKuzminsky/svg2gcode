@@ -31,7 +31,7 @@ import sys
 
 
 def fuzzy_compare(expected, result):
-    regex = "^[A-Za-z]?(([0-9]+)?\.?([0-9]+)?)$"
+    regex = "^[A-Za-z]?(-?([0-9]+)?\.?([0-9]+)?)$"
     try:
         e_match = re.match(regex, expected)
         r_match = re.match(regex, result)
