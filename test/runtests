@@ -47,7 +47,7 @@ do_test() {
     fi
 
     if [ -f expected.ngc -a -f result.ngc ]; then
-        "${TEST_ROOT_DIR}/diff-gcode" expected.ngc result.ngc
+        "${TEST_ROOT_DIR}/diff-gcode" --quiet expected.ngc result.ngc
         if [ $? -ne 0 ]; then
             diff -u expected.ngc result.ngc
             echo "FAILED ${TEST_NAME}: unexpected G-code result"

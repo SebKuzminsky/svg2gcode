@@ -40,9 +40,7 @@ def fuzzy_compare(expected, result):
         if abs(e_num - r_num) < args.fuzz:
             return True
     except Exception as e:
-        print("can't convert to float:")
-        print("e: %s" % expected)
-        print("r: %s" % result)
+        return False
 
     return False
 
@@ -62,6 +60,7 @@ parser = argparse.ArgumentParser(description="Diff two g-code files, while allow
 parser.add_argument("EXPECTED", help="The file containing the expected g-code.")
 parser.add_argument("RESULT", help="The file containing the g-code to compare to EXPECTED.")
 parser.add_argument("-f", "--fuzz", type=float, default=0.00011, help="The amount of fuzz accepted.  If the difference betwee the EXPECTED coordinate and the RESULT coordinate is not greater than FUZZ, the coordinates are considered identical.  (Default: 0.00011 mm/min)")
+parser.add_argument("-q", "--quiet", action='store_true', help="Don't print any differences found, just return 0 if the files are fuzzily the same and 1 if they differ by more than the fuzz.")
 args = parser.parse_args()
 
 
@@ -117,4 +116,6 @@ while True:
             )
 
 if err != '':
+    if args.quiet:
+        sys.exit(1)
     raise SystemExit("expected file: %s\nresult file: %s\n\n" % (args.EXPECTED, args.RESULT) + err)
