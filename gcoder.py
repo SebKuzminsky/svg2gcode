@@ -709,6 +709,12 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             if type(next_seg) is svgpathtools.path.Arc:
                 next_seg._parameterize()
 
+            if debug: print("    trimmed:", file=sys.stderr)
+            if debug: print("        this", this_seg, file=sys.stderr)
+            if debug: print("            length", this_seg.length(), file=sys.stderr)
+            if debug: print("        next", next_seg, file=sys.stderr)
+            if debug: print("            length", next_seg.length(), file=sys.stderr)
+
 
     #
     # Find all the places where adjacent segments do not end/start close
