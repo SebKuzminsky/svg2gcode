@@ -728,8 +728,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             continue
 
         if debug: print("these segments don't touch end to end:", file=sys.stderr)
-        if debug: print(this_seg, file=sys.stderr)
-        if debug: print(next_seg, file=sys.stderr)
+        if debug: print("    this", this_seg, file=sys.stderr)
+        if debug: print("    next", next_seg, file=sys.stderr)
         if debug: print("    error: %s (%.7f)" % (this_seg.end-next_seg.start, abs(this_seg.end-next_seg.start)), file=sys.stderr)
 
         # FIXME: Choose values for `large_arc` and `sweep` correctly here.
