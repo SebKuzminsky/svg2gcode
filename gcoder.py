@@ -684,7 +684,9 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         # FIXME: I'm not sure about this part.
         if debug: print("intersecting", file=sys.stderr)
         if debug: print("    this", this_seg, file=sys.stderr)
+        if debug: print("        length", this_seg.length(), file=sys.stderr)
         if debug: print("    next", next_seg, file=sys.stderr)
+        if debug: print("        length", next_seg.length(), file=sys.stderr)
         intersections = this_seg.intersect(next_seg)
         if debug: print("    intersections:", intersections, file=sys.stderr)
         if len(intersections) > 0:
