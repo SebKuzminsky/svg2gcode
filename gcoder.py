@@ -788,6 +788,10 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         if debug: print("    start-end distance:", joining_arc.start-joining_arc.end, file=sys.stderr)
 
         # FIXME: this is kind of arbitrary
+        # FIXME: we should really just drop any segment that doesn't move
+        #     the controlled point enough that the current coordinates
+        #     change.  That's currently 0.0001mm, but should probably
+        #     be configurable.
         joining_seg = joining_arc
         if joining_arc.length() < 1e-4:
             joining_seg = svgpathtools.path.Line(joining_arc.start, joining_arc.end)
