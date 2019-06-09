@@ -620,7 +620,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 new_radius = abs(new_radius)
                 sweep = not sweep
 
-            if new_radius > 0.002:
+            if new_radius > minimum_arc_radius:
                 radius = complex(new_radius, new_radius)
                 offset_arc = svgpathtools.path.Arc(
                     start = start,
@@ -1505,6 +1505,12 @@ current_w = None
 
 current_feed = None
 
+
+# Minimum arc radius accepted by LinuxCNC 2.7 (in mm).  An arc with
+# a radius less than this will be rejected by the g-code interpreter,
+# and the program will fail to run.  Any arcs smaller than this, replace
+# with straight lines.
+minimum_arc_radius = 0.00128
 
 # When comparing floats, a difference of less than epsilon counts as no
 # difference at all.
