@@ -676,10 +676,9 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
     for i in range(len(offset_path_list)):
         this_seg = offset_path_list[i]
-        if (i+1) < len(offset_path_list):
-            next_seg = offset_path_list[i+1]
-        else:
-            next_seg = offset_path_list[0]
+
+        next_i = (i + 1) % len(offset_path_list)
+        next_seg = offset_path_list[next_i]
 
         # FIXME: I'm not sure about this part.
         if debug: print("intersecting", file=sys.stderr)
