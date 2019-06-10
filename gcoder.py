@@ -680,7 +680,6 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         next_i = (i + 1) % len(offset_path_list)
         next_seg = offset_path_list[next_i]
 
-        # FIXME: I'm not sure about this part.
         if debug: print("intersecting", file=sys.stderr)
         if debug: print("    this", this_seg, file=sys.stderr)
         if debug: print("        length", this_seg.length(), file=sys.stderr)
@@ -690,23 +689,17 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         if debug: print("    intersections:", intersections, file=sys.stderr)
         if len(intersections) > 0:
             intersection = intersections[0]
-            point = this_seg.point(intersection[0])
-            if debug: print("    intersection point:", point, file=sys.stderr)
-            if close_enough(point, this_seg.end):
-                # Adjust the endpoints so the segments touch.
-                p = (this_seg.end + next_seg.start) / 2.0
-                this_seg.end = p
-                next_seg.start = p
-            else:
-                # Trim the ends off both segment so they end at their intersection.
-                this_seg.end = this_seg.point(intersection[0])
-                next_seg.start = this_seg.end
+            if debug:
+                this_point = this_seg.point(intersections[0][0])
+                next_point = next_seg.point(intersections[0][1])
+                print("    first intersection: {} {} {}".format(intersection, this_point, next_point), file=sys.stderr)
+            # Trim the end off `this_seg` and the start off `next_seg`
+            # so they meet at their intersection.
+            this_seg = this_seg.cropped(0.0, intersection[0])
+            next_seg = next_seg.cropped(intersection[1], 1.0)
 
-            # If you change an Arc you have to re-parameterize it.
-            if type(this_seg) is svgpathtools.path.Arc:
-                this_seg._parameterize()
-            if type(next_seg) is svgpathtools.path.Arc:
-                next_seg._parameterize()
+            offset_path_list[i] = this_seg
+            offset_path_list[next_i] = next_seg
 
             if debug: print("    trimmed:", file=sys.stderr)
             if debug: print("        this", this_seg, file=sys.stderr)
