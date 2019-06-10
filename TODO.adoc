@@ -58,7 +58,7 @@
 
     * Profile & optimize.
 
-        * Generate a profile: python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug --job test.s2g $(cat test.args) test.svg >| result.ngc 2>| stderr
+        * Generate a profile: python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug $(cat test.args) test.s2g test.svg >| result.ngc 2>| stderr
 
         * Analyze the profile: runsnake out.prof
 
