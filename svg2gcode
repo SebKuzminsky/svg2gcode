@@ -172,7 +172,6 @@ def handle_operation(op, path_index):
 
     elif 'drill' in op:
         results = do_drill(op['drill'], input_path)
-        print(results, file=sys.stderr)
 
     else:
         raise SystemExit('unknown operation %s' % op)
