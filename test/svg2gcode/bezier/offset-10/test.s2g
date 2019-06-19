@@ -1,9 +1,14 @@
 {
     "jobs": [
         {
-            "job-type": "offset",
-            "distance": 10,
-            "max-depth-of-cut": 0.34
+            "operations": [
+                {
+                    "offset": {
+                        "distance": 10,
+                        "max-depth-of-cut": 0.34
+                    }
+                }
+            ]
         }
     ]
 }
