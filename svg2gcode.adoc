@@ -295,6 +295,36 @@ Example:
     }
 
 
+=== Operation: translate
+
+The `translate` operation moves the output gcode of its child operation(s)
+by a specified amount in X and Y.
+
+The `operations` array of the `translate` operation can hold any
+operations except another `translate` operation.
+
+Example:
+
+    {
+        "jobs": [
+            {
+                "paths": [ 0, 1 ],
+                "operations": [
+                    {
+                        "translate": {
+                            "x": 15.0,
+                            "y": -100,
+                            "operations": [
+                                ...
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+
 === Work-holding tabs
 
 Properties in the `work-holding-tabs` object of the `offset` operation

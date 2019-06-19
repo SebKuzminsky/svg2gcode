@@ -179,6 +179,39 @@ class ResultPath(Result):
         )
 
 
+class ResultTranslate(Result):
+    """This class holds other Results, but translated."""
+
+    def __init__(self, x, y, results):
+        self.comment = []
+        self.x = x
+        self.y = y
+        print("creating a ResultTranslate, results:", results, file=sys.stderr)
+        self.results = results
+
+    def emit(self):
+        print("emitting a ResultTranslate", file=sys.stderr)
+        print("self.results:", self.results, file=sys.stderr)
+        for result in self.results:
+            if isinstance(result, ResultDrill):
+                result.x += self.x
+                result.y += self.y
+                result.emit()
+                result.x -= self.x
+                result.y -= self.y
+
+            elif isinstance(result, ResultPath):
+                original_path = result.path
+                translated_path = original_path.translated(complex(self.x, self.y))
+                result.path = translated_path
+                result.emit()
+                result.path = original_path
+
+            else:
+                # FIXME: don't know how to translate gcode strings
+                result.emit()
+
+
 def handle_operation(op, path_index):
     print("operation:", op, file=sys.stderr)
     print("path:", path_index, file=sys.stderr)
@@ -210,6 +243,9 @@ def handle_operation(op, path_index):
 
     elif 'drill' in op:
         results += do_drill(op['drill'], input_path)
+
+    elif 'translate' in op:
+        results = do_translate(op['translate'], path_index)
 
     else:
         raise SystemExit('unknown operation %s' % op)
@@ -565,6 +601,13 @@ def do_pocket(op_args, input_path):
     return results
 
 
+def do_translate(op_args, path_index):
+    results = []
+    for op in op_args['operations']:
+        results += handle_operation(op, path_index)
+    return [ResultTranslate(op_args['x'], op_args['y'], results)]
+
+
 def load_job_file(jobfile):
     work_holding_tabs_schema = {
         'type': 'object',
@@ -636,6 +679,83 @@ def load_job_file(jobfile):
         'additionalProperties': False
     }
 
+    basic_operations = {
+        'engrave': {
+            'type': 'object',
+            'properties': {
+                'ramp-slope': {
+                    'type': 'number'
+                }
+            },
+            'additionalProperties': False
+        },
+        'offset': {
+            'type': 'object',
+            'properties': {
+                'distance': {
+                    'type': 'number'
+                },
+                'max-depth-of-cut': {
+                    'type': 'number'
+                },
+                'ramp-slope': {
+                    'type': 'number'
+                },
+                'work-holding-tabs': work_holding_tabs_schema
+            },
+            'additionalProperties': False
+        },
+        'pocket': {
+            'type': 'object',
+            'properties': {
+                'tool-diameter': {
+                    'type': 'number'
+                },
+                'width-of-cut': {
+                    'type': 'number'
+                },
+                'finishing-allowance': {
+                    'type': 'number'
+                },
+                'slot-max-depth-of-cut': {
+                    'type': 'number'
+                },
+                'shoulder-max-depth-of-cut': {
+                    'type': 'number'
+                },
+                'ramp-slope': {
+                    'type': 'number'
+                }
+            },
+            'additionalProperties': False
+        },
+        'drill': {
+            'type': 'object',
+            'properties': { },
+            'additionalProperties': False
+        }
+    }
+
+    operations = {
+        'translate': {
+            'type': 'object',
+            'properties': {
+                'x': {
+                    'type': 'number'
+                },
+                'y': {
+                    'type': 'number'
+                },
+                'operations': {
+                    'type': 'array',
+                    'items': basic_operations
+                }
+            }
+        }
+    }
+
+    operations.update(basic_operations)
+
     v2_schema = {
         'type': 'object',
         'properties': {
@@ -654,62 +774,7 @@ def load_job_file(jobfile):
                             'type': 'array',
                             'items': {
                                 'type': 'object',
-                                'properties': {
-                                    'engrave': {
-                                        'type': 'object',
-                                        'properties': {
-                                            'ramp-slope': {
-                                                'type': 'number'
-                                            }
-                                        },
-                                        'additionalProperties': False
-                                    },
-                                    'offset': {
-                                        'type': 'object',
-                                        'properties': {
-                                            'distance': {
-                                                'type': 'number'
-                                            },
-                                            'max-depth-of-cut': {
-                                                'type': 'number'
-                                            },
-                                            'ramp-slope': {
-                                                'type': 'number'
-                                            },
-                                            'work-holding-tabs': work_holding_tabs_schema
-                                        },
-                                        'additionalProperties': False
-                                    },
-                                    'pocket': {
-                                        'type': 'object',
-                                        'properties': {
-                                            'tool-diameter': {
-                                                'type': 'number'
-                                            },
-                                            'width-of-cut': {
-                                                'type': 'number'
-                                            },
-                                            'finishing-allowance': {
-                                                'type': 'number'
-                                            },
-                                            'slot-max-depth-of-cut': {
-                                                'type': 'number'
-                                            },
-                                            'shoulder-max-depth-of-cut': {
-                                                'type': 'number'
-                                            },
-                                            'ramp-slope': {
-                                                'type': 'number'
-                                            }
-                                        },
-                                        'additionalProperties': False
-                                    },
-                                    'drill': {
-                                        'type': 'object',
-                                        'properties': { },
-                                        'additionalProperties': False
-                                    }
-                                },
+                                'properties': operations,
                                 'additionalProperties': False
                             }
                         }
