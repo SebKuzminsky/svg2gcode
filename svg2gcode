@@ -69,6 +69,17 @@ class ResultComment(Result):
             print(";", comment)
 
 
+class ResultFeed(Result):
+    """This class holds a G-code F-word to emit."""
+
+    def __init__(self, feed):
+        self.comment = []
+        self.feed = feed
+
+    def emit(self):
+        gcoder.set_feed_rate(self.feed)
+
+
 class ResultDrill(Result):
     """This class holds the (X, Y) coordinate of a hole to drill."""
 
@@ -514,7 +525,7 @@ def do_pocket(op_args, input_path):
                 results.append(ResultGCode("G0 Z%.4f" % args.z_traverse))
             results.append(ResultGCode("G0 X%.4f Y%.4f" % (x, y)))
             results.append(ResultGCode("G0 Z%.4f" % args.z_approach))
-            results.append(ResultGCode("F %.4f" % args.plunge_feed))
+            results.append(ResultFeed(args.plunge_feed))
             results.append(ResultGCode("G1 Z%.4f" % z))
 
             result = ResultPath(
