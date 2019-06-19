@@ -78,6 +78,8 @@
 
 * offset_paths() takes an optional `steps` argument, let user choose.
 
+* `truss` gcode is upside down vs svg, `house` is not
+
 
 == Plating
 
