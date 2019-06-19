@@ -46,18 +46,6 @@ class Result(object):
         pass
 
 
-class ResultGCode(Result):
-    """This class holds an array of prepared G-code statements to emit."""
-
-    def __init__(self, *gcode):
-        self.comment = []
-        self.gcode = gcode
-
-    def emit(self):
-        for line in self.gcode:
-            print(line)
-
-
 class ResultComment(Result):
     """This class holds a G-code comment to emit."""
 
@@ -78,6 +66,32 @@ class ResultFeed(Result):
 
     def emit(self):
         gcoder.set_feed_rate(self.feed)
+
+
+class ResultG0(Result):
+    """This class holds a G-code G0 command to emit."""
+
+    def __init__(self, x=None, y=None, z=None):
+        self.comment = []
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def emit(self):
+        gcoder.g0(x=self.x, y=self.y, z=self.z)
+
+
+class ResultG1(Result):
+    """This class holds a G-code G1 command to emit."""
+
+    def __init__(self, x=None, y=None, z=None):
+        self.comment = []
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def emit(self):
+        gcoder.g1(x=self.x, y=self.y, z=self.z)
 
 
 class ResultDrill(Result):
@@ -513,23 +527,22 @@ def do_pocket(op_args, input_path):
 
         for path in shoulder_milling_paths:
             # The tool is currently down on the floor of the pocket.
-
             results.append(ResultComment("pocket shoulder-milling path"))
 
             # FIXME: if we can reach it without gouging, just feed there
             # else this:
             # Come up out of the pocket.
-            results.append(ResultGCode("G1 Z%.4f" % args.z_approach))
-            results.append(ResultGCode("G0 Z%.4f" % args.z_traverse))
+            results.append(ResultG1(z=args.z_approach))
+            results.append(ResultG0(z=args.z_traverse))
 
             # Rapid over to the beginning of the next path.
             (x, y) = svg.xy_to_mm(path[0].start)
-            results.append(ResultGCode("G0 X%.4f Y%.4f" % (x, y)))
-            results.append(ResultGCode("G0 Z%.4f" % args.z_approach))
+            results.append(ResultG0(x=x, y=y))
+            results.append(ResultG0(z=args.z_approach))
 
             # Plunge down into the beginning of the next path.
             results.append(ResultFeed(args.plunge_feed))
-            results.append(ResultGCode("G1 Z%.4f" % z))
+            results.append(ResultG1(z=z))
 
             result = ResultPath(
                 svg=svg,
@@ -546,8 +559,8 @@ def do_pocket(op_args, input_path):
 
     # The tool is left down on the floor of the pocket, raise it
     # up now.
-    results.append(ResultGCode("G1 Z%.4f" % args.z_approach))
-    results.append(ResultGCode("G0 Z%.4f" % args.z_traverse))
+    results.append(ResultG1(z=args.z_approach))
+    results.append(ResultG0(z=args.z_traverse))
 
     return results
 
