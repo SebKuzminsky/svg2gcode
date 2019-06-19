@@ -518,13 +518,16 @@ def do_pocket(op_args, input_path):
 
             # FIXME: if we can reach it without gouging, just feed there
             # else this:
+            # Come up out of the pocket.
+            results.append(ResultGCode("G1 Z%.4f" % args.z_approach))
+            results.append(ResultGCode("G0 Z%.4f" % args.z_traverse))
+
+            # Rapid over to the beginning of the next path.
             (x, y) = svg.xy_to_mm(path[0].start)
-            if gcoder.current_z < args.z_approach:
-                results.append(ResultGCode("G1 Z%.4f" % args.z_approach))
-            if gcoder.current_z < args.z_traverse:
-                results.append(ResultGCode("G0 Z%.4f" % args.z_traverse))
             results.append(ResultGCode("G0 X%.4f Y%.4f" % (x, y)))
             results.append(ResultGCode("G0 Z%.4f" % args.z_approach))
+
+            # Plunge down into the beginning of the next path.
             results.append(ResultFeed(args.plunge_feed))
             results.append(ResultGCode("G1 Z%.4f" % z))
 
