@@ -689,13 +689,13 @@ def load_job_file(jobfile):
 
     jobfile_schema = None
     try:
-        jsonschema.validate(jobs, v1_schema)
-        jobfile_schema = 1
-    except Exception as v1_e:
+        jsonschema.validate(jobs, v2_schema)
+        jobfile_schema = 2
+    except Exception as v2_e:
         try:
-            jsonschema.validate(jobs, v2_schema)
-            jobfile_schema = 2
-        except Exception as v2_e:
+            jsonschema.validate(jobs, v1_schema)
+            jobfile_schema = 1
+        except Exception as v1_e:
             print("json fails schema validation (both v1 and v2)!", file=sys.stderr)
             print("v1 schema failure:", file=sys.stderr)
             print(v1_e, file=sys.stderr)
