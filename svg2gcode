@@ -58,6 +58,17 @@ class ResultGCode(Result):
             print(line)
 
 
+class ResultComment(Result):
+    """This class holds a G-code comment to emit."""
+
+    def __init__(self, comment):
+        self.comment = [comment]
+
+    def emit(self):
+        for comment in self.comment:
+            print(";", comment)
+
+
 class ResultDrill(Result):
     """This class holds the (X, Y) coordinate of a hole to drill."""
 
@@ -161,24 +172,22 @@ def handle_operation(op, path_index):
         input_path = input_path.reversed()
 
     results = []
+    results.append(ResultComment("%s, path %d" % (op.keys()[0], path_index)))
+
     if 'engrave' in op:
-        results = do_engrave(op['engrave'], input_path)
+        results += do_engrave(op['engrave'], input_path)
 
     elif 'offset' in op:
-        results = do_offset(op['offset'], input_path)
+        results += do_offset(op['offset'], input_path)
 
     elif 'pocket' in op:
-        results = do_pocket(op['pocket'], input_path)
+        results += do_pocket(op['pocket'], input_path)
 
     elif 'drill' in op:
-        results = do_drill(op['drill'], input_path)
+        results += do_drill(op['drill'], input_path)
 
     else:
         raise SystemExit('unknown operation %s' % op)
-
-    for r in results:
-        print("r: %s" % r, file=sys.stderr)
-        r.comment.insert(0, "%s, path %d" % (op.keys()[0], path_index))
 
     return results
 
@@ -494,7 +503,7 @@ def do_pocket(op_args, input_path):
         for path in shoulder_milling_paths:
             # The tool is currently down on the floor of the pocket.
 
-            results.append(ResultGCode("; pocket shoulder-milling path"))
+            results.append(ResultComment("pocket shoulder-milling path"))
 
             # FIXME: if we can reach it without gouging, just feed there
             # else this:
