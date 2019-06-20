@@ -1,0 +1,32 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "translate": {
+                        "x": 40,
+                        "y": 10,
+                        "operations": [
+                            {
+                                "engrave": { }
+                            },
+                            {
+                                "pocket": {
+                                    "tool-diameter": 6.35,
+                                    "width-of-cut": 1.5,
+                                    "finishing-allowance": 0.5,
+                                    "slot-max-depth-of-cut": 2.0,
+                                    "ramp-slope": 0.1
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "engrave": { }
+                }
+            ]
+        }
+    ]
+}
