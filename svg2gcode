@@ -234,7 +234,7 @@ class ResultTranslate(Result):
 
             elif isinstance(result, ResultDrill):
                 result.x += self.x
-                result.y += self.y
+                result.y -= self.y
                 result.emit()
 
             elif isinstance(result, ResultPath):

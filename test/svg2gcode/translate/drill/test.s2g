@@ -1,0 +1,42 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "translate": {
+                        "x": 40,
+                        "y": 10,
+                        "operations": [
+                            {
+                                "engrave": { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "engrave": { }
+                }
+            ]
+        },
+        {
+            "paths": [ 1 ],
+            "operations": [
+                {
+                    "translate": {
+                        "x": 40,
+                        "y": 10,
+                        "operations": [
+                            {
+                                "drill": { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "drill": { }
+                }
+            ]
+        }
+    ]
+}
