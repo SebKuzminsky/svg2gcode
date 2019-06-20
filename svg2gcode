@@ -77,6 +77,20 @@ class ResultG0(Result):
         self.y = y
         self.z = z
 
+    def __str__(self):
+        s = "ResultG0("
+        separator = ""
+        if self.x is not None:
+            s += "%sx=%.4f" % (separator, self.x)
+            separator = ", "
+        if self.y is not None:
+            s += "%sy=%.4f" % (separator, self.y)
+            separator = ", "
+        if self.z is not None:
+            s += "%sz=%.4f" % (separator, self.z)
+        s += ")"
+        return s
+
     def emit(self):
         gcoder.g0(x=self.x, y=self.y, z=self.z)
 
@@ -89,6 +103,20 @@ class ResultG1(Result):
         self.x = x
         self.y = y
         self.z = z
+
+    def __str__(self):
+        s = "ResultG1("
+        separator = ""
+        if self.x is not None:
+            s += "%sx=%.4f" % (separator, self.x)
+            separator = ", "
+        if self.y is not None:
+            s += "%sy=%.4f" % (separator, self.y)
+            separator = ", "
+        if self.z is not None:
+            s += "%sz=%.4f" % (separator, self.z)
+        s += ")"
+        return s
 
     def emit(self):
         gcoder.g1(x=self.x, y=self.y, z=self.z)
