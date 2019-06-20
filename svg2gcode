@@ -599,9 +599,15 @@ def do_pocket(op_args, input_path):
 
 
 def do_translate(op_args, path_index):
+    if 'x' not in op_args:
+        op_args['x'] = 0.0
+    if 'y' not in op_args:
+        op_args['y'] = 0.0
+
     results = []
     for op in op_args['operations']:
         results += handle_operation(op, path_index)
+
     return [ResultTranslate(op_args['x'], op_args['y'], results)]
 
 
@@ -747,7 +753,9 @@ def load_job_file(jobfile):
                     'type': 'array',
                     'items': basic_operations
                 }
-            }
+            },
+            'required': [ 'operations' ],
+            'additionalProperties': False
         }
     }
 

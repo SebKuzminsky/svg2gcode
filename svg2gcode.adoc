@@ -300,8 +300,16 @@ Example:
 The `translate` operation moves the output gcode of its child operation(s)
 by a specified amount in X and Y.
 
-The `operations` array of the `translate` operation can hold any
-operations except another `translate` operation.
+Arguments:
+
+*operations* (list of objects):: The list of operations to translate.
+The list can hold any operations except another `translate` operation.
+
+*x* (float, optional):: Distance to translate the operations in X.
+Defaults to 0.0 if omitted.
+
+*y* (float, optional):: Distance to translate the operations in Y.
+Defaults to 0.0 if omitted.
 
 Example:
 
