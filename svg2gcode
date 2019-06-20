@@ -222,15 +222,11 @@ class ResultTranslate(Result):
                 result.x += self.x
                 result.y += self.y
                 result.emit()
-                result.x -= self.x
-                result.y -= self.y
 
             elif isinstance(result, ResultPath):
-                original_path = result.path
-                translated_path = original_path.translated(complex(self.x, self.y))
+                translated_path = result.path.translated(complex(self.x, self.y))
                 result.path = translated_path
                 result.emit()
-                result.path = original_path
 
             else:
                 # FIXME: don't know how to translate gcode strings
