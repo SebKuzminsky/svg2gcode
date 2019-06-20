@@ -186,12 +186,9 @@ class ResultTranslate(Result):
         self.comment = []
         self.x = x
         self.y = y
-        print("creating a ResultTranslate, results:", results, file=sys.stderr)
         self.results = results
 
     def emit(self):
-        print("emitting a ResultTranslate", file=sys.stderr)
-        print("self.results:", self.results, file=sys.stderr)
         for result in self.results:
             if isinstance(result, ResultDrill):
                 result.x += self.x
