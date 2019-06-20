@@ -613,7 +613,7 @@ def load_job_file(jobfile):
         'type': 'object',
         'properties': {
             'number-of-tabs': {
-                'type': 'number'
+                'type': 'integer'
             },
             'height': {
                 'type': 'number'
@@ -736,7 +736,7 @@ def load_job_file(jobfile):
         }
     }
 
-    operations = {
+    translate_operation = {
         'translate': {
             'type': 'object',
             'properties': {
@@ -754,7 +754,9 @@ def load_job_file(jobfile):
         }
     }
 
+    operations = {}
     operations.update(basic_operations)
+    operations.update(translate_operation)
 
     v2_schema = {
         'type': 'object',
