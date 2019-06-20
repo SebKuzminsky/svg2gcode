@@ -246,6 +246,68 @@ class ResultTranslate(Result):
                 result.emit()
 
 
+class ResultDuplicate(Result):
+    """This class holds other Results, but duplicated."""
+
+    def __init__(self, x_offset, y_offset, x_count, y_count, results):
+        self.comment = []
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.x_count = x_count
+        self.y_count = y_count
+        self.results = results
+
+    def emit(self):
+        for x in range(0, self.x_count):
+            for y in range(0, self.y_count):
+                x_offset = x * self.x_offset
+                y_offset = y * self.y_offset
+
+                for result in self.results:
+                    if isinstance(result, ResultG0):
+                        orig_x = result.x
+                        orig_y = result.y
+                        if result.x is not None:
+                            result.x += x_offset
+                        if result.y is not None:
+                            result.y -= y_offset
+                        result.emit()
+                        result.x = orig_x
+                        result.y = orig_y
+
+                    elif isinstance(result, ResultG1):
+                        orig_x = result.x
+                        orig_y = result.y
+                        if result.x is not None:
+                            result.x += x_offset
+                        if result.y is not None:
+                            result.y -= y_offset
+                        result.emit()
+                        result.x = orig_x
+                        result.y = orig_y
+
+                    elif isinstance(result, ResultDrill):
+                        orig_x = result.x
+                        orig_y = result.y
+                        if result.x is not None:
+                            result.x += x_offset
+                        if result.y is not None:
+                            result.y -= y_offset
+                        result.emit()
+                        result.x = orig_x
+                        result.y = orig_y
+
+                    elif isinstance(result, ResultPath):
+                        orig_path = result.path
+                        translated_path = orig_path.translated(complex(x_offset, y_offset))
+                        result.path = translated_path
+                        result.emit()
+                        result.path = orig_path
+
+                    else:
+                        result.emit()
+
+
 def handle_operation(op, path_index):
     print("operation:", op, file=sys.stderr)
     print("path:", path_index, file=sys.stderr)
@@ -280,6 +342,9 @@ def handle_operation(op, path_index):
 
     elif 'translate' in op:
         results = do_translate(op['translate'], path_index)
+
+    elif 'duplicate' in op:
+        results = do_duplicate(op['duplicate'], path_index)
 
     else:
         raise SystemExit('unknown operation %s' % op)
@@ -648,6 +713,23 @@ def do_translate(op_args, path_index):
     return [ResultTranslate(op_args['x'], op_args['y'], results)]
 
 
+def do_duplicate(op_args, path_index):
+    if 'x-offset' not in op_args:
+        op_args['x-offset'] = 0.0
+    if 'y-offset' not in op_args:
+        op_args['y-offset'] = 0.0
+    if 'x-count' not in op_args:
+        op_args['x-count'] = 1
+    if 'y-count' not in op_args:
+        op_args['y-count'] = 1
+
+    results = []
+    for op in op_args['operations']:
+        results += handle_operation(op, path_index)
+
+    return [ResultDuplicate(op_args['x-offset'], op_args['y-offset'], op_args['x-count'], op_args['y-count'], results)]
+
+
 def load_job_file(jobfile):
     work_holding_tabs_schema = {
         'type': 'object',
@@ -798,9 +880,34 @@ def load_job_file(jobfile):
         }
     }
 
+    duplicate_operation = {
+        'duplicate': {
+            'type': 'object',
+            'properties': {
+                'x-offset': {
+                    'type': 'number'
+                },
+                'y-offset': {
+                    'type': 'number'
+                },
+                'x-count': {
+                    'type': 'integer'
+                },
+                'y-count': {
+                    'type': 'integer'
+                },
+                'operations': {
+                    'type': 'array',
+                    'items': basic_operations
+                }
+            }
+        }
+    }
+
     operations = {}
     operations.update(basic_operations)
     operations.update(translate_operation)
+    operations.update(duplicate_operation)
 
     v2_schema = {
         'type': 'object',

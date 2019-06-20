@@ -303,7 +303,7 @@ by a specified amount in X and Y.
 Arguments:
 
 *operations* (list of objects):: The list of operations to translate.
-The list can hold any operations except another `translate` operation.
+The list can hold any operations except `duplicate` and `translate`.
 
 *x* (float, optional):: Distance to translate the operations in X.
 Defaults to 0.0 if omitted.
@@ -322,6 +322,52 @@ Example:
                         "translate": {
                             "x": 15.0,
                             "y": -100,
+                            "operations": [
+                                ...
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+
+=== Operation: duplicate
+
+The `duplicate` operation makes several copies of the output gcode of its child operation(s)
+in a regular X/Y grid.
+
+Arguments:
+
+*operations* (list of objects):: The list of operations to duplicate.
+The list can hold any operations except `duplicate` and `translate`.
+
+*x-offset* (float, optional):: X distance between adjacent to copies in
+the grid.  Defaults to 0.0 if omitted, which is not useful.
+
+*y-offset* (float, optional):: Y distance between adjacent to copies in
+the grid.  Defaults to 0.0 if omitted, which is not useful.
+
+*x-count* (float, optional):: Number of duplicate copies in the X
+direction.  Defaults to 1 if omitted.
+
+*y-count* (float, optional):: Number of duplicate copies in the Y
+direction.  Defaults to 1 if omitted.
+
+Example:
+
+    {
+        "jobs": [
+            {
+                "paths": [ 0, 1 ],
+                "operations": [
+                    {
+                        "duplicate": {
+                            "x-offset": 15.0,
+                            "y-offset": -100,
+                            "x-count": 5,
+                            "y-count": 10,
                             "operations": [
                                 ...
                             ]
