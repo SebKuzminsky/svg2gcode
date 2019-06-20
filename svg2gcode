@@ -706,6 +706,7 @@ def load_job_file(jobfile):
                 },
                 'work-holding-tabs': work_holding_tabs_schema
             },
+            'required': [ 'distance' ],
             'additionalProperties': False
         },
         'pocket': {
@@ -730,6 +731,7 @@ def load_job_file(jobfile):
                     'type': 'number'
                 }
             },
+            'required': [ 'tool-diameter', 'width-of-cut' ],
             'additionalProperties': False
         },
         'drill': {
@@ -782,6 +784,8 @@ def load_job_file(jobfile):
                             'items': {
                                 'type': 'object',
                                 'properties': operations,
+                                'minProperties': 1,
+                                'maxProperties': 1,
                                 'additionalProperties': False
                             }
                         }
