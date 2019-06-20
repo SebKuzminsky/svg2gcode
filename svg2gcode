@@ -218,7 +218,21 @@ class ResultTranslate(Result):
 
     def emit(self):
         for result in self.results:
-            if isinstance(result, ResultDrill):
+            if isinstance(result, ResultG0):
+                if result.x is not None:
+                    result.x += self.x
+                if result.y is not None:
+                    result.y -= self.y
+                result.emit()
+
+            elif isinstance(result, ResultG1):
+                if result.x is not None:
+                    result.x += self.x
+                if result.y is not None:
+                    result.y -= self.y
+                result.emit()
+
+            elif isinstance(result, ResultDrill):
                 result.x += self.x
                 result.y += self.y
                 result.emit()
@@ -229,7 +243,6 @@ class ResultTranslate(Result):
                 result.emit()
 
             else:
-                # FIXME: don't know how to translate gcode strings
                 result.emit()
 
 
