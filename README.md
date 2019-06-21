@@ -66,6 +66,11 @@ Build the manpage:
     make
 
 
+Run the test suite:
+
+    cd test; ./runtests
+
+
 # G-Coder Python module
 
 This repo also contains a python module named `gcoder` that writes g-code.
