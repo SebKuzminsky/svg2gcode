@@ -21,6 +21,8 @@ Features:
 
 * optionally add work-holding tabs
 
+* primitive nesting via duplication on an XY grid
+
 ![Example generated tool path](example-toolpath-0.png)
 
 ![Example generated tool path](example-toolpath-1.png)
