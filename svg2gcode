@@ -437,12 +437,12 @@ def do_drill(op_args, input_path):
     if len(input_path) == 2 and \
         type(input_path[0]) == svgpathtools.path.Arc and \
         type(input_path[1]) == svgpathtools.path.Arc and \
-        input_path[0].center == input_path[1].center and \
-        input_path[0].start == input_path[1].end and \
-        input_path[0].end == input_path[1].start and \
-        input_path[0].radius == input_path[1].radius and \
+        gcoder.close_enough(input_path[0].center, input_path[1].center) and \
+        gcoder.close_enough(input_path[0].start, input_path[1].end) and \
+        gcoder.close_enough(input_path[0].end, input_path[1].start) and \
+        gcoder.close_enough(input_path[0].radius, input_path[1].radius) and \
         input_path[0].sweep == input_path[1].sweep and \
-        input_path[0].radius.real == input_path[0].radius.imag:
+        gcoder.close_enough(input_path[0].radius.real, input_path[0].radius.imag):
         # input path is a circle, ok
         pass
     else:
