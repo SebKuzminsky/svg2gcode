@@ -80,6 +80,8 @@
 
 * `truss` gcode is upside down vs svg, `house` is not
 
+* Add peck drilling via optional arguments to the `drill` op.
+
 
 == Plating
 
