@@ -203,10 +203,6 @@ class svg():
         if 'viewBox' in self.svg_attributes:
             print("svg viewBox:", self.svg_attributes['viewBox'], file=sys.stderr)
             (x_min, y_min, width, height) = re.split(',|(?: +(?:, *)?)', self.svg_attributes['viewBox'])
-            print("    x_min:", x_min, file=sys.stderr)
-            print("    y_min:", y_min, file=sys.stderr)
-            print("    width:", width, file=sys.stderr)
-            print("    height:", height, file=sys.stderr)
             self.viewBox_x = float(x_min)
             self.viewBox_y = float(y_min)
             self.viewBox_width = float(width)
@@ -214,6 +210,13 @@ class svg():
 
             self.x_scale *= self.viewport_width / self.viewBox_width
             self.y_scale *= self.viewport_height / self.viewBox_height
+
+            print("    viewBox_x:", self.viewBox_x, file=sys.stderr)
+            print("    viewBox_y:", self.viewBox_y, file=sys.stderr)
+            print("    viewBox_width:", self.viewBox_width, file=sys.stderr)
+            print("    viewBox_height:", self.viewBox_height, file=sys.stderr)
+            print("    x_scale:", self.x_scale, file=sys.stderr)
+            print("    y_scale:", self.y_scale, file=sys.stderr)
 
         else:
             self.viewBox_x = 0.0
