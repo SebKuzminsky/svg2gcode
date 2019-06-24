@@ -928,6 +928,9 @@ def path_segment_to_gcode(svg, segment, z=None):
         # FIXME: g90.1 or g91.1?
         (end_x, end_y) = svg.xy_to_mm(segment.end)
         (center_x, center_y) = svg.xy_to_mm(segment.center)
+
+        # In SVG sweep==True means clockwise and sweep==False means
+        # counter-clockwise, but in svgpathtools it's the opposite.
         if segment.sweep:
             g2(x=end_x, y=end_y, z=z, i=center_x, j=center_y)
         else:
