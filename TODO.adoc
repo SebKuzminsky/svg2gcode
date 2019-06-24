@@ -62,16 +62,16 @@
 
 * Make it faster
 
-  * Profile & optimize.
+  ** Profile & optimize.
 
-    * Generate a profile: python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug $(cat test.args) test.s2g test.svg >| result.ngc 2>| stderr
+    *** Generate a profile: `python -m cProfile -o out.prof /home/seb/svg2gcode/svg2gcode --debug $(cat test.args) test.s2g test.svg >| result.ngc 2>| stderr`
 
-    * Analyze the profile: runsnake out.prof
+    *** Analyze the profile: `runsnake out.prof`
 
-  * Make the runtests script parallelize the tests.
+  ** Make the runtests script parallelize the tests.
 
-  * Make s2g parallelize the work.  Run handle_operation() calls in
-    parallel maybe?
+  ** Make s2g parallelize the work.  Run handle_operation() calls in
+     parallel maybe?
 
 * Let 'engrave' jobs have work-holding tabs.  This will be easy to do,
   just add it to the jobfile schema and pass it through in do_engrave().
