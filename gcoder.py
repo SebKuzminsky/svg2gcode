@@ -139,8 +139,14 @@ class arc_ccw(arc):
 
 
 class svg():
-    def __init__(self, svg_file):
+    GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT=0
+    GCODE_ORIGIN_IS_SVG_ORIGIN=1
+
+    def __init__(self, svg_file, gcode_origin=GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT):
         self.svg_file = svg_file
+        self.gcode_origin = gcode_origin
+
+        print("gcode_origin:", gcode_origin, file=sys.stderr)
 
         #
         # We need to convert from whatever units the SVG input file
@@ -262,14 +268,21 @@ class svg():
     def x_to_mm(self, x):
         if type(x) != float:
             raise SystemExit('non-float input')
-        out = (x - self.viewBox_x) * self.x_scale
+        if self.gcode_origin == self.GCODE_ORIGIN_IS_SVG_ORIGIN:
+            out = x * self.x_scale
+        elif self.gcode_origin == self.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT:
+            out = (x - self.viewBox_x) * self.x_scale
         return out
 
 
     def y_to_mm(self, y):
         if type(y) != float:
             raise SystemExit('non-float input')
-        out = (self.viewBox_height - (y - self.viewBox_y)) * self.y_scale
+        # Y is upside down in SVG.
+        if self.gcode_origin == self.GCODE_ORIGIN_IS_SVG_ORIGIN:
+            out = -y * self.y_scale
+        elif self.gcode_origin == self.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT:
+            out = (self.viewBox_height - (y - self.viewBox_y)) * self.y_scale
         return out
 
 

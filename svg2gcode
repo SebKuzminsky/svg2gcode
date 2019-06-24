@@ -965,6 +965,7 @@ def load_job_file(jobfile):
 parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
 parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
+parser.add_argument("--gcode-origin", choices=['viewbox-lower-left', 'svg-origin'], default='viewbox-lower-left', help="See the manpage for a fuller dicussion of this option.  (Default: 'viewbox-lower-left'.)")
 parser.add_argument("-p", "--path", type=int, action='append', help="Apply the machining operations to this path (specified as an index into the list of paths in the input SVG).  May be used multiple times to apply the operations to multiple paths.  (Default: apply to all paths.)")
 parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
 parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
@@ -1005,7 +1006,12 @@ if args.z_top_of_material <= args.z_cut_depth:
     raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
 
 jobs, jobfile_schema = load_job_file(args.JOBFILE)
-svg = gcoder.svg(args.SVG)
+
+if args.gcode_origin == 'viewbox-lower-left':
+    gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT
+elif args.gcode_origin == 'svg-origin':
+    gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_SVG_ORIGIN
+svg = gcoder.svg(args.SVG, gcode_origin)
 
 # G-code preamble
 gcoder.metric()

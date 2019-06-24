@@ -64,6 +64,28 @@ multiple times to operate on multiple paths.  The path(s) specified using
 specified and no paths are specified in the job file, operate on *all*
 paths from the input SVG file.
 
+*--gcode-orgin* _{viewbox-lower-left, svg-origin}_::
+There are two places in the input SVG that can serve as a reasonable
+point for the gcode origin: 'viewbox-lower-left' and 'svg-origin'.
++
+The SVG native coordinate system has its origin in the upper left corner,
+but humans are often accustomed to having the origin in the lower left
+corner (what SVG calls the "viewbox lower left" corner).
++
+By default svg2gcode translates the input SVG paths so that the viewbox
+(ie what you see in an SVG viewer or editor) appears in the positive X,
+positive Y quadrant of the G-code coordinate space, with the lower left
+corner of the viewbox at the origin of the G-code coordinate space.
+This is generally what you want if you're working with a single SVG.
++
+However, if you have multiple related SVGs containing different aspect
+of the same part/model, then the viewboxes might be out of alignment,
+and the paths from the different SVGs won't line up.  In this situation
+you can disable the viewbox-based translation by setting the G-code
+coordinate system origin equal to the SVG coordinate system origin.
++
+(Default: viewbox-lower-left.)
+
 
 == Job File Format
 
