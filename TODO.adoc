@@ -30,8 +30,14 @@
   There must be literature on this topic.  Anders' Wallin's opencamlib
   does something smarter.
 
-* Add support for SVG group transforms.  See "scaled" test.  This probably
-  requires support in svgpathtools for "<g transform>".
+* Add support for SVG group transforms.  The "scaled" test needs this.
+  `truss` gcode is upside down vs svg, `house` is not.  This probably
+  requires support in svgpathtools for "<g transform>".  The Inkscape
+  "ApplyTransformations" extension seems pretty close, but doesn't handle
+  `circle` elements.  Until then, this seems like a possible workaround
+  (requires inkscape GUI though):
+
+    `inkscape ${SVG_FILE} --verb=EditSelectAll --verb=SelectionUnGroup --verb=FileSave --verb=FileClose  --verb=FileQuit`
 
 * Add user units handling.  Currently all numbers the user specifies
   are SI (mm for offsets, doc, etc; mm/min for feeds).  Accept units
@@ -77,8 +83,6 @@
   speeds for each.
 
 * offset_paths() takes an optional `steps` argument, let user choose.
-
-* `truss` gcode is upside down vs svg, `house` is not
 
 * Add peck drilling via optional arguments to the `drill` op.
 
