@@ -20,61 +20,49 @@ or more closed paths), and produces the corresponding g-code.
 == OPTIONS
 
 *--debug*::
-
-    Print extra debugging info to stderr.  Useful for submitting bug
-    reports.
+Print extra debugging info to stderr.  Useful for submitting bug reports.
 
 *-s*, *--speed* _N_::
-
-    The spindle speed to use, in RPM.  (Default: 1000 rpm)
+The spindle speed to use, in RPM.  (Default: 1000 rpm)
 
 *-f*, *--feed* _N_::
-
-    The tool feed rate to use, in mm/minute.  Used by the 'engrave' and
-    'offset' job types.  (Default: 100.0 mm/min)
+The tool feed rate to use, in mm/minute.  Used by the 'engrave' and
+'offset' job types.  (Default: 100.0 mm/min)
 
  *--shoulder-feed* _N_::
-
-    The tool feed rate to use for shoulder milling, in mm/minute.
-    Used by the 'pocket' operation.  (Default: 90.0 mm/min)
+The tool feed rate to use for shoulder milling, in mm/minute.  Used by
+the 'pocket' operation.  (Default: 90.0 mm/min)
 
 *--slot-feed* _N_::
-
-    The tool feed rate to use for slot milling, in mm/minute.  Used by
-    the 'pocket' operation.  (Default: 75.0 mm/min)
+The tool feed rate to use for slot milling, in mm/minute.  Used by the
+'pocket' operation.  (Default: 75.0 mm/min)
 
 *--plunge-feed* _N_::
-
-    The tool feed rate to use for plunging cuts, in mm/minute.  Used by
-    all job types.  (Default: 50.0 mm/min)
+The tool feed rate to use for plunging cuts, in mm/minute.  Used by all
+job types.  (Default: 50.0 mm/min)
 
 *--z-traverse* _N_::
-
-    The Z level for safe traverses above the work and workholding, in mm.
-    (Default: 10)
+The Z level for safe traverses above the work and workholding, in mm.
+(Default: 10)
 
 *--z-approach* _N_::
-
-    The Z level down to which we should rapid, before slowing to the
-    feed rate to approach the work, in mm.  (Default: 0.5 mm above
-    `--z-top-of-material`).
+The Z level down to which we should rapid, before slowing to the
+feed rate to approach the work, in mm.  (Default: 0.5 mm above
+`--z-top-of-material`).
 
 *--z-top-of-material* _N_::
-
-    The Z level where the material starts, in mm.  (Default: 0)
+The Z level where the material starts, in mm.  (Default: 0)
 
 *--z-cut-depth* _N_::
+The Z level to cut down to, in mm.  Must be lower than
+*--z-top-of-material*.  (Default: -1)
 
-    The Z level to cut down to, in mm.  Must be lower than
-    *--z-top-of-material*.  (Default: -1)
-
-*--path* N::
-
-    Operate on the Nth path from the input SVG file.  May be specified
-    multiple times to operate on multiple paths.  The path(s) specified
-    using --path override any paths specified in the job file.  If no
-    --path is specified and no paths are specified in the job file,
-    operate on *all* paths from the input SVG file.
+*--path* _N_::
+Operate on the Nth path from the input SVG file.  May be specified
+multiple times to operate on multiple paths.  The path(s) specified using
+--path override any paths specified in the job file.  If no --path is
+specified and no paths are specified in the job file, operate on *all*
+paths from the input SVG file.
 
 
 == Job File Format
