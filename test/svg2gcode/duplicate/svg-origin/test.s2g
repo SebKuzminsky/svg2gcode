@@ -1,0 +1,61 @@
+{
+    "jobs": [
+        {
+            "paths": [ 0 ],
+            "operations": [
+                {
+                    "duplicate": {
+                        "x-offset": 90,
+                        "y-offset": -200,
+                        "x-count": 3,
+                        "y-count": 2,
+                        "operations": [
+                            {
+                                "engrave": {}
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "paths": [ 1 ],
+            "operations": [
+                {
+                    "duplicate": {
+                        "x-offset": 90,
+                        "y-offset": -200,
+                        "x-count": 3,
+                        "y-count": 2,
+                        "operations": [
+                            {
+                                "pocket": {
+                                    "tool-diameter": 6.35,
+                                    "width-of-cut": 2.0
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "paths": [ 2, 3, 4, 5 ],
+            "operations": [
+                {
+                    "duplicate": {
+                        "x-offset": 90,
+                        "y-offset": -200,
+                        "x-count": 3,
+                        "y-count": 2,
+                        "operations": [
+                            {
+                                "drill": {}
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

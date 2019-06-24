@@ -1,0 +1,5 @@
+--gcode-origin=svg-origin
+--feed=1000
+--shoulder-feed=1100
+--slot-feed=900
+--plunge-feed=500
