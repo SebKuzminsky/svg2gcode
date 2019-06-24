@@ -37,7 +37,7 @@
   `circle` elements.  Until then, this seems like a possible workaround
   (requires inkscape GUI though):
 
-    `inkscape ${SVG_FILE} --verb=EditSelectAll --verb=SelectionUnGroup --verb=FileSave --verb=FileClose  --verb=FileQuit`
+    inkscape ${SVG_FILE} --verb=EditSelectAll --verb=SelectionUnGroup --verb=FileSave --verb=FileClose  --verb=FileQuit
 
 * Add user units handling.  Currently all numbers the user specifies
   are SI (mm for offsets, doc, etc; mm/min for feeds).  Accept units
