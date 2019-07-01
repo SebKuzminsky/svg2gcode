@@ -3,7 +3,8 @@
 
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
-* Pockets with islands.
+* Pockets with islands.  Counter-clockwise paths are the outside walls
+  of the pocket, clockwise paths are the islands.
 
 * Chain drilling.  Offset the path, walk along it in steps of (drill
   diameter - overlap), g81 or g83.
