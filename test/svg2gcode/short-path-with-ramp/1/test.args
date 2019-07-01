@@ -1,0 +1,8 @@
+--gcode-origin=svg-origin
+--speed=9783
+--feed=1905
+--plunge-feed=889
+--z-cut-depth=-6.5
+--z-traverse=25
+--z-approach=2
+--z-top-of-material=0
