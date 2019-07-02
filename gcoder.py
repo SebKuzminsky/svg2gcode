@@ -573,6 +573,41 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         return False
 
 
+    def intersect(this_seg, next_seg, intersection):
+        if debug:
+            this_point = this_seg.point(intersections[0][0])
+            next_point = next_seg.point(intersections[0][1])
+            print("    intersection: {} {} {}".format(intersection, this_point, next_point), file=sys.stderr)
+
+        if close_enough(intersection[0], 0.0) and close_enough(intersection[1], 1.0):
+            # Start of `this_seg` touches end of `next_seg`, that's ok.
+            point = (this_point + next_point) / 2
+            this_seg.start = point
+            next_seg.end = point
+            # If you change an Arc you have to re-parameterize it.
+            if type(this_seg) is svgpathtools.path.Arc:
+                this_seg._parameterize()
+            if type(next_seg) is svgpathtools.path.Arc:
+                next_seg._parameterize()
+
+        elif close_enough(intersection[0], 1.0) and close_enough(intersection[1], 0.0):
+            # End of `this_seg` touches start of `next_seg`, that's ok.
+            point = (this_point + next_point) / 2
+            this_seg.end = point
+            next_seg.start = point
+            # If you change an Arc you have to re-parameterize it.
+            if type(this_seg) is svgpathtools.path.Arc:
+                this_seg._parameterize()
+            if type(next_seg) is svgpathtools.path.Arc:
+                next_seg._parameterize()
+
+        else:
+            # Trim the end off `this_seg` and the start off `next_seg`
+            # so they meet at their intersection.
+            this_seg = this_seg.cropped(0.0, intersection[0])
+            next_seg = next_seg.cropped(intersection[1], 1.0)
+
+
     # This only works on closed paths.
     if debug: print("input path:", file=sys.stderr)
     if debug: print(path, file=sys.stderr)
@@ -690,30 +725,22 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
     if debug: print("trimming intersecting segments...", file=sys.stderr)
 
-    for i in range(len(offset_path_list)):
+    if len(offset_path_list) == 2:
+        i = 0
         this_seg = offset_path_list[i]
 
-        next_i = (i + 1) % len(offset_path_list)
+        next_i = 1
         next_seg = offset_path_list[next_i]
 
-        if debug: print("intersecting", file=sys.stderr)
+        if debug: print("intersecting 2-segment path", file=sys.stderr)
         if debug: print("    this", this_seg, file=sys.stderr)
         if debug: print("        length", this_seg.length(), file=sys.stderr)
         if debug: print("    next", next_seg, file=sys.stderr)
         if debug: print("        length", next_seg.length(), file=sys.stderr)
         intersections = this_seg.intersect(next_seg)
         if debug: print("    intersections:", intersections, file=sys.stderr)
-        if len(intersections) > 0:
-            intersection = intersections[0]
-            if debug:
-                this_point = this_seg.point(intersections[0][0])
-                next_point = next_seg.point(intersections[0][1])
-                print("    first intersection: {} {} {}".format(intersection, this_point, next_point), file=sys.stderr)
-            # Trim the end off `this_seg` and the start off `next_seg`
-            # so they meet at their intersection.
-            this_seg = this_seg.cropped(0.0, intersection[0])
-            next_seg = next_seg.cropped(intersection[1], 1.0)
-
+        for intersection in intersections:
+            intersect(this_seg, next_seg, intersection)
             offset_path_list[i] = this_seg
             offset_path_list[next_i] = next_seg
 
@@ -722,6 +749,40 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             if debug: print("            length", this_seg.length(), file=sys.stderr)
             if debug: print("        next", next_seg, file=sys.stderr)
             if debug: print("            length", next_seg.length(), file=sys.stderr)
+
+    else:
+        for i in range(len(offset_path_list)):
+            this_seg = offset_path_list[i]
+
+            next_i = (i + 1) % len(offset_path_list)
+            next_seg = offset_path_list[next_i]
+
+            if debug: print("intersecting", file=sys.stderr)
+            if debug: print("    this", this_seg, file=sys.stderr)
+            if debug: print("        length", this_seg.length(), file=sys.stderr)
+            if debug: print("    next", next_seg, file=sys.stderr)
+            if debug: print("        length", next_seg.length(), file=sys.stderr)
+            intersections = this_seg.intersect(next_seg)
+            if debug: print("    intersections:", intersections, file=sys.stderr)
+            if len(intersections) > 0:
+                intersection = intersections[0]
+                if debug:
+                    this_point = this_seg.point(intersections[0][0])
+                    next_point = next_seg.point(intersections[0][1])
+                    print("    first intersection: {} {} {}".format(intersection, this_point, next_point), file=sys.stderr)
+                # Trim the end off `this_seg` and the start off `next_seg`
+                # so they meet at their intersection.
+                this_seg = this_seg.cropped(0.0, intersection[0])
+                next_seg = next_seg.cropped(intersection[1], 1.0)
+
+                offset_path_list[i] = this_seg
+                offset_path_list[next_i] = next_seg
+
+                if debug: print("    trimmed:", file=sys.stderr)
+                if debug: print("        this", this_seg, file=sys.stderr)
+                if debug: print("            length", this_seg.length(), file=sys.stderr)
+                if debug: print("        next", next_seg, file=sys.stderr)
+                if debug: print("            length", next_seg.length(), file=sys.stderr)
 
 
     #
