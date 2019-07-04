@@ -87,7 +87,7 @@
 
 * Add peck drilling via optional arguments to the `drill` op.
 
-* Per-operation speed, feeds, and adoc (like there's currently per-op
+* Per-operation speeds, feeds, and adoc (like there's currently per-op
   rdoc for pocketing).
 
 
