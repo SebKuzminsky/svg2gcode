@@ -41,7 +41,7 @@ Clone the svg2gcode repo:
 
 Install dependencies:
 
-    sudo apt-get install python python-svgwrite python-numpy python-jsonschema asciidoc docbook-xml docbook-xsl xsltproc
+    sudo apt-get install python3 python3-svgwrite python3-numpy python3-jsonschema asciidoc docbook-xml docbook-xsl xsltproc make
 
 The test suite runs the LinuxCNC Standalone Interpreter to validate
 the emitted g-code, this is available in the `linuxcnc-uspace` package

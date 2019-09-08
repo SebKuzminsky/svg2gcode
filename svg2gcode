@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # svg2gcode - a program for writing g-code from SVG files
@@ -20,7 +20,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 # 
 
-from __future__ import print_function
+
 
 import argparse
 import json
@@ -326,7 +326,7 @@ def handle_operation(op, path_index):
         input_path = input_path.reversed()
 
     results = []
-    results.append(ResultComment("%s, path %d" % (op.keys()[0], path_index)))
+    results.append(ResultComment("%s, path %d" % (list(op.keys())[0], path_index)))
 
     if 'engrave' in op:
         results += do_engrave(op['engrave'], input_path)
@@ -354,7 +354,7 @@ def handle_operation(op, path_index):
 
 def do_engrave(op_args, input_path):
     ramp_slope = None
-    if "ramp-slope" in op_args.keys():
+    if "ramp-slope" in list(op_args.keys()):
         ramp_slope = op_args['ramp-slope']
 
     result = ResultPath(
@@ -378,29 +378,29 @@ def do_offset(op_args, input_path):
     output_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
 
     max_depth_of_cut = None
-    if "max-depth-of-cut" in op_args.keys():
+    if "max-depth-of-cut" in list(op_args.keys()):
         max_depth_of_cut = op_args['max-depth-of-cut']
     else:
         cut_depth = args.z_top_of_material - args.z_cut_depth
         print("WARNING: no 'max-depth-of-cut' specified in job, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, cut_depth), file=sys.stderr)
 
     ramp_slope = None
-    if "ramp-slope" in op_args.keys():
+    if "ramp-slope" in list(op_args.keys()):
         ramp_slope = op_args['ramp-slope']
 
     work_holding_tabs = 0
     work_holding_tab_height = 0.5
     work_holding_tab_width = 10.0
     work_holding_tab_locations = []
-    if "work-holding-tabs" in op_args.keys():
+    if "work-holding-tabs" in list(op_args.keys()):
         tabs = op_args['work-holding-tabs']
-        if "number-of-tabs" in tabs.keys():
+        if "number-of-tabs" in list(tabs.keys()):
             work_holding_tabs = tabs['number-of-tabs']
-        if "height" in tabs.keys():
+        if "height" in list(tabs.keys()):
             work_holding_tab_height = tabs['height']
-        if "width" in tabs.keys():
+        if "width" in list(tabs.keys()):
             work_holding_tab_width = tabs['width']
-        if "locations" in tabs.keys():
+        if "locations" in list(tabs.keys()):
             work_holding_tab_locations = tabs['locations']
 
         if work_holding_tabs > 0 and len(work_holding_tab_locations) != 0:
@@ -567,31 +567,31 @@ def do_pocket(op_args, input_path):
     material_contour = input_path
 
     # FIXME: get these from a different tool info section of the json data
-    if "tool-diameter" in op_args.keys():
+    if "tool-diameter" in list(op_args.keys()):
         tool_diameter = op_args['tool-diameter']
     else:
         raise ValueError('no "tool-diameter" specified in "pocket" operation')
     tool_radius = tool_diameter / 2.0
 
-    if "width-of-cut" in op_args.keys():
+    if "width-of-cut" in list(op_args.keys()):
         width_of_cut = op_args['width-of-cut']
     else:
         raise ValueError('no "width-of-cut" specified in "pocket" operation')
 
     finishing_allowance = 0.0
-    if "finishing-allowance" in op_args.keys():
+    if "finishing-allowance" in list(op_args.keys()):
         finishing_allowance = op_args['finishing-allowance']
 
     pocket_depth = args.z_top_of_material - args.z_cut_depth
 
     slot_max_depth_of_cut = pocket_depth
-    if "slot-max-depth-of-cut" in op_args.keys():
+    if "slot-max-depth-of-cut" in list(op_args.keys()):
         slot_max_depth_of_cut = op_args['slot-max-depth-of-cut']
     else:
         print("WARNING: no 'slot-max-depth-of-cut' specified in pocket operation, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
 
     shoulder_max_depth_of_cut = pocket_depth
-    if "shoulder-max-depth-of-cut" in op_args.keys():
+    if "shoulder-max-depth-of-cut" in list(op_args.keys()):
         shoulder_max_depth_of_cut = op_args['shoulder-max-depth-of-cut']
     else:
         print("WARNING: no 'shoulder-max-depth-of-cut' specified in pocket operation, slotting from --z-top-of-material (%f) down to --z-cut-depth (%f), total %f, in one pass" % (args.z_top_of_material, args.z_cut_depth, pocket_depth), file=sys.stderr)
@@ -601,7 +601,7 @@ def do_pocket(op_args, input_path):
     depth_of_cut = pocket_depth / num_passes
 
     ramp_slope = None
-    if "ramp-slope" in op_args.keys():
+    if "ramp-slope" in list(op_args.keys()):
         ramp_slope = op_args['ramp-slope']
 
 
@@ -1026,7 +1026,7 @@ results = []
 # command line, and run all jobs on each.
 if jobfile_schema == 1:
     if args.path == None:
-        args.path = range(0, len(svg.paths))
+        args.path = list(range(0, len(svg.paths)))
     for path_index in args.path:
         for job in jobs['jobs']:
             results += v1_handle_path(job, path_index)
@@ -1041,7 +1041,7 @@ elif jobfile_schema == 2:
         elif 'paths' in job:
             input_paths = job['paths']
         else:
-            input_paths = range(0, len(svg.paths))
+            input_paths = list(range(0, len(svg.paths)))
         for path in input_paths:
             for op in job['operations']:
                 results += handle_operation(op, path)
