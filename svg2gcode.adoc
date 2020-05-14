@@ -84,7 +84,7 @@ and the paths from the different SVGs won't line up.  In this situation
 you can disable the viewbox-based translation by setting the G-code
 coordinate system origin equal to the SVG coordinate system origin.
 +
-(Default: viewbox-lower-left.)
+(Default: viewbox-lower-left)
 
 
 == Job File Format
