@@ -1,6 +1,10 @@
 
 # Future embellishments
 
+* viewBox is still buggy.  Origin is messed up.  These have non-zero origin:
+    test/svg2gcode/short-path-with-ramp/1/test.svg
+    test/svg2gcode/svg-viewBox/test.svg
+
 * Specify preamble (set G64P, G40, etc, like gcoder.init()).
 
 * Pockets with islands.  Counter-clockwise paths are the outside walls
