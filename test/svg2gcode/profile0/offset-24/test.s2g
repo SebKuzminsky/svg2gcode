@@ -2,6 +2,22 @@
     "jobs": [
         {
             "job-type": "offset",
+            "distance": 10
+        },
+        {
+            "job-type": "offset",
+            "distance": 20
+        },
+        {
+            "job-type": "offset",
+            "distance": 21
+        },
+        {
+            "job-type": "offset",
+            "distance": 22
+        },
+        {
+            "job-type": "offset",
             "distance": 24
         }
     ]

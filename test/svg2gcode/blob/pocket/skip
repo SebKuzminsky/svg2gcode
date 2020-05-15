@@ -1,23 +1,19 @@
-Skipping because of a known bug with Arc.intersect(Arc).
-
-https://github.com/mathandy/svgpathtools/issues/43
-
 intersecting
-    this Arc(start=(-13.3240138471+73.5143173665j), radius=(43.029+43.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.090692916+76.1177918091j))
-    next Arc(start=(-60.0906376347+76.117751406j), radius=(43.029+43.029j), rotation=0.0, large_arc=False, sweep=False, end=(-76.7713295292+119.886761691j))
+    this Arc(start=(67.37411462699134+149.0065327306089j), radius=(51.072+51.072j), rotation=0.0, large_arc=False, sweep=False, end=(122.60926068478136+133.81853477924648j))
+        length 60.8150689294922
+    next Arc(start=(122.6092613886214+133.8185339555112j), radius=(51.072+51.072j), rotation=0.0, large_arc=False, sweep=False, end=(128.9937005588717+76.88991877856988j))
+        length 60.81540256632486
 Traceback (most recent call last):
-  File "/home/seb/svg2gcode/test/../svg2gcode", line 737, in <module>
-    output_paths.append(handle_operation(op, path))
-  File "/home/seb/svg2gcode/test/../svg2gcode", line 59, in handle_operation
-    return do_offset(op['offset'], input_path)
-  File "/home/seb/svg2gcode/test/../svg2gcode", line 94, in do_offset
-    output_paths = gcoder.offset_paths(input_path, offset, debug=args.debug)
-  File "/home/seb/svg2gcode/gcoder.py", line 596, in offset_paths
+  File "/data/home/seb/svg2gcode/test/../svg2gcode", line 1047, in <module>
+    results += handle_operation(op, path)
+  File "/data/home/seb/svg2gcode/test/../svg2gcode", line 338, in handle_operation
+    results += do_pocket(op['pocket'], input_path)
+  File "/data/home/seb/svg2gcode/test/../svg2gcode", line 632, in do_pocket
+    shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
+  File "/data/home/seb/svg2gcode/test/../svg2gcode", line 513, in remove_island
+    shoulder_milling_paths = gcoder.offset_paths(island, offset, debug=args.debug)
+  File "/data/home/seb/svg2gcode/gcoder.py", line 765, in offset_paths
     intersections = this_seg.intersect(next_seg)
-  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/path.py", line 1914, in intersect
-    tol=tol, tol_deC=tol)
-  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 320, in bezier_intersections
-    (c11, c12) = halve_bezier(pair.bez1)
-  File "/home/seb/svg2gcode/svgpathtools/svgpathtools/bezier.py", line 157, in halve_bezier
-    if len(p) == 4:
-TypeError: object of type 'Arc' has no len()
+  File "/data/home/seb/svg2gcode/svgpathtools/svgpathtools/path.py", line 2020, in intersect
+    assert(np.isclose(self.point(self_t), other_seg.point(other_t), rtol=0.0, atol=1e-6))
+AssertionError

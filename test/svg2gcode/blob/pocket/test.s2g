@@ -11,7 +11,9 @@
                         "slot-max-depth-of-cut": 10.0,
                         "shoulder-max-depth-of-cut": 10.0,
                         "ramp-slope": 0.5
-                    },
+                    }
+                },
+                {
                     "offset": {
                         "distance": 5.0
                     }
