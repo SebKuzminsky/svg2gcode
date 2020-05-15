@@ -179,8 +179,12 @@ class svg():
         # see svg.x_to_mm() and svg.y_to_mm() below.)
         #
 
-        self.paths, self.attributes, self.svg_attributes = svgpathtools.svg2paths2(self.svg_file)
-        print("svgpathtools attributes: %s" % self.svg_attributes, file=sys.stderr)
+        self.doc = svgpathtools.Document(self.svg_file)
+
+        self.results = self.doc.flatten_all_paths()
+        self.paths = [result.path for result in self.results]
+
+        self.svg_attributes = self.doc.root.attrib
 
 
         #
