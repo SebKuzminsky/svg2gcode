@@ -346,6 +346,10 @@ https://www.geometrictools.com/Documentation/Documentation.html
 
 == svgpathtools bugs
 
+To run the svgpathtools test suite, run the Python2 pytest in the
+svgpathtools directory.
+
+
 === Arc.intersect(Arc)
 
 https://github.com/mathandy/svgpathtools/issues/43
