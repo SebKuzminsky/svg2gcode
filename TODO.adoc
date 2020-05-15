@@ -44,12 +44,11 @@
 * Let work-holding tabs span the path end.
 
 * Make tabs that apply to multiple jobs...  A typical use case is to
-  machine a part by cutting an 'offset' with a distance larger than
-  the cutter radius (roughing it out), then a second operation operation
-  finishes the part at the proper offset distance.  (Then manually cutting
-  the tabs.)  Getting the two sets of tabs to line up is pretty fiddly.
-  Maybe specify them as percentages along the path, rather than millimeter
-  distances?
+  machine a part by cutting an 'offset' with a distance larger than the
+  cutter radius (roughing it out), then a second operation finishes the
+  part at the proper offset distance.  (Then manually cutting the tabs.)
+  Getting the two sets of tabs to line up is pretty fiddly.  Maybe specify
+  them as percentages along the path, rather than millimeter distances?
 
 * "Rest machining": Machine the initial part of the pocket with a
   large-diameter cutter, then do cleanup/finishing with a small-diameter
@@ -85,18 +84,19 @@
 * Per-operation speeds, feeds, and adoc (like there's currently per-op
   rdoc for pocketing).
 
-* A typical use case is to mill around the outline of a part, freeing it
-  from the raw material.  To get the best surface finish you'd make two
-  cuts: first a slot offset out from the outline by the cutter radius
-  plus a small finishing allowance, followed by a finishing pass offset
-  out from the outline by just the cutter radius.  The retract move
-  at the end of the finishing pass should not happen with the tool in
-  contact with the part, it leaves a blemish.  Instead add an optional
-  "departure move" or "exit move" or "pre-retract move" after finishing
-  the path, before retracting, pulling away from the material contour
-  path by a small amount, maybe half the finishing allowance.  Linear
-  (perpendicular to the path) or arc departure moves work, but arcs
-  might be harder to get right?  Approach moves might benefit similarly.
+* A typical use case is to mill around the outline of a part, freeing
+  it from the raw material.  To get the best surface finish you'd make
+  two cuts: first a slot offset out from the outline by the cutter
+  radius plus a small finishing allowance, followed by a finishing pass
+  offset out from the outline by just the cutter radius.  The retract
+  move at the end of the finishing pass should not happen with the
+  tool in contact with the part, it leaves a blemish.  Instead add an
+  optional "departure move" or "exit move" or "pre-retract move" after
+  finishing the path, before retracting, pulling away from the material
+  contour path by a small amount, maybe half the finishing allowance.
+  Linear (perpendicular to the path) or arc departure moves work, but
+  arcs might be harder to get right?  But linear would slow down more
+  while in contact with the work.  Approach moves might benefit similarly.
 
 * The `pocket` operation only applies the `ramp` to the first (slotting)
   cut.  Subsequent cuts (shrinking the left-behind islands) use plunge
@@ -152,7 +152,7 @@ https://www.geometrictools.com/Documentation/Documentation.html
 
 
 
-== svgpathtools bugs
+== svgpathtools testing
 
 To run the svgpathtools test suite, run the Python2 pytest in the
 svgpathtools directory.
