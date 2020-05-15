@@ -2,10 +2,6 @@
     "jobs": [
         {
             "job-type": "offset",
-            "distance": 10
-        },
-        {
-            "job-type": "offset",
             "distance": 12
         },
         {
