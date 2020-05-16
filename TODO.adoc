@@ -24,9 +24,9 @@
 
 * GUI (optional, the program must still be scriptable).  The GUI displays
   the input SVG and the computed tool path, and lets you export the
-  toolpath as g-code.  Something like cambam.  Maybe start with dxf2gcode,
-  add the features that are missing (svg input, offset paths, pocketing,
-  what else?).
+  toolpath as g-code.  Something like cambam.  Maybe start with dxf2gcode
+  or flatcam, add the features that are missing (svg input, offset paths,
+  pocketing, what else?).
 
 * Better pocketing algorithm.  It currently makes the longest possible
   slotting cut...  Instead, maybe first slot the innermost path, then
