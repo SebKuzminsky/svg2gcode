@@ -686,6 +686,7 @@ def do_pocket(op_args, input_path):
             results.append(ResultG0(z=args.z_approach))
 
             # Plunge down into the beginning of the next path.
+            # FIXME: should optionally use ramp entry here
             results.append(ResultFeed(args.plunge_feed))
             results.append(ResultG1(z=z))
 
