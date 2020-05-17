@@ -5,7 +5,9 @@
             "operations": [
                 {
                     "pocket": {
-                        "finishing-allowance": 1,
+                        "finishing": {
+                            "allowance": 1
+                        },
                         "tool-diameter": 6.35,
                         "width-of-cut": 5
                     }

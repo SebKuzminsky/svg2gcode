@@ -225,8 +225,9 @@ Arguments:
 *width-of-cut* (float):: Desired radial width-of-cut when shoulder
 milling, in mm.
 
-*finishing-allowance* (float, optional):: Make the pocket smaller than
-the SVG path by this amount, in mm.  Defaults to 0 mm if omitted.
+*finishing-allowance* (float, optional):: Make the pocket smaller
+than the SVG path by this amount, in mm.  Defaults to 0 mm if omitted.
+Deprecated, use a *finishing* object instead (described below).
 
 *slot-max-depth-of-cut* (float, optional):: Maximum axial depth of a slot
 milling pass, in mm.  Defaults to `(--z-top-of-material - --z-cut-depth)`
@@ -242,6 +243,16 @@ horizontal distance of the ramp entry move.  *ramp-slope* also enables a
 move at the end of the slotting path to remove the entry ramp.  The ramp
 entry move may wrap around the path.  If *ramp-slope* is not specified
 it uses a full depth plunge entry.
+
+*finishing* (object, optional):: A *finishing* object machines the pocket
+slightly undersize (ie with a little extra material left "on the walls").
+The properties of the *finishing* object are:
+
+* *allowance* (number, optional):: How much material to leave for the
+    finishing pass, in mm.  Must be greater than 0.0.  The default is
+    0.5 mm.  This replaces the deprecated *pocket.finishing-allowance*
+    property.
+
 
 Example:
 
@@ -265,10 +276,12 @@ Example:
                         "pocket": {
                             "tool-diameter": 15.25,
                             "width-of-cut": 5.125,
-                            "finishing-allowance": 5.0,
                             "slot-max-depth-of-cut": 1.2,
                             "shoulder-max-depth-of-cut": 2.8,
-                            "ramp-slope": 0.1
+                            "ramp-slope": 0.1,
+                            "finishing": {
+                                "allowance": 1.0,
+                            }
                         }
                     }
                 ]

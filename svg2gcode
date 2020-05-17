@@ -584,7 +584,13 @@ def do_pocket(op_args, input_path):
 
     finishing_allowance = 0.0
     if "finishing-allowance" in op_args:
+        print("WARNING: `pocket.finishing-allowance` is deprecated, use `pocket.finishing.allowance` instead.", file=sys.stderr)
+        print("i'll let it slide just this once", file=sys.stderr)
         finishing_allowance = op_args['finishing-allowance']
+
+    if "finishing" in op_args:
+        if 'allowance' in op_args['finishing']:
+            finishing_allowance = op_args['finishing']['allowance']
 
     pocket_depth = args.z_top_of_material - args.z_cut_depth
 
@@ -757,6 +763,16 @@ def load_job_file(jobfile):
         'additionalProperties': False
     }
 
+    pocket_finishing_schema = {
+        'type': 'object',
+        'properties': {
+            'allowance': {
+                'type': 'number'
+            }
+        },
+        'additionalProperties': False
+    }
+
     v1_schema = {
         'type': 'object',
         'properties': {
@@ -841,9 +857,6 @@ def load_job_file(jobfile):
                 'width-of-cut': {
                     'type': 'number'
                 },
-                'finishing-allowance': {
-                    'type': 'number'
-                },
                 'slot-max-depth-of-cut': {
                     'type': 'number'
                 },
@@ -852,7 +865,11 @@ def load_job_file(jobfile):
                 },
                 'ramp-slope': {
                     'type': 'number'
-                }
+                },
+                'finishing-allowance': {
+                    'type': 'number'
+                },
+                'finishing': pocket_finishing_schema
             },
             'required': [ 'tool-diameter', 'width-of-cut' ],
             'additionalProperties': False

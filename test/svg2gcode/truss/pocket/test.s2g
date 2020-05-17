@@ -14,7 +14,9 @@
 		{
 		    "pocket": {
 			"tool-diameter": 3.175,
-                        "finishing-allowance": 0.825,
+                        "finishing": {
+                            "allowance": 0.825
+                        },
                         "width-of-cut": 1.0,
                         "slot-max-depth-of-cut": 0.5,
                         "shoulder-max-depth-of-cut": 2.0,

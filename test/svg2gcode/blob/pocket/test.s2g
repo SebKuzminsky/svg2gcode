@@ -7,7 +7,9 @@
                     "pocket": {
                         "tool-diameter": 5.0,
                         "width-of-cut": 2.0,
-                        "finishing-allowance": 2.0,
+                        "finishing": {
+                            "allowance": 2.0
+                        },
                         "slot-max-depth-of-cut": 10.0,
                         "shoulder-max-depth-of-cut": 10.0,
                         "ramp-slope": 0.5
