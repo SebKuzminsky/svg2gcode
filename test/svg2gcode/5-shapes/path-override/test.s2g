@@ -17,7 +17,8 @@
                         "width-of-cut": 2.0,
                         "ramp-slope": 0.1,
                         "finishing": {
-                            "allowance": 2.0
+                            "allowance": 2.0,
+                            "behavior": "none"
                         }
                     }
                 },

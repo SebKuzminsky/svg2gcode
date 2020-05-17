@@ -545,27 +545,30 @@ def remove_island(island, tool_radius, width_of_cut):
 
 def do_pocket(op_args, input_path):
     #
-    # Inset the material contour by the finishing allowance to
-    # get the rough material contour.
+    # Inset the material contour by the finishing allowance (if any)
+    # to get the rough material contour.
     #
-    # The first tool path is the perimeter slotting cut (which
-    # might be wrong, shouldn't we make the smallest possible
-    # slot in the middle and go out from there?). Inset the rough
-    # material contour by the tool radius to get the tool path
-    # for this wrong slot.
+    # The first tool path is the perimeter slotting cut (which might be
+    # wrong, shouldn't we make the smallest possible slot in the middle
+    # and go out from there?). Inset the rough material contour by the
+    # tool radius to get the tool path for this wrong slot.
     #
-    # After that we want to shoulder mill the remainder
-    #
-    # Inset the slotting tool path by the tool radius to find
-    # the remaining material contour
+    # After that we want to shoulder mill the remainder.  Inset the
+    # slotting tool path by the tool radius to find the remaining
+    # material contour.
     #
     # While the remaining material contour is greater than zero:
     #
-    #     Outset the remaining material contour by the tool radius
-    #     minus the width of cut to find the next pass tool path
+    #     Outset the remaining material contour by the tool radius minus
+    #     the width of cut to find the next pass tool path.
     #
-    #     Inset the tool path by the tool radius to find the
-    #     new remaining material contour
+    #     Inset the tool path by the tool radius to find the new remaining
+    #     material contour.
+    #
+    # If a finishing cut was requested, inset the original material
+    # contour by the tool radius to find the finishing pass tool path
+    # and shoulder mill.
+    #
 
     output_paths = []
     material_contour = input_path
@@ -582,15 +585,41 @@ def do_pocket(op_args, input_path):
     else:
         raise ValueError('no "width-of-cut" specified in "pocket" operation')
 
-    finishing_allowance = 0.0
+
+    #
+    # Deal with finishing.  This is complicated a bit by having to
+    # support the deprecated `pocket.finishing-allowance` and the new
+    # `pocket.finishing`.
+    #
+    # The default `finishing['allowance'] value of 0.0 here means "no
+    # finishing at all".
+    #
+
+    finishing = {
+        'allowance': 0.0,
+        'behavior': 'single-pass'
+    }
+
     if "finishing-allowance" in op_args:
         print("WARNING: `pocket.finishing-allowance` is deprecated, use `pocket.finishing.allowance` instead.", file=sys.stderr)
         print("i'll let it slide just this once", file=sys.stderr)
-        finishing_allowance = op_args['finishing-allowance']
+        finishing['allowance'] = op_args['finishing-allowance']
+        finishing['behavior'] = 'none'
 
     if "finishing" in op_args:
         if 'allowance' in op_args['finishing']:
-            finishing_allowance = op_args['finishing']['allowance']
+            if op_args['finishing']['allowance'] <= 0.0:
+                raise ValueError("`pocket.finishing.allowance` must be > 0.0")
+            finishing['allowance'] = op_args['finishing']['allowance']
+        else:
+            finishing['allowance'] = 0.5
+
+        if 'behavior' in op_args['finishing']:
+            if finishing['behavior'] not in [ 'none', 'progressive', 'single-pass' ]:
+                raise ValueError(f"`pocket.finishing.behavior` has invalid value '{op_args['finishing']['behavior']}'")
+            finishing['behavior'] = op_args['finishing']['behavior']
+        else:
+            finishing['behavior'] = 'single-pass'
 
     pocket_depth = args.z_top_of_material - args.z_cut_depth
 
@@ -619,7 +648,7 @@ def do_pocket(op_args, input_path):
     # Compute initial slotting paths.
     #
 
-    offset = finishing_allowance + tool_radius
+    offset = finishing['allowance'] + tool_radius
     slotting_paths = gcoder.offset_paths(material_contour, offset, debug=args.debug)
     if not slotting_paths:
         print("no slotting path!", file=sys.stderr)
@@ -647,6 +676,21 @@ def do_pocket(op_args, input_path):
 
 
     #
+    # Compute finishing paths, if any.
+    #
+
+    if finishing['allowance'] > 0.0:
+        finishing_paths = gcoder.offset_paths(material_contour, tool_radius, debug=args.debug)
+        if not finishing_paths:
+            print("no finishing path!", file=sys.stderr)
+            return []
+        output_paths += finishing_paths
+        print("finishing path(s): %s" % finishing_paths, file=sys.stderr)
+    else:
+        finishing_paths = [ ]
+
+
+    #
     # Emit all the g-code.
     #
     results = []
@@ -658,7 +702,7 @@ def do_pocket(op_args, input_path):
 
         for path in slotting_paths:
             result = ResultPath(
-                comment="slotting cut %d/%d, z=%f, %.4f finishing allowance + %.4f tool radius" % (pass_num, num_passes, z, finishing_allowance, tool_radius),
+                comment="slotting cut %d/%d, z=%f, %.4f finishing allowance + %.4f tool radius" % (pass_num, num_passes, z, finishing['allowance'], tool_radius),
                 svg=svg,
                 path=path,
                 z_traverse=args.z_traverse,
@@ -706,10 +750,49 @@ def do_pocket(op_args, input_path):
             )
             results.append(result)
 
+        if finishing['behavior'] == 'progressive':
+            for path in finishing_paths:
+                result = ResultPath(
+                    comment="progressive finishing cut %d/%d, z=%f, %.4f tool radius" % (pass_num, num_passes, z, tool_radius),
+                    svg=svg,
+                    path=path,
+                    z_traverse=args.z_traverse,
+                    z_approach=args.z_approach,
+                    z_top_of_material=z_prev,
+                    z_cut_depth=z,
+                    lead_in=True,
+                    lead_out=False,
+                    plunge_feed=args.plunge_feed,
+                    feed=args.shoulder_feed,
+                    ramp_slope=ramp_slope
+                )
+                results.append(result)
+
     # The tool is left down on the floor of the pocket, raise it
     # up now.
     results.append(ResultG1(z=args.z_approach))
     results.append(ResultG0(z=args.z_traverse))
+
+    if finishing['behavior'] == 'single-pass':
+        for path in finishing_paths:
+            result = ResultPath(
+                comment="single-pass finishing cut, z=%f, %.4f tool radius" % (z, tool_radius),
+                svg=svg,
+                path=path,
+                z_traverse=args.z_traverse,
+                z_approach=args.z_approach,
+                z_top_of_material=args.z_top_of_material,
+                z_cut_depth=z,
+                lead_in=True,
+                lead_out=True,
+                plunge_feed=args.plunge_feed,
+                feed=args.shoulder_feed,
+                ramp_slope=ramp_slope
+            )
+            results.append(result)
+
+        # The lead_out moved the tool up out of the pocket and left it
+        # at Z=z_traverse.
 
     return results
 
@@ -772,6 +855,9 @@ def load_job_file(jobfile):
         'properties': {
             'allowance': {
                 'type': 'number'
+            },
+            'behavior': {
+                'type': 'string'
             }
         },
         'additionalProperties': False

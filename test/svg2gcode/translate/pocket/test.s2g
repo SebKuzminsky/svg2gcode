@@ -16,7 +16,8 @@
                                     "tool-diameter": 6.35,
                                     "width-of-cut": 1.5,
                                     "finishing": {
-                                        "allowance": 0.5
+                                        "allowance": 0.5,
+                                        "behavior": "none"
                                     },
                                     "slot-max-depth-of-cut": 2.0,
                                     "ramp-slope": 0.1

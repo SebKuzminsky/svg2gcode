@@ -244,14 +244,34 @@ move at the end of the slotting path to remove the entry ramp.  The ramp
 entry move may wrap around the path.  If *ramp-slope* is not specified
 it uses a full depth plunge entry.
 
-*finishing* (object, optional):: A *finishing* object machines the pocket
-slightly undersize (ie with a little extra material left "on the walls").
-The properties of the *finishing* object are:
+*finishing* (object, optional):: If a *pocket* has a *finishing* property,
+svg2gcode will machine the pocket slightly undersize (ie with a little
+extra material left "on the walls"), then optionally machine the pocket
+to its specified size with a finishing pass.  The properties of the
+*finishing* object are:
 
 * *allowance* (number, optional):: How much material to leave for the
     finishing pass, in mm.  Must be greater than 0.0.  The default is
     0.5 mm.  This replaces the deprecated *pocket.finishing-allowance*
     property.
+
+* *behavior* (string, optional):: There are three possible choices
+    for finishing behavior, corresponding to three possible values for
+    this property:
+
+    ** 'none': Do not make a finishing cut.  Leave any finishing
+        allowance on the walls of the pocket, possibly to be cleaned up
+        by a later operation.
+
+    ** 'progressive': When a pocket is deeper than what can be cut in
+        a single pass (as determined by *pocket.slot-max-depth-of-cut*
+        and *pocket.shoulder-max-depth-of-cut*), finish the walls
+        progressively (depth-pass by depth-pass) as the pocket is
+        machined deeper.
+
+    ** 'single-pass': Finishing the walls in a single finishing pass
+        once when the pocket has been machined to its final depth.
+        This is the default.
 
 
 Example:
@@ -281,6 +301,7 @@ Example:
                             "ramp-slope": 0.1,
                             "finishing": {
                                 "allowance": 1.0,
+                                "behavior": "progressive"
                             }
                         }
                     }

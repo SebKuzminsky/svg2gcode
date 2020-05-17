@@ -15,7 +15,8 @@
 		    "pocket": {
 			"tool-diameter": 3.175,
                         "finishing": {
-                            "allowance": 0.825
+                            "allowance": 0.825,
+                            "behavior": "none"
                         },
                         "width-of-cut": 1.0,
                         "slot-max-depth-of-cut": 0.5,

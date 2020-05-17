@@ -6,7 +6,8 @@
                 {
                     "pocket": {
                         "finishing": {
-                            "allowance": 1
+                            "allowance": 1,
+                            "behavior": "none"
                         },
                         "tool-diameter": 6.35,
                         "width-of-cut": 5
