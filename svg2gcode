@@ -638,6 +638,9 @@ def do_pocket(op_args, input_path):
         print("remaining material contours (islands): %s" % remaining_material_contours, file=sys.stderr)
         output_paths += remaining_material_contours
         # FIXME: sort the remaining islands, nearest first
+        # FIXME: Keep track of the islands separately, and within each
+        #     island only raise the tool to the top of material within this
+        #     pocketing op.
         for island in remaining_material_contours:
             shoulder_milling_paths += remove_island(island, tool_radius, width_of_cut)
     output_paths += shoulder_milling_paths
