@@ -941,6 +941,9 @@ def load_job_file(jobfile):
         'additionalProperties': False
     }
 
+    jsonschema.Draft4Validator.check_schema(v1_schema)
+    jsonschema.Draft4Validator.check_schema(v2_schema)
+
     jobs = json.load(open(jobfile))
 
     jobfile_schema = None
