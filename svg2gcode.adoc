@@ -212,14 +212,10 @@ It cuts a slot around the inside of this adjusted material contour.
 The slot leaves zero or more "islands" of remaining material in the
 pocket.
 
-svg2gcode removes the islands one by one using the side of the endmill
-to shrink the island from the edges.  Each pass removes `width-of-cut`
+svg2gcode removes the islands one by one using shoulder milling to
+shrink the island from the edges.  Each pass removes `width-of-cut`
 material from the perimeter of the island until nothing remains, then
-moves on to the next island.
-
-svg2gcode tries to keep the tool down in the pocket as much as it can,
-but some of the transitions between passes trigger defensive "raise,
-traverse, plunge" movements.
+it moves on to the next island.  Each pass begins with a plunge entry.
 
 Arguments:
 
