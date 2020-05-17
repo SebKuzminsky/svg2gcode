@@ -98,10 +98,10 @@
   arcs might be harder to get right?  But linear would slow down more
   while in contact with the work.  Approach moves might benefit similarly.
 
-* The `pocket` operation only applies the `ramp` to the first (slotting)
-  cut.  Subsequent cuts (shrinking the left-behind islands) use plunge
-  entry.  They should probably ramp too, though maybe at a steeper angle
-  since they're not slotting.
+* The `pocket` operation only applies the `ramp-slope` to the first
+  (slotting) cut.  Subsequent cuts (shrinking the left-behind islands)
+  use plunge entry.  They should probably ramp too, though maybe at a
+  steeper angle since they're not slotting.
 
 
 
