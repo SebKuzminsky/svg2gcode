@@ -13,8 +13,8 @@
 * Chain drilling.  Offset the path, walk along it in steps of (drill
   diameter - overlap), g81 or g83.
 
-* Plunge mill roughing.  Rough a pocket by plunging a twist drill (or
-  center-cutting endmill).
+* Plunge mill roughing.  Rough a pocket or a path by plunging a twist
+  drill (or center-cutting endmill).
 
 * Some way to deal with open paths - sometimes you want to machine one
   side of a part, not the whole perimeter.  You could include free space
