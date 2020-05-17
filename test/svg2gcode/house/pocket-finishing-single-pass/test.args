@@ -1,0 +1,5 @@
+--feed 1000
+--shoulder-feed 1000
+--slot-feed 500
+--plunge-feed 250
+--z-cut-depth -10.0

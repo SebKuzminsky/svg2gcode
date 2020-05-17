@@ -1,0 +1,24 @@
+{
+    "jobs": [
+        {
+            "operations": [
+                {
+                    "pocket": {
+                        "tool-diameter": 8,
+                        "width-of-cut": 2,
+                        "slot-max-depth-of-cut": 4.0,
+                        "shoulder-max-depth-of-cut": 9.0,
+                        "ramp-slope": 0.1,
+                        "finishing": {
+                            "allowance": 1,
+                            "behavior": "progressive"
+                        }
+                    }
+                },
+                {
+                    "engrave": {}
+                }
+            ]
+        }
+    ]
+}
