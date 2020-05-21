@@ -103,6 +103,9 @@
   use plunge entry.  They should probably ramp too, though maybe at a
   steeper angle since they're not slotting.
 
+* Add a `profile` operation, like `offset` but with an optional
+  `finishing` block.
+
 
 
 
