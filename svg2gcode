@@ -956,6 +956,8 @@ def load_job_file(jobfile):
                 'ramp-slope': {
                     'type': 'number'
                 },
+                # FIXME: Remove `finishing-allowance`, the `finishing`
+                # object takes care of this now.
                 'finishing-allowance': {
                     'type': 'number'
                 },
