@@ -922,8 +922,6 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     # Smooth the path: adjacent segments whose start/end points are
     # "close enough" to each other are adjusted so they actually touch.
     #
-    # FIXME: is this still needed?
-    #
 
     if debug: print("smoothing paths...", file=sys.stderr)
 
@@ -934,12 +932,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 next_seg = path_list[i+1]
             else:
                 next_seg = path_list[0]
-            if close_enough(this_seg.end, next_seg.start):
-                next_seg.start = this_seg.end
-            else:
-                if debug: print("gap in the path (seg %d and following):" % i, file=sys.stderr)
-                if debug: print("    this_seg.end:", this_seg.end, file=sys.stderr)
-                if debug: print("    next_seg.start:", next_seg.start, file=sys.stderr)
+            midpoint = (this_seg.end + next_seg.start) / 2
+            next_seg.start = this_seg.end = midpoint
 
 
     #
