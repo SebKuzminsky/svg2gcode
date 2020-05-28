@@ -686,7 +686,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                     sweep = sweep
                 )
                 offset_path_list.append(offset_arc)
-            elif new_radius > epsilon:
+            else:
                 # Offset Arc radius is smaller than the minimum that
                 # LinuxCNC accepts, replace with a Line.
                 if debug: print("    arc too small, replacing with a line", file=sys.stderr)
@@ -696,10 +696,6 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                     end = old_start
                 offset_arc = svgpathtools.path.Line(start = start, end = end)
                 offset_path_list.append(offset_arc)
-            else:
-                # Zero-radius Arc, it disappeared.
-                if debug: print("    arc way too small, removing", file=sys.stderr)
-                continue
             if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
 
         else:
