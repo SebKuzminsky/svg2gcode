@@ -612,6 +612,23 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             next_seg = next_seg.cropped(intersection[1], 1.0)
 
 
+    def remove_connected_zero_length_segments(path_list):
+        if debug: print("removing too-short connected segments...", file=sys.stderr)
+        new_path_list = []
+        for i in range(len(path_list)):
+            prev_seg = path_list[i-1]
+            this_seg = path_list[i]
+            next_seg = path_list[(i+1) % len(path_list)]
+            if close_enough(prev_seg.end, this_seg.start) and close_enough(this_seg.end, next_seg.start) and this_seg.length() < epsilon:
+                if debug: print(f"removing {this_seg.length()} long segment: {this_seg}", file=sys.stderr)
+                midpoint = (prev_seg.end + next_seg.start) / 2
+                prev_seg.end = midpoint
+                next_seg.start = midpoint
+                continue
+            new_path_list.append(this_seg)
+        return new_path_list
+
+
     # This only works on closed paths.
     if debug: print("input path:", file=sys.stderr)
     if debug: print(path, file=sys.stderr)
@@ -717,6 +734,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 offset_path_list.append(svgpathtools.Line(start, end))
             if debug: print("    (long list of short lines)", file=sys.stderr)
 
+    offset_path_list = remove_connected_zero_length_segments(offset_path_list)
+
 
     #
     # Find all the places where one segment intersects the next, and
@@ -783,6 +802,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 if debug: print("            length", this_seg.length(), file=sys.stderr)
                 if debug: print("        next", next_seg, file=sys.stderr)
                 if debug: print("            length", next_seg.length(), file=sys.stderr)
+
+    offset_path_list = remove_connected_zero_length_segments(offset_path_list)
 
 
     #
@@ -888,6 +909,13 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     if debug: print("splitting path at intersections...", file=sys.stderr)
 
     offset_paths_list = split_path_at_intersections(offset_path_list, debug=debug)
+
+    new_offset_paths_list = []
+    for path_list in offset_paths_list:
+        new_path_list = remove_connected_zero_length_segments(path_list)
+        new_offset_paths_list.append(new_path_list)
+
+    offset_paths_list = new_offset_paths_list
 
 
     #
@@ -1598,7 +1626,7 @@ minimum_arc_radius = 0.00128
 
 # When comparing floats, a difference of less than epsilon counts as no
 # difference at all.
-epsilon = 1e-6
+epsilon = 1e-5
 
 def close_enough(a, b):
     """Returns True if the two numbers `a` and `b` are within `epsilon`
