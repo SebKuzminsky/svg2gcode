@@ -1,7 +1,7 @@
 {
     "jobs": [
         {
-            "paths": [ 0 ],
+            "paths": [ 1 ],
             "operations": [
                 {
                     "pocket": {
