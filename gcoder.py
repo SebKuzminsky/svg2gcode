@@ -928,10 +928,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
     for path_list in offset_paths_list:
         for i in range(len(path_list)):
             this_seg = path_list[i]
-            if (i+1) < len(path_list):
-                next_seg = path_list[i+1]
-            else:
-                next_seg = path_list[0]
+            next_seg = path_list[(i+1) % len(path_list)]
             midpoint = (this_seg.end + next_seg.start) / 2
             next_seg.start = this_seg.end = midpoint
 
