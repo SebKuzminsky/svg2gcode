@@ -1,3 +1,5 @@
+intersecting two arcs where a0.end == a1.start
+
 intersecting
     this Arc(start=(67.37411462699134+149.0065327306089j), radius=(51.072+51.072j), rotation=0.0, large_arc=False, sweep=False, end=(122.60926068478136+133.81853477924648j))
         length 60.8150689294922
