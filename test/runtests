@@ -73,16 +73,20 @@ else
     TEST_DIRS=$PWD
 fi
 
+NUM_TESTS=$(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | wc -l)
+TEST_NUM=0
+
 FAILED=""
 SKIPPED=""
 for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
+    TEST_NUM=$((TEST_NUM+1))
     TEST_DIR=$(dirname ${TEST})
     TEST_NAME=$(realpath ${TEST_DIR})
     HERE=$(realpath ${PWD})
     TEST_NAME=${TEST_DIR#${HERE}/}
     ORIG_DIR=${PWD}
 
-    echo "running ${TEST_NAME}"
+    echo "running ${TEST_NAME} (${TEST_NUM}/${NUM_TESTS})"
     cd ${TEST_DIR}
     do_test ${TEST} ${TEST_NAME}
     R=$?
