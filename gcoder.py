@@ -974,17 +974,20 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
     if offset_distance > 0:
         # The offset is positive (inwards), discard paths with opposite
-        # direction from input path.
+        # direction from input path, and paths inside any other path.
         for offset_path in offset_paths:
             if debug: print("checking path:", offset_path, file=sys.stderr)
             offset_path_area = approximate_path_area(offset_path)
             if debug: print("offset path area:", offset_path_area, file=sys.stderr)
-            if path_area * offset_path_area < 0.0:
+            if is_enclosed(offset_path, offset_paths):
+                if debug: print("path is enclosed, dropping", file=sys.stderr)
+            elif path_area * offset_path_area < 0.0:
                 # Input path and offset path go in the opposite directions,
                 # drop offset path.
                 if debug: print("wrong direction, dropping", file=sys.stderr)
-                continue
-            keepers.append(offset_path)
+            else:
+                if debug: print(f"good direction, keeping", file=sys.stderr)
+                keepers.append(offset_path)
 
     else:
         # The offset is negative (outwards), discard paths that lie
