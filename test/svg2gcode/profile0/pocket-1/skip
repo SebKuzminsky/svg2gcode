@@ -1,2 +1,0 @@
-this no longer crashes, but produces incorrect g-code at the inner-most
-path of the pocket
