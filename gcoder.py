@@ -652,7 +652,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 continue
             start = seg.point(0) + (offset_distance * seg.normal(0))
             end = seg.point(1) + (offset_distance * seg.normal(1))
-            offset_path_list.append(svgpathtools.Line(start, end))
+            seg = svgpathtools.Line(start, end)
+            offset_path_list.append(seg)
             if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
 
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
@@ -702,7 +703,6 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                     large_arc = seg.large_arc,
                     sweep = sweep
                 )
-                offset_path_list.append(offset_arc)
             else:
                 # Offset Arc radius is smaller than the minimum that
                 # LinuxCNC accepts, replace with a Line.
@@ -712,7 +712,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                     start = end
                     end = old_start
                 offset_arc = svgpathtools.path.Line(start = start, end = end)
-                offset_path_list.append(offset_arc)
+            offset_path_list.append(offset_arc)
             if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
 
         else:
@@ -731,7 +731,8 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             for k in range(len(points)-1):
                 start = points[k]
                 end = points[k+1]
-                offset_path_list.append(svgpathtools.Line(start, end))
+                seg = svgpathtools.Line(start, end)
+                offset_path_list.append(seg)
             if debug: print("    (long list of short lines)", file=sys.stderr)
 
     offset_path_list = remove_connected_zero_length_segments(offset_path_list)
