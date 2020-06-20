@@ -109,6 +109,10 @@
 * svgpathtools recently added a "is_contained_by()" method, maybe i can
   use that instead of gcoder's `is_enclosed()`?
 
+* Reference the offsetting algorithm: Chen & McCains "Polygon Offsetting
+  by Computing Winding Numbers" in the docs.
+
+
 
 
 == Pocket: smarter pass-to-pass transitions
