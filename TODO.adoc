@@ -106,6 +106,8 @@
 * Add a `profile` operation, like `offset` but with an optional
   `finishing` block.
 
+* svgpathtools recently added a "is_contained_by()" method, maybe i can
+  use that instead of gcoder's `is_enclosed()`?
 
 
 
