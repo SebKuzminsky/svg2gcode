@@ -1,0 +1,120 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2018-2020 Sebastian Kuzminsky
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# 
+
+
+TEST_ROOT_DIR=$(realpath $(dirname "${0}"))
+
+export PYTHONPATH="${TEST_ROOT_DIR}/..:${PYTHONPATH}"
+export PATH="${TEST_ROOT_DIR}/..:${PATH}"
+
+do_test() {
+    TEST_FILE=$(basename "$1")
+    TEST_NAME="$2"
+
+    if [ -f skip ]; then
+        return 2
+    fi
+
+    rm -f stderr
+    rm -f result.ngc
+
+    if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
+        echo $PWD
+        echo ${TEST_FILE}
+        echo ${TEST_NAME}
+        echo $(cat test.args)
+#         svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg >| result.ngc 2>> stderr
+        svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg > result.ngc
+    else
+        echo '46'
+        ./${TEST_FILE} > result.ngc 2>> stderr
+    fi
+    if [ $? -ne 0 ]; then
+        cat stderr
+        echo "FAILED ${TEST_NAME}: non-zero exit code"
+        return 1
+    fi
+    if [ -f expected.ngc -a -f result.ngc ]; then
+        "${TEST_ROOT_DIR}/diff-gcode" --quiet expected.ngc result.ngc
+        if [ $? -ne 0 ]; then
+            diff -u expected.ngc result.ngc
+            echo "FAILED ${TEST_NAME}: unexpected G-code result"
+            return 1
+        fi
+    fi
+
+    if [ -f result.ngc -a -x rs274 ]; then
+        rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
+        if [ $? -ne 0 ]; then
+            echo "FAILED ${TEST_NAME}: resulting g-code rejected by SAI"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+FAILED=""
+SKIPPED=""
+
+TEST=${1}
+TEST_DIR=$(dirname ${TEST})
+TEST_NAME=$(realpath ${TEST_DIR})
+HERE=$(realpath ${PWD})
+TEST_NAME=${TEST_DIR#${HERE}/}
+ORIG_DIR=${PWD}
+
+echo "running ${TEST_NAME}"
+cd ${TEST_DIR}
+do_test ${TEST} ${TEST_NAME}
+R=$?
+if [ $R -eq 0 ]; then
+    rm -f result.ngc
+    rm -f result.canon
+    OK_TEST="${TEST_NAME}"
+elif [ $R -eq 1 ]; then
+    FAILED="${TEST_NAME}"
+elif [ $R -eq 2 ]; then
+    SKIPPED="${TEST_NAME}"
+else
+    echo "unknown return code $? from do_test, aborting"
+    exit 99
+fi
+cd ${ORIG_DIR}
+
+RETVAL=0
+
+if [ -n "${FAILED}" ]; then
+    echo "        failed tests"
+    echo "${FAILED}" >>  log/failed_tests.log 
+    RETVAL=1
+fi
+
+if [ -n "${SKIPPED}" ]; then
+    echo "        skipped tests"
+    echo "${SKIPPED}" >> log/skipped_tests.log
+fi
+
+if [ -n "${OK_TEST}" ]; then
+    echo "        ok tests"
+    echo "${OK_TEST}" >> log/ok_tests.log
+fi
+
+exit ${RETVAL}
