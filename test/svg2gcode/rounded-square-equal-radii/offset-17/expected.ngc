@@ -1,9 +1,8 @@
 G21
-G64 P0.0100 (enable path blending with tolerance)
 S 1000
 ; offset, path 0
 ; offset path (17.000000 offset) 1/1
-G90.1
+G91.1
 G0 Z10.0000
 G0 X22.0000 Y22.0000
 M3

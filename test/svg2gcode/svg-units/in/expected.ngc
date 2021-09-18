@@ -1,9 +1,8 @@
 G21
-G64 P0.0100 (enable path blending with tolerance)
 S 1000
 ; engrave, path 0
 ; engrave path
-G90.1
+G91.1
 G0 Z10.0000
 G0 X109.5805 Y49.1776
 M3

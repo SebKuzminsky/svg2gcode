@@ -1,0 +1,6 @@
+svg2gcode/translate/drill/expected.ngc
+svg2gcode/duplicate/side/expected.ngc
+svg2gcode/duplicate/svg-origin/expected.ngc
+svg2gcode/bones/holes/expected.ngc
+svg2gcode/truss/pocket/expected.ngc
+svg2gcode/truss/offset/expected.ngc

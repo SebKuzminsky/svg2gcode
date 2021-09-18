@@ -1,5 +1,4 @@
 G21
-G64 P0.0100 (enable path blending with tolerance)
 S 1000
 ; pocket, path 0
 ; slotting cut 1/1, z=-1.000000, 1.0000 finishing allowance + 3.1750 tool radius
