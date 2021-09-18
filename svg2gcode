@@ -4,21 +4,21 @@
 # svg2gcode - a program for writing g-code from SVG files
 #
 # Copyright (C) 2018-2020 Sebastian Kuzminsky
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-# 
+#
 
 import argparse
 import json
@@ -28,10 +28,7 @@ import os
 import sys
 
 import gcoder
-
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
 import svgpathtools
-
 
 class Result(object):
     """Abstract class to hold the result of an Operation."""
@@ -308,18 +305,20 @@ class ResultDuplicate(Result):
 
 def handle_operation(op, path_index):
     print("operation:", op, file=sys.stderr)
-    print("path:", path_index, file=sys.stderr)
+    print("path index:", path_index, file=sys.stderr)
 
     input_path = svg.paths[path_index]
-
     input_path = gcoder.close_path(input_path)
     if not input_path.isclosed():
         raise ValueError("path is not closed")
 
+    for seg in input_path:
+        print("    segment type:", seg, file=sys.stderr)
     # positive area == clockwise path
     # negative area == counter-clockwise path
     # Make sure the input path is counter-clockwise.
     # FIXME: Only process counter-clockwise paths.  Clockwise paths are islands.  (Or the other way around)
+
     if gcoder.approximate_path_area(input_path) > 0:
         input_path = input_path.reversed()
 
@@ -450,7 +449,7 @@ def do_drill(op_args, input_path):
     else:
         raise ValueError('drill job on non-circle path!')
 
-    (x, y) = svg.xy_to_mm(input_path[0].center)
+    (x, y) = svg.xy_to_mm(complex(input_path[0].center))
     result = ResultDrill(
         x=x,
         y=y,
@@ -726,7 +725,7 @@ def do_pocket(op_args, input_path):
             results.append(ResultG0(z=args.z_traverse))
 
             # Rapid over to the beginning of the next path.
-            (x, y) = svg.xy_to_mm(path[0].start)
+            (x, y) = svg.xy_to_mm(complex(path[0].start))
             results.append(ResultG0(x=x, y=y))
             results.append(ResultG0(z=args.z_approach))
 
@@ -1090,6 +1089,7 @@ parser.add_argument("--z-traverse", type=float, help="The Z level for safe trave
 parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
+parser.add_argument("--arc-centers", type=int, help="1 The arc centers are relative to arc starting point G91.1 (1) or arc centers are absolute G90.1 (0).  (Default: 0)", default=0)
 parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
 args = parser.parse_args()
 
@@ -1127,9 +1127,13 @@ elif args.gcode_origin == 'svg-origin':
     gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_SVG_ORIGIN
 svg = gcoder.svg(args.SVG, gcode_origin)
 
+if not (args.arc_centers == 0 or args.arc_centers == 1):
+    raise ValueError("--arc-centers (%i) is not 0 or 1 (G90.1 absolute or G91.1 relative)" % (args.arc_centers))
+
 # G-code preamble
 gcoder.metric()
-gcoder.path_blend(tolerance=0.01)
+#grbl/gcode.c => G64 NOT SUPPORTED
+#gcoder.path_blend(tolerance=0.01)
 gcoder.speed(args.speed)
 
 results = []
@@ -1171,7 +1175,7 @@ for result in results:
 if args.debug:
     print("output paths: %s" % output_paths, file=sys.stderr)
     if len(output_paths) > 0:
-        svgpathtools.paths2svg.wsvg(paths=output_paths)
+        svgpathtools.paths2svg.wsvg(paths=output_paths,  filename=os.path.join(os.getcwd(), 'disvg_output.svg'))
 
 # G-code postamble
 gcoder.m2()
