@@ -23,52 +23,39 @@ Features:
 
 * primitive nesting via duplication on an XY grid
 
-![Example generated tool path](example-toolpath-0.png)
-
-![Example generated tool path](example-toolpath-1.png)
+![Example generated tool path](example-toolpath-cncjs.png)
 
 ![Cut part](cut-part.jpg)
-
 
 ## Installation
 
 Clone the svg2gcode repo:
 
     git clone https://github.com/SebKuzminsky/svg2gcode.git
-    git submodule init
-    git submodule update
-
 
 Install dependencies:
 
     sudo apt-get install python3 python3-svgwrite python3-numpy python3-jsonschema asciidoc docbook-xml docbook-xsl xsltproc make
 
-The test suite runs the LinuxCNC Standalone Interpreter to validate
-the emitted g-code, this is available in the `linuxcnc-uspace` package
-from the linuxcnc.org deb archive.
-
-Add the GPG key that validates the linuxcnc.org deb archive:
-
-    sudo apt-key adv --keyserver hkp://keys.gnupg.net --recv-key 3cb9fd148f374fef
-
-Add the apt source for the linuxcnc.org deb archive:
-
-    deb http://linuxcnc.org stretch base 2.7-uspace
+    pip install svgpathtools
 
 
-Install the `linuxcnc-uspace` package:
+## Supported CNC controller:
 
-    sudo apt-get install linuxcnc-uspace
+GRBL: https://github.com/gnea/grbl
 
 
-Build the manpage:
-
-    make
-
+## Tests
 
 Run the test suite:
 
-    cd test; ./runtests
+Test the GCODE comparing the expected.ngc file with a result.ngc file generated during the test.
+
+    cd test; ./runtests_parallel
+
+Test the GCODE expected.ngc with an Arduino board (testing takes a lot of time).
+
+    runtests_grbl.py
 
 
 # G-Coder Python module
