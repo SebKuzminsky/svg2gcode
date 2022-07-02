@@ -578,10 +578,13 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 
     def intersect(this_seg, next_seg, intersection):
+        this_point = this_seg.point(intersection[0])
+        next_point = next_seg.point(intersection[1])
+
         if debug:
-            this_point = this_seg.point(intersections[0][0])
-            next_point = next_seg.point(intersections[0][1])
-            print("    intersection: {} {} {}".format(intersection, this_point, next_point), file=sys.stderr)
+            print(f"    this_seg: {this_seg}", file=sys.stderr)
+            print(f"    next_seg: {next_seg}", file=sys.stderr)
+            print(f"    intersection: {intersection} {this_point} {next_point}", file=sys.stderr)
 
         if close_enough(intersection[0], 0.0) and close_enough(intersection[1], 1.0):
             # Start of `this_seg` touches end of `next_seg`, that's ok.
