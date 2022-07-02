@@ -1,0 +1,18 @@
+{
+   "jobs": [
+       {
+           "paths": [ 0 ],
+           "operations": [
+               {
+                    "offset": {
+                        "distance": 3.175
+                    }
+               },
+               {
+                    "engrave": { }
+               }
+           ]
+       }
+   ]
+}
+

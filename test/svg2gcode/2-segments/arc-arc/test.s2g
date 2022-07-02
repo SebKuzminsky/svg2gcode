@@ -1,0 +1,17 @@
+{
+   "jobs": [
+       {
+           "paths": [ 1, 2, 3, 4 ],
+           "operations": [
+               {
+                    "offset": {
+                        "distance": 3.175,
+                        "max-depth-of-cut": 0.8,
+                        "ramp-slope": 0.05
+                    }
+               }
+           ]
+       }
+   ]
+}
+
