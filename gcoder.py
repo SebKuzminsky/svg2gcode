@@ -2,31 +2,29 @@
 # gcoder.py - python library for writing g-code
 #
 # Copyright (C) 2018-2020 Sebastian Kuzminsky
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-# 
+#
 
 
 from __future__ import print_function
 
 import math
-import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
 import svgpathtools
 
 
@@ -178,14 +176,18 @@ class svg():
         # to gcode, and that the viewBox can be offset from the origin,
         # see svg.x_to_mm() and svg.y_to_mm() below.)
         #
-
+        self.paths=[]
         self.doc = svgpathtools.Document(self.svg_file)
-
-        self.results = self.doc.flatten_all_paths()
-        self.paths = [result.path for result in self.results]
-
+        for this_path in self.doc.paths():
+            if this_path.isclosed() == True:
+                if this_path.area(chord_length=1e-1) != 0 :
+                    self.paths.append(this_path)
+                else:
+                     print("area is null:",this_path,  file=sys.stderr)
+            else:
+                print("path is not closed:",this_path,  file=sys.stderr)
+                self.paths.append(this_path)
         self.svg_attributes = self.doc.root.attrib
-
 
         #
         # Deal with the viewport.
@@ -292,7 +294,7 @@ class svg():
 
     def xy_to_mm(self, xy):
         if type(xy) != complex:
-            raise SystemExit('non-complex input')
+            raise SystemExit('xy, non-complex input')
         x = self.x_to_mm(xy.real)
         y = self.y_to_mm(xy.imag)
         return (x, y)
@@ -504,8 +506,8 @@ def split_path_at_intersections(path_list, debug=False):
             for i in intersections:
                 if seg_index == i[0] or seg_index == i[1]:
                     break
-            if debug: print("i:", i, file=sys.stderr)
-            if debug: print("seg_index:", seg_index, file=sys.stderr)
+            if debug: print("    intersection:", i, file=sys.stderr)
+            if debug: print("    seg_index:", seg_index, file=sys.stderr)
             if (i is not None) and (i[0] == seg_index):
                 # This segment is the first entrance to an intersection,
                 # take the second exit.
@@ -531,22 +533,7 @@ def split_path_at_intersections(path_list, debug=False):
 
 def approximate_path_area(path):
 
-    """Approximates the path area by converting each Arc to 1,000
-    Lines."""
-
-    assert(path.isclosed())
-    tmp = svgpathtools.path.Path()
-    for seg in path:
-        if type(seg) == svgpathtools.path.Arc:
-            for i in range(0, 1000):
-                t0 = i/1000.0
-                t1 = (i+1)/1000.0
-                l = svgpathtools.path.Line(start=seg.point(t0), end=seg.point(t1))
-                tmp.append(l)
-        else:
-            tmp.append(seg)
-    return tmp.area()
-
+    return  path.area(chord_length=1e-2)
 
 def offset_paths(path, offset_distance, steps=100, debug=False):
     """Takes an svgpathtools.path.Path object, `path`, and a float
@@ -616,14 +603,14 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 
     def remove_connected_zero_length_segments(path_list):
-        if debug: print("removing too-short connected segments...", file=sys.stderr)
+        if debug: print("Test too-short offset connected segments. Length of offset segment < ",epsilon,  file=sys.stderr)
         new_path_list = []
         for i in range(len(path_list)):
             prev_seg = path_list[i-1]
             this_seg = path_list[i]
             next_seg = path_list[(i+1) % len(path_list)]
             if close_enough(prev_seg.end, this_seg.start) and close_enough(this_seg.end, next_seg.start) and this_seg.length() < epsilon:
-                if debug: print(f"removing {this_seg.length()} long segment: {this_seg}", file=sys.stderr)
+                if debug: print(f"  removing {this_seg.length()} long segment: {this_seg}", file=sys.stderr)
                 midpoint = (prev_seg.end + next_seg.start) / 2
                 prev_seg.end = midpoint
                 next_seg.start = midpoint
@@ -657,7 +644,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             end = seg.point(1) + (offset_distance * seg.normal(1))
             seg = svgpathtools.Line(start, end)
             offset_path_list.append(seg)
-            if debug: print("    %s" % offset_path_list[-1], file=sys.stderr)
+            if debug: print("    Offset : %s" % offset_path_list[-1], file=sys.stderr)
 
         elif type(seg) == svgpathtools.path.Arc and (seg.radius.real == seg.radius.imag):
             # Circular arcs remain arcs, elliptical arcs become linear
@@ -726,6 +713,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             # FIXME: Steps should probably be computed dynamically to make
             #     the length of the *offset* line segments manageable.
             points = []
+            if debug: print("    %s is not a line or a circular arc" % seg,  file=sys.stderr)
             for k in range(steps+1):
                 t = k / float(steps)
                 normal = seg.normal(t)
@@ -736,17 +724,16 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 end = points[k+1]
                 seg = svgpathtools.Line(start, end)
                 offset_path_list.append(seg)
-            if debug: print("    (long list of short lines)", file=sys.stderr)
+            if debug: print("    Offset : turned into a list of %s lines" % steps,   file=sys.stderr)
 
     offset_path_list = remove_connected_zero_length_segments(offset_path_list)
-
 
     #
     # Find all the places where one segment intersects the next, and
     # trim to the intersection.
     #
 
-    if debug: print("trimming intersecting segments...", file=sys.stderr)
+    if debug: print("Test intersecting offset segments...", file=sys.stderr)
 
     if len(offset_path_list) == 2:
         i = 0
@@ -755,7 +742,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
         next_i = 1
         next_seg = offset_path_list[next_i]
 
-        if debug: print("intersecting 2-segment path", file=sys.stderr)
+        if debug: print("  intersecting 2-segment path", file=sys.stderr)
         if debug: print("    this", this_seg, file=sys.stderr)
         if debug: print("        length", this_seg.length(), file=sys.stderr)
         if debug: print("    next", next_seg, file=sys.stderr)
@@ -780,7 +767,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
             next_i = (i + 1) % len(offset_path_list)
             next_seg = offset_path_list[next_i]
 
-            if debug: print("intersecting", file=sys.stderr)
+            if debug: print("  intersecting", file=sys.stderr)
             if debug: print("    this", this_seg, file=sys.stderr)
             if debug: print("        length", this_seg.length(), file=sys.stderr)
             if debug: print("    next", next_seg, file=sys.stderr)
@@ -989,7 +976,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
                 # drop offset path.
                 if debug: print("wrong direction, dropping", file=sys.stderr)
             else:
-                if debug: print(f"good direction, keeping", file=sys.stderr)
+                if debug: print("good direction, keeping", file=sys.stderr)
                 keepers.append(offset_path)
 
     else:
@@ -1020,14 +1007,19 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 
 def path_segment_to_gcode(svg, segment, z=None):
+
     if type(segment) == svgpathtools.path.Line:
-        (start_x, start_y) = svg.xy_to_mm(segment.start)
-        (end_x, end_y) = svg.xy_to_mm(segment.end)
+        (start_x, start_y) = svg.xy_to_mm(complex(segment.start))
+        (end_x, end_y) = svg.xy_to_mm(complex(segment.end))
         g1(x=end_x, y=end_y, z=z)
     elif type(segment) is svgpathtools.path.Arc and (segment.radius.real == segment.radius.imag):
         # FIXME: g90.1 or g91.1?
-        (end_x, end_y) = svg.xy_to_mm(segment.end)
-        (center_x, center_y) = svg.xy_to_mm(segment.center)
+        #  cncjs :: G91.1 :incremental distance mode for I, J.
+        (start_x, start_y) = svg.xy_to_mm(complex(segment.start))
+        (end_x, end_y) = svg.xy_to_mm(complex(segment.end))
+        (center_x, center_y) = svg.xy_to_mm(complex(segment.center))
+        center_x = center_x - start_x
+        center_y = center_y - start_y
 
         # In SVG sweep==True means clockwise and sweep==False means
         # counter-clockwise, but in svgpathtools it's the opposite.
@@ -1048,8 +1040,7 @@ def path_segment_to_gcode(svg, segment, z=None):
         steps = 1000
         for k in range(steps+1):
             t = k / float(steps)
-            end = segment.point(t)
-            (end_x, end_y) = svg.xy_to_mm(end)
+            (end_x, end_y) = svg.xy_to_mm(complex(segment.point(t)))
             g1(x=end_x, y=end_y)
 
 
@@ -1258,9 +1249,8 @@ Arguments:
             z_end = None
         path_segment_to_gcode(svg, segment, z=z_end)
 
-
-    absolute_arc_centers()
-    (x, y) = svg.xy_to_mm(path[0].start)
+    relative_arc_centers()
+    (x, y) = svg.xy_to_mm(complex(path[0].start))
 
     if z_approach == None:
         z_approach = 0.5 + z_top_of_material
@@ -1698,9 +1688,7 @@ def quill_up():
     absolute()
     cutter_comp_off()
     print("G53 G0 Z0")
-    current_z = None
     spindle_off()
-
 
 def presentation_position():
     imperial()
@@ -1709,8 +1697,6 @@ def presentation_position():
     # rapid to presentation position
     # table centered in X, all the way forward towards the user
     print("G53 G0 X9 Y12")
-    current_x = None
-    current_y = None
 
 
 def m2():
@@ -2210,7 +2196,7 @@ def helix_hole(x, y, z_retract, z_start, z_bottom, diameter, doc):
     z_range = z_start - z_bottom
     full_circles = math.ceil(z_range / doc)
 
-    absolute_arc_centers()
+    relative_arc_centers()
 
     # get in position for the cut
     g0(z=z_retract)
