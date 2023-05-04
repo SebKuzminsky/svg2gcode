@@ -25,6 +25,7 @@ import math
 import os
 import re
 import sys
+import numpy
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'svgpathtools'))
 import svgpathtools
@@ -269,8 +270,8 @@ class svg():
 
 
     def x_to_mm(self, x):
-        if type(x) != float:
-            raise SystemExit('non-float input')
+        if type(x) not in [ float, numpy.float64 ]:
+            raise SystemExit(f"non-float input, it's {type(x)}")
         if self.gcode_origin == self.GCODE_ORIGIN_IS_SVG_ORIGIN:
             out = x * self.x_scale
         elif self.gcode_origin == self.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT:
@@ -279,8 +280,8 @@ class svg():
 
 
     def y_to_mm(self, y):
-        if type(y) != float:
-            raise SystemExit('non-float input')
+        if type(y) not in [ float, numpy.float64 ]:
+            raise SystemExit(f"non-float input, it's {type(y)}")
         # Y is upside down in SVG.
         if self.gcode_origin == self.GCODE_ORIGIN_IS_SVG_ORIGIN:
             out = -y * self.y_scale
@@ -290,8 +291,8 @@ class svg():
 
 
     def xy_to_mm(self, xy):
-        if type(xy) != complex:
-            raise SystemExit('non-complex input')
+        if type(xy) not in [ complex, numpy.complex128 ]:
+            raise SystemExit(f"non-complex input, it's {type(xy)}")
         x = self.x_to_mm(xy.real)
         y = self.y_to_mm(xy.imag)
         return (x, y)
