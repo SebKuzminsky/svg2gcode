@@ -1,125 +1,318 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
-# Copyright (C) 2018-2020 Sebastian Kuzminsky
-# 
+# Copyright (C) 2018-2023 Sebastian Kuzminsky
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-# 
+#
+
+import argparse
+import atexit
+import os
+import pathlib
+import queue
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+import rich
+import rich.console
+import rich.live
+import rich.layout
+import rich.table
+import rich.progress
 
 
-TEST_ROOT_DIR=$(realpath $(dirname "${0}"))
+def worker_thread(thread_num, quit_event, workq, statusq):
+    global test_dir
+    global have_rs274
 
-export PYTHONPATH="${TEST_ROOT_DIR}/..:${PYTHONPATH}"
-export PATH="${TEST_ROOT_DIR}/..:${PATH}"
+    while not quit_event.is_set():
 
-do_test() {
-    TEST_FILE=$(basename "$1")
-    TEST_NAME="$2"
+        # Each work item is a pathlib.Path with the name of a
+        # test file (relative to the `test_dir` directory, like:
+        # 'svg2gcode/scaled/engrave/test.s2g' The main thread signals
+        # "no more work" by queueing a test of None.
 
-    if [ -f skip ]; then
-        echo SKIPPED
-        return 2
-    fi
+        work = workq.get(block=True)
+        if work is None:
+            statusq.put([thread_num, 'done'])
+            return
 
-    rm -f stderr
+        statusq.put([thread_num, 'start', work])
 
-    if [[ "${TEST_FILE}" =~ .s2g$ ]]; then
-        svg2gcode --debug $(cat test.args 2> /dev/null) ${TEST_FILE} test.svg >| result.ngc 2>> stderr
-    else
-        ./${TEST_FILE} > result.ngc 2>> stderr
-    fi
-    if [ $? -ne 0 ]; then
-        cat stderr
-        echo "FAILED ${TEST_NAME}: non-zero exit code"
-        return 1
-    fi
+        this_test_dir = test_dir / work.parent
 
-    if [ -f expected.ngc -a -f result.ngc ]; then
-        "${TEST_ROOT_DIR}/diff-gcode" --quiet expected.ngc result.ngc
-        if [ $? -ne 0 ]; then
-            diff -u expected.ngc result.ngc
-            echo "FAILED ${TEST_NAME}: unexpected G-code result"
-            return 1
-        fi
-    fi
+        if (this_test_dir / 'skip').exists():
+            statusq.put([thread_num, 'skip', work])
+            continue
 
-    if [ -f result.ngc -a -x rs274 ]; then
-        rs274 -t /dev/null -v /dev/null -g result.ngc >| result.canon 2>> stderr
-        if [ $? -ne 0 ]; then
-            echo "FAILED ${TEST_NAME}: resulting g-code rejected by SAI"
-            return 1
-        fi
-    fi
+        cmd = []
+        if work.suffix == '.s2g':
+            cmd += [ 'svg2gcode', '--debug' ]
 
-    return 0
-}
+            # Add test-specific arguments, if any.
+            test_args = this_test_dir / 'test.args'
+            if test_args.exists():
+                with open(test_args) as f:
+                    for line in f.readlines():
+                        cmd += line.strip().split()
+
+            cmd += [ work.name, 'test.svg' ]
+
+        else:
+            cmd += [ f'./{work.name}' ]
+
+        with open(this_test_dir/'result.ngc', mode='w') as out_file:
+            with open(this_test_dir/'stderr', mode='w') as err_file:
+                result = subprocess.run(
+                    cmd,
+                    shell=False,
+                    cwd=this_test_dir,
+                    stdout=out_file,
+                    stderr=err_file,
+                    text=True
+                )
+
+        if result.returncode != 0:
+            error_message = f'process exited with return code {result.returncode}, last lines of stderr were:\n'
+            with open(this_test_dir/'stderr', mode='r') as err_file:
+                for line in err_file.readlines()[-25:]:
+                    error_message += line
+            statusq.put([thread_num, 'fail', work, error_message])
+            continue
+
+        expected_ngc = this_test_dir/'expected.ngc'
+        result_ngc = this_test_dir/'result.ngc'
+        if result_ngc.exists():
+            if expected_ngc.exists():
+                cmd = [
+                    f"{test_dir/'diff-gcode'}",
+                    '--quiet',
+                    str(expected_ngc),
+                    str(result_ngc)
+                ]
+                result = subprocess.run(cmd, cwd=this_test_dir, text=True, capture_output=True)
+                if result.returncode != 0:
+                    cmd = [
+                        'diff',
+                        '-u',
+                        str(expected_ngc),
+                        str(result_ngc)
+                    ]
+                    result = subprocess.run(cmd, cwd=this_test_dir, text=True, capture_output=True)
+                    error_msg = f"{work} produced unexpected output:\n"
+                    error_msg += result.stdout
+                    statusq.put([thread_num, 'fail', work, error_msg])
+                    continue
+
+            if result_ngc.stat().st_size > 0 and have_rs274:
+                with open(this_test_dir/'result.canon', mode='w') as out_file:
+                    with open(this_test_dir/'stderr', mode='a') as err_file:
+                        cmd = [
+                            'rs274',
+                            '-t', '/dev/null',
+                            '-v', '/dev/null',
+                            '-g', 'result.ngc'
+                        ]
+                        result = subprocess.run(cmd, cwd=this_test_dir, text=True, stdout=out_file, stderr=err_file)
+                        if result.returncode != 0:
+                            error_msg = f"{work} produced G-code rejected by SAI:\n"
+                            error_msg += f"stdout last lines:\n"
+                            lines = result.stdout.split('\n')
+                            for line in lines[-10:]:
+                                error_msg += line + '\n'
+                            error_msg += f"stderr last lines:\n"
+                            lines = result.stderr.split('\n')
+                            for line in lines[-10:]:
+                                error_msg += line + '\n'
+                            statusq.put([thread_num, 'fail', work, error_msg])
+                            continue
+
+        statusq.put([thread_num, 'pass', work])
 
 
-if [[ $# -gt 0 ]]; then
-    TEST_DIRS="$@"
-else
-    TEST_DIRS=$PWD
-fi
+def handle_status(msg, work_threads, live):
+    global tests
+    global passed_tests
+    global failed_tests
+    global skipped_tests
 
-NUM_TESTS=$(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | wc -l)
-TEST_NUM=0
+    thread_num = msg[0]
 
-FAILED=""
-SKIPPED=""
-for TEST in $(find ${TEST_DIRS} -name 'test*.py' -o -name 'test.sh' -o -name 'test.s2g' | sort); do
-    TEST_NUM=$((TEST_NUM+1))
-    TEST_DIR=$(dirname ${TEST})
-    TEST_NAME=$(realpath ${TEST_DIR})
-    HERE=$(realpath ${PWD})
-    TEST_NAME=${TEST_DIR#${HERE}/}
-    ORIG_DIR=${PWD}
+    if msg[1] == 'start':
+        work_threads[thread_num]['work'] = str(msg[2])
+    elif msg[1] == 'pass':
+        progress.advance(progress_task)
+        passed_tests.append(msg[2])
+        live.console.print(f"[green]PASS: {msg[2]}")
+    elif msg[1] == 'fail':
+        failed_tests.append(msg[2])
+        progress.advance(progress_task)
+        live.console.print(f"[red]FAIL: {msg[2]}")
+        if len(msg) > 3:
+            live.console.print(msg[3])
+    elif msg[1] == 'skip':
+        skipped_tests.append(msg[2])
+        progress.advance(progress_task)
+        live.console.print(f"[yellow]SKIP: {msg[2]}")
+    elif msg[1] == 'done':
+        work_threads[thread_num]['work'] = ""
 
-    echo "running ${TEST_NAME} (${TEST_NUM}/${NUM_TESTS})"
-    cd ${TEST_DIR}
-    do_test ${TEST} ${TEST_NAME}
-    R=$?
-    if [ $R -eq 0 ]; then
-        rm -f result.ngc
-        rm -f result.canon
-    elif [ $R -eq 1 ]; then
-        FAILED="${FAILED} ${TEST_NAME}"
-    elif [ $R -eq 2 ]; then
-        SKIPPED="${SKIPPED} ${TEST_NAME}"
-    else
-        echo "unknown return code $? from do_test, aborting"
-        exit 99
-    fi
-    cd ${ORIG_DIR}
-done
+    layout['threads'].update(update_threads(work_threads))
+    layout['status'].update(update_status(passed_tests, failed_tests, skipped_tests))
+    progress.refresh()
 
 
-RETVAL=0
+def update_threads(work_threads) -> rich.table.Table:
+    table = rich.table.Table(box=None)
+    table.add_column("Thread")
+    table.add_column("Test")
+    for t in work_threads:
+        table.add_row(f"{t['num']}", t['work'])
+    return table
 
-if [ -n "${FAILED}" ]; then
-    echo "failed tests:"
-    for TEST in ${FAILED}; do
-        echo "    ${TEST}"
-    done
-    RETVAL=1
-fi
 
-if [ -n "${SKIPPED}" ]; then
-    echo "skipped tests:"
-    for TEST in ${SKIPPED}; do
-        echo "    ${TEST}"
-    done
-fi
+def update_status(passed_tests, failed_tests, skipped_tests):
+    return f"[green]{len(passed_tests)} passed[/], [red]{len(failed_tests)} failed[/], [yellow]{len(skipped_tests)} skipped[/]"
 
-exit ${RETVAL}
+
+default_num_threads = 8
+
+description = "Run svg2gcode tests."
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=description)
+parser.add_argument("--num-threads", "-t", type=int, help=f"Number of simultaneous test threads to run.  Each one will run one test at a time.  Defaults to {default_num_threads}.")
+parser.add_argument('TESTS', nargs=argparse.REMAINDER, help='Optional list of directories relative to the top `test/` directory to search for tests.  If not specified, searches everything in the top `test/` directory.')
+args = parser.parse_args()
+
+if args.num_threads is None:
+    args.num_threads = default_num_threads
+
+
+console = rich.console.Console()
+
+
+test_dir = pathlib.Path(os.path.realpath(os.path.dirname(__file__)))
+
+# Add the git top-level directory with the `svg2gcode` executable,
+# first in the path so we're sure that's the one we run in the tests.
+os.environ['PATH'] = str(test_dir.parent) + os.pathsep + os.environ['PATH']
+
+# Add the git top-level directory with the `gcoder.py` python module,
+# first in the module search path so we're sure that's the one we use
+# in the tests.
+if 'PYTHONPATH' in os.environ:
+    os.environ['PYTHONPATH'] = str(test_dir.parent) + os.pathsep + os.environ['PYTHONPATH']
+else:
+    os.environ['PYTHONPATH'] = str(test_dir.parent)
+
+
+# List tests, relative to `test_dir`.
+os.chdir(test_dir)
+
+if len(args.TESTS) == 0:
+    args.TESTS = [ '.' ]
+
+tests = []
+
+for t in args.TESTS:
+    d = pathlib.Path(t)
+    tests += list(d.rglob('**/test.s2g'))
+    tests += list(d.rglob('**/test*.py'))
+    tests += list(d.rglob('**/test.sh'))
+tests.sort()
+
+print(f"{len(tests)} tests found")
+
+have_rs274 = subprocess.getstatusoutput('rs274 -h')[0] != 127
+
+failed_tests = []
+passed_tests = []
+skipped_tests = []
+
+quit_event = threading.Event()
+workq = queue.Queue()
+statusq = queue.Queue()
+
+print(f"starting {args.num_threads} worker threads")
+work_threads = []
+for thread_num in range(0, args.num_threads):
+    t = threading.Thread(target=worker_thread, args=[thread_num, quit_event, workq, statusq])
+    t.start()
+    work_threads.append({'thread': t, 'num': thread_num, 'work': ''})
+
+progress = rich.progress.Progress(
+    "{task.description}",
+    rich.progress.SpinnerColumn(),
+    rich.progress.BarColumn(),
+    rich.progress.TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+    rich.progress.TextColumn("{task.completed}/{task.total}"),
+)
+progress_task = progress.add_task("Progress", total=len(tests))
+
+layout = rich.layout.Layout()
+layout.split(
+    rich.layout.Layout(name="threads", size=args.num_threads+1),
+    rich.layout.Layout(name="progress", size=1),
+    rich.layout.Layout(name="status", size=1),
+)
+layout["threads"].update(update_threads(work_threads))
+layout["progress"].update(progress)
+layout["status"].update(update_status(passed_tests, failed_tests, skipped_tests))
+
+try:
+    for test in tests:
+        workq.put(test)
+
+    for t in work_threads:
+        workq.put(None)
+
+    with rich.live.Live(layout, transient=True, auto_refresh=False) as live:
+        while threading.active_count() > 1:
+            try:
+                msg = statusq.get(timeout=0.1)
+                handle_status(msg, work_threads, live)
+            except queue.Empty as e:
+                progress.refresh()
+                pass
+
+        while not statusq.empty():
+            msg = statusq.get()
+            handle_status(msg, work_threads, live)
+
+    for t in work_threads:
+        t['thread'].join()
+
+except KeyboardInterrupt as e:
+    quit_event.set()
+
+    for t in work_threads:
+        t['thread'].join()
+
+console.print(f"{len(tests)} tests, [green]{len(passed_tests)} passed[/], [red]{len(failed_tests)} failed[/], [yellow]{len(skipped_tests)} skipped[/]")
+
+if len(failed_tests) != 0:
+    console.print("Skipped tests:")
+    for skipped_test in skipped_tests:
+        console.print(f"[yellow]SKIP: {skipped_test}")
+
+if len(failed_tests) == 0:
+    console.print("No failed tests 😁")
+else:
+    console.print("Failed tests:")
+    for failed_test in failed_tests:
+        console.print(f"[red]FAIL: {failed_test}")
