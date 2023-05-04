@@ -181,8 +181,7 @@ class svg():
 
         self.doc = svgpathtools.Document(self.svg_file)
 
-        self.results = self.doc.flatten_all_paths()
-        self.paths = [result.path for result in self.results]
+        self.paths = self.doc.paths()
 
         self.svg_attributes = self.doc.root.attrib
 
