@@ -1171,7 +1171,7 @@ for result in results:
 if args.debug:
     print("output paths: %s" % output_paths, file=sys.stderr)
     if len(output_paths) > 0:
-        svgpathtools.paths2svg.wsvg(paths=output_paths)
+        svgpathtools.paths2svg.wsvg(paths=output_paths, filename=os.path.join(os.getcwd(), 'disvg_output.svg'))
 
 # G-code postamble
 gcoder.m2()
