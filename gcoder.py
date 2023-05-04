@@ -535,16 +535,23 @@ def approximate_path_area(path):
     Lines."""
 
     assert(path.isclosed())
+    assert(path.iscontinuous())
+
     tmp = svgpathtools.path.Path()
     for seg in path:
         if type(seg) == svgpathtools.path.Arc:
-            for i in range(0, 1000):
-                t0 = i/1000.0
-                t1 = (i+1)/1000.0
-                l = svgpathtools.path.Line(start=seg.point(t0), end=seg.point(t1))
+            p0 = seg.start
+            for i in range(1, 1000):
+                t1 = i/1000.0
+                p1 = seg.point(t1)
+                l = svgpathtools.path.Line(start=p0, end=p1)
                 tmp.append(l)
+                p0 = p1
+            l = svgpathtools.path.Line(start=p0, end=seg.end)
+            tmp.append(l)
         else:
             tmp.append(seg)
+
     return tmp.area()
 
 
