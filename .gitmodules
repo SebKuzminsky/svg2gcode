@@ -1,3 +1,5 @@
 [submodule "svgpathtools"]
 	path = svgpathtools
 	url = https://github.com/SebKuzminsky/svgpathtools.git
+[submodule "https://github.com/mathandy/svgpathtools.git"]
+	url = svgpathtools/
