@@ -1091,26 +1091,28 @@ parser.add_argument("--z-approach", type=float, help="The Z level down to which 
 parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
 parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
 parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
+parser.add_argument("--precision", metavar="DISTANCE", type=float, help="Distance threshold for merging operations", default=1e-5)
+parser.add_argument("--step-length", metavar="DISTANCE", type=float, help="Approximate step length when splitting curves in segments (mm).", default=1.0)
 args = parser.parse_args()
 
 if args.speed == None:
-    print("WARNING: no --speed argument supplied, using the default 1000 rpm", file=sys.stderr)
+    print("NOTE: no --speed argument supplied, using the default 1000 rpm", file=sys.stderr)
     args.speed = 1000
 
 if args.feed == None:
-    print("WARNING: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
+    print("NOTE: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
     args.feed = 100.0
 
 if args.shoulder_feed == None:
-    print("WARNING: no --shoulder-feed argument supplied, using the default 90 mm/min", file=sys.stderr)
+    print("NOTE: no --shoulder-feed argument supplied, using the default 90 mm/min", file=sys.stderr)
     args.shoulder_feed = 90
 
 if args.slot_feed == None:
-    print("WARNING: no --slot-feed argument supplied, using the default 75 mm/min", file=sys.stderr)
+    print("NOTE: no --slot-feed argument supplied, using the default 75 mm/min", file=sys.stderr)
     args.slot_feed = 75
 
 if args.plunge_feed == None:
-    print("WARNING: no --plunge-feed argument supplied, using the default 50 mm/min", file=sys.stderr)
+    print("NOTE: no --plunge-feed argument supplied, using the default 50 mm/min", file=sys.stderr)
     args.plunge_feed = 50
 
 if args.z_approach == None:
