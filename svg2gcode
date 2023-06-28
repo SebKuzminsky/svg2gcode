@@ -156,7 +156,7 @@ class ResultPath(Result):
     """This class holds the result of an Operation that produces a Path,
     to be turned into a sequence of G-code feed moves."""
 
-    def __init__(self, svg, path, comment=None, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[]):
+    def __init__(self, svg, path, comment=None, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[], step_length=1.0):
         self.comment = []
         if comment == None:
             pass;
@@ -180,6 +180,7 @@ class ResultPath(Result):
         self.work_holding_tab_height = work_holding_tab_height
         self.work_holding_tab_width = work_holding_tab_width
         self.work_holding_tab_locations = work_holding_tab_locations
+        self.step_length=step_length
 
     def emit(self):
         for c in self.comment:
@@ -201,7 +202,8 @@ class ResultPath(Result):
             work_holding_tab_height=self.work_holding_tab_height,
             work_holding_tab_width=self.work_holding_tab_width,
             work_holding_tab_locations=self.work_holding_tab_locations,
-            debug=args.debug
+            debug=args.debug,
+            step_length=self.step_length
         )
 
 
@@ -369,7 +371,8 @@ def do_engrave(op_args, input_path):
         z_cut_depth=args.z_cut_depth,
         plunge_feed=args.plunge_feed,
         feed=args.feed,
-        ramp_slope=ramp_slope
+        ramp_slope=ramp_slope,
+        step_length=args.step_length
     )
 
     return [result]
@@ -428,7 +431,8 @@ def do_offset(op_args, input_path):
             work_holding_tabs=work_holding_tabs,
             work_holding_tab_height=work_holding_tab_height,
             work_holding_tab_width=work_holding_tab_width,
-            work_holding_tab_locations=work_holding_tab_locations
+            work_holding_tab_locations=work_holding_tab_locations,
+            step_length=args.step_length
         )
         results.append(result)
 
@@ -711,7 +715,8 @@ def do_pocket(op_args, input_path):
                 lead_out=False,
                 plunge_feed=args.plunge_feed,
                 feed=args.slot_feed,
-                ramp_slope=ramp_slope
+                ramp_slope=ramp_slope,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -744,7 +749,8 @@ def do_pocket(op_args, input_path):
                 z_cut_depth=z,
                 lead_in=False,
                 lead_out=False,
-                feed=args.shoulder_feed
+                feed=args.shoulder_feed,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -762,7 +768,8 @@ def do_pocket(op_args, input_path):
                     lead_out=False,
                     plunge_feed=args.plunge_feed,
                     feed=args.shoulder_feed,
-                    ramp_slope=ramp_slope
+                    ramp_slope=ramp_slope,
+                    step_length=args.step_length
                 )
                 results.append(result)
 
@@ -785,7 +792,8 @@ def do_pocket(op_args, input_path):
                 lead_out=True,
                 plunge_feed=args.plunge_feed,
                 feed=args.shoulder_feed,
-                ramp_slope=ramp_slope
+                ramp_slope=ramp_slope,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -1076,6 +1084,7 @@ def load_job_file(jobfile):
     return jobs, jobfile_schema
 
 
+
 parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
 parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
 parser.add_argument("SVG", help="The name of the SVG file to read.")
@@ -1121,6 +1130,11 @@ if args.z_approach == None:
 if args.z_top_of_material <= args.z_cut_depth:
     raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
 
+gcoder.precision = args.precision
+
+if args.step_length <= 0:
+    raise ValueError("--step-length (%f) cannot be null or negative" % args.step_length)
+
 jobs, jobfile_schema = load_job_file(args.JOBFILE)
 
 if args.gcode_origin == 'viewbox-lower-left':
@@ -1162,13 +1176,11 @@ elif jobfile_schema == 2:
             for op in job['operations']:
                 results += handle_operation(op, path)
 
-
 output_paths = []
 for result in results:
     result.emit()
     if type(result) == ResultPath:
         output_paths += result.path
-
 
 if args.debug:
     print("output paths: %s" % output_paths, file=sys.stderr)
