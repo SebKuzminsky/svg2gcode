@@ -308,8 +308,8 @@ def close_path(p):
                 avg = (this_seg.end + next_seg.start) / 2.0
                 this_seg.end = avg
                 next_seg.start = avg
-            else:
-                raise ValueError("segments are not even close to closed: %s, %s" % (this_seg, next_seg))
+            # else:
+                # raise ValueError("segments are not even close to closed: %s, %s" % (this_seg, next_seg))
         return (this_seg, next_seg)
 
     for i in range(len(p)-1):
@@ -1029,7 +1029,7 @@ def offset_paths(path, offset_distance, steps=100, debug=False):
 
 
 
-def path_segment_to_gcode(svg, segment, z=None):
+def path_segment_to_gcode(svg, segment, step_length=1.0, z=None):
     if type(segment) == svgpathtools.path.Line:
         (start_x, start_y) = svg.xy_to_mm(segment.start)
         (end_x, end_y) = svg.xy_to_mm(segment.end)
@@ -1049,21 +1049,37 @@ def path_segment_to_gcode(svg, segment, z=None):
         # Deal with any segment that's not a line or a circular arc,
         # this includes elliptic arcs and bezier curves.  Use linear
         # approximation.
-        #
-        # FIXME: The number of steps should probably be dynamically
-        #     adjusted to make the length of the *offset* line
-        #     segments manageable.
         if z is not None:
             raise ValueError("Z value specified for non-Line, non-circular-Arc segment: %s", segment)
-        steps = 1000
-        for k in range(steps+1):
-            t = k / float(steps)
+
+        # 2D distance.
+        def d(a,b):
+            return math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2)
+
+        start = svg.xy_to_mm(segment.start)
+        end = svg.xy_to_mm(segment.end)
+        stepdist = d(start,end)
+        nsplits=1
+        if stepdist > step_length:
+            # Find a number of splits of the curve that matches step_length.
+            while stepdist > step_length:
+                t = 1 / float(nsplits)
+                inter = segment.point(t)
+                end = svg.xy_to_mm(inter)
+                stepdist = d(start,end)
+                nsplits *= 2
+        else:
+            print("WARNING: actual path's segment length ({}) is smaller than configured minimum step length ({}), I will keep the path's curve as a straight line.".format(stepdist,step_length), file=sys.stderr)
+
+        # Split the curve.
+        for k in range(nsplits+1):
+            t = k / float(nsplits)
             end = segment.point(t)
             (end_x, end_y) = svg.xy_to_mm(end)
             g1(x=end_x, y=end_y)
 
 
-def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[], debug=False):
+def path_to_gcode(svg, path, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[], debug=False, step_length=1.0):
 
     """Prints the G-code corresponding to the input `path`.
 
@@ -1234,7 +1250,7 @@ Arguments:
 
 """
 
-    def cut_segment_skip_tabs(svg, seg_index, z_start, z_end, z_tab):
+    def cut_segment_skip_tabs(svg, seg_index, z_start, z_end, z_tab, step_length=1.0):
         """We're about to cut the specified segment, while moving the
         tool from `z_start` where it is now to `z_end` at the end of
         the segment, except it shouldn't cut into any tabs."""
@@ -1266,7 +1282,7 @@ Arguments:
         # Inhibit Z coordinate if it's not needed.
         if close_enough(current_z, z_end):
             z_end = None
-        path_segment_to_gcode(svg, segment, z=z_end)
+        path_segment_to_gcode(svg, segment, z=z_end, step_length=step_length)
 
 
     absolute_arc_centers()
@@ -1521,7 +1537,7 @@ Arguments:
                     if (z_at_segment_end - 1e-6) > z_bottom_of_pass:
                         # Not bottoming out on this segment, it is in
                         # the middle of the ramp somewhere.
-                        cut_segment_skip_tabs(svg, i, z_at_segment_start, z_at_segment_end, z_tab)
+                        cut_segment_skip_tabs(svg, i, z_at_segment_start, z_at_segment_end, z_tab, step_length=step_length)
                         i += 1
 
                     else:
@@ -1549,7 +1565,7 @@ Arguments:
 
                         elif close_enough(t, 1.0):
                             # Bottoming out right at the end of this segment, don't split.
-                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab, step_length=step_length)
                             segment_after_ramp = i+1;
                             if debug: print("ramp bottoms out at end of seg %d, t %f" % (i, t), file=sys.stderr)
 
@@ -1560,7 +1576,7 @@ Arguments:
                             path.insert(i+1, new_segments[1])
                             segment_is_in_tab.insert(i+1, segment_is_in_tab[i])
                             segment_after_ramp = i+1
-                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab)
+                            cut_segment_skip_tabs(svg, i, z_at_segment_start, z_bottom_of_pass, z_tab, step_length=step_length)
                             if debug:
                                 print("ramp bottoms out in middle of seg %d, t %f" % (i, t), file=sys.stderr)
                                 print("    original seg (%f): %s" % (segment.length(), segment), file=sys.stderr)
@@ -1594,7 +1610,7 @@ Arguments:
             set_feed_rate(feed)
 
         for i in range(segment_after_ramp, len(path)):
-            cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab)
+            cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab, step_length=step_length)
 
     # Done with all cutting passes.
 
@@ -1604,7 +1620,7 @@ Arguments:
 
     # Clean up the final ramp (if any).
     for i in range(0, segment_after_ramp):
-        cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab)
+        cut_segment_skip_tabs(svg, i, z_bottom_of_pass, z_bottom_of_pass, z_tab, step_length=step_length)
 
     if lead_out:
         g1(z=z_approach)
