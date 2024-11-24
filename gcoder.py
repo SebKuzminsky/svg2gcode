@@ -182,7 +182,10 @@ class svg():
 
         self.doc = svgpathtools.Document(self.svg_file)
 
-        self.paths = self.doc.paths()
+        self.paths = []
+        for path in self.doc.paths():
+            for continuous_path in path.continuous_subpaths():
+                self.paths.append(continuous_path)
 
         self.svg_attributes = self.doc.root.attrib
 
