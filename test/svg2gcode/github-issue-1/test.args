@@ -1,0 +1,4 @@
+--speed 2000
+--feed 50
+--plunge-feed 2000
+--z-cut-depth -0.8
