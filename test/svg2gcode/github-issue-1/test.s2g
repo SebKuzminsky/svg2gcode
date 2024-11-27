@@ -1,31 +1,9 @@
 {
   "jobs": [
     {
-      "paths": [ 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 14 ],
       "operations": [
         {
-          "offset": {
-            "distance": 2,
-            "max-depth-of-cut": 0.1,
-            "ramp-slope": 0.005,
-            "work-holding-tabs": {
-              "number-of-tabs": 4,
-              "height": 0.3,
-              "width": 5
-            }
-          }
-        }
-      ]
-    },
-    {
-      "paths": [ 7, 11, 13 ],
-      "operations": [
-        {
-          "offset": {
-            "distance": 2,
-            "max-depth-of-cut": 0.1,
-            "ramp-slope": 0.005
-          }
+          "engrave": { }
         }
       ]
     }
