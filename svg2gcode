@@ -156,7 +156,7 @@ class ResultPath(Result):
     """This class holds the result of an Operation that produces a Path,
     to be turned into a sequence of G-code feed moves."""
 
-    def __init__(self, svg, path, comment=None, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[]):
+    def __init__(self, svg, path, comment=None, z_traverse=10, z_approach=None, z_top_of_material=0, z_cut_depth=0, lead_in=True, lead_out=True, feed=None, plunge_feed=None, ramp_slope=None, max_depth_of_cut=None, work_holding_tabs=0, work_holding_tab_height=0.5, work_holding_tab_width=10.0, work_holding_tab_locations=[], step_length=1.0):
         self.comment = []
         if comment == None:
             pass;
@@ -180,6 +180,7 @@ class ResultPath(Result):
         self.work_holding_tab_height = work_holding_tab_height
         self.work_holding_tab_width = work_holding_tab_width
         self.work_holding_tab_locations = work_holding_tab_locations
+        self.step_length=step_length
 
     def emit(self):
         for c in self.comment:
@@ -201,7 +202,8 @@ class ResultPath(Result):
             work_holding_tab_height=self.work_holding_tab_height,
             work_holding_tab_width=self.work_holding_tab_width,
             work_holding_tab_locations=self.work_holding_tab_locations,
-            debug=args.debug
+            debug=args.debug,
+            step_length=self.step_length
         )
 
 
@@ -369,7 +371,8 @@ def do_engrave(op_args, input_path):
         z_cut_depth=args.z_cut_depth,
         plunge_feed=args.plunge_feed,
         feed=args.feed,
-        ramp_slope=ramp_slope
+        ramp_slope=ramp_slope,
+        step_length=args.step_length
     )
 
     return [result]
@@ -428,7 +431,8 @@ def do_offset(op_args, input_path):
             work_holding_tabs=work_holding_tabs,
             work_holding_tab_height=work_holding_tab_height,
             work_holding_tab_width=work_holding_tab_width,
-            work_holding_tab_locations=work_holding_tab_locations
+            work_holding_tab_locations=work_holding_tab_locations,
+            step_length=args.step_length
         )
         results.append(result)
 
@@ -711,7 +715,8 @@ def do_pocket(op_args, input_path):
                 lead_out=False,
                 plunge_feed=args.plunge_feed,
                 feed=args.slot_feed,
-                ramp_slope=ramp_slope
+                ramp_slope=ramp_slope,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -744,7 +749,8 @@ def do_pocket(op_args, input_path):
                 z_cut_depth=z,
                 lead_in=False,
                 lead_out=False,
-                feed=args.shoulder_feed
+                feed=args.shoulder_feed,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -762,7 +768,8 @@ def do_pocket(op_args, input_path):
                     lead_out=False,
                     plunge_feed=args.plunge_feed,
                     feed=args.shoulder_feed,
-                    ramp_slope=ramp_slope
+                    ramp_slope=ramp_slope,
+                    step_length=args.step_length
                 )
                 results.append(result)
 
@@ -785,7 +792,8 @@ def do_pocket(op_args, input_path):
                 lead_out=True,
                 plunge_feed=args.plunge_feed,
                 feed=args.shoulder_feed,
-                ramp_slope=ramp_slope
+                ramp_slope=ramp_slope,
+                step_length=args.step_length
             )
             results.append(result)
 
@@ -1075,103 +1083,109 @@ def load_job_file(jobfile):
 
     return jobs, jobfile_schema
 
+if __name__ == "__main__":
 
-parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
-parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
-parser.add_argument("SVG", help="The name of the SVG file to read.")
-parser.add_argument("--gcode-origin", choices=['viewbox-lower-left', 'svg-origin'], default='viewbox-lower-left', help="See the manpage for a fuller dicussion of this option.  (Default: 'viewbox-lower-left'.)")
-parser.add_argument("-p", "--path", type=int, action='append', help="Apply the machining operations to this path (specified as an index into the list of paths in the input SVG).  May be used multiple times to apply the operations to multiple paths.  (Default: apply to all paths.)")
-parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
-parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
-parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket' operation.  (Default: 90.0 mm/min)")
-parser.add_argument("--slot-feed", type=float, help="The tool feed rate to use for slot milling, in mm/minute.  Used by the 'pocket' operation'.  (Default: 75.0 mm/min)")
-parser.add_argument("--plunge-feed", type=float, help="The tool feed rate to use for plunging cuts, in mm/minute.  Used by all job types.  (Default: 50.0 mm/min)")
-parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
-parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
-parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
-parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
-parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
-args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Compute g-code operations from the closed paths in an SVG file.")
+    parser.add_argument("JOBFILE", help="Read machining job parameters from this file.")
+    parser.add_argument("SVG", help="The name of the SVG file to read.")
+    parser.add_argument("--gcode-origin", choices=['viewbox-lower-left', 'svg-origin'], default='viewbox-lower-left', help="See the manpage for a fuller dicussion of this option.  (Default: 'viewbox-lower-left'.)")
+    parser.add_argument("-p", "--path", type=int, action='append', help="Apply the machining operations to this path (specified as an index into the list of paths in the input SVG).  May be used multiple times to apply the operations to multiple paths.  (Default: apply to all paths.)")
+    parser.add_argument("-s", "--speed", type=int, help="The spindle speed to use, in RPM.  (Default: 1000 rpm.)")
+    parser.add_argument("-f", "--feed", type=float, help="The tool feed rate to use, in mm/minute.  Used by the 'engrave' and 'offset' job types.  (Default: 100.0 mm/min)")
+    parser.add_argument("--shoulder-feed", type=float, help="The tool feed rate to use for shoulder milling, in mm/minute.  Used by the 'pocket' operation.  (Default: 90.0 mm/min)")
+    parser.add_argument("--slot-feed", type=float, help="The tool feed rate to use for slot milling, in mm/minute.  Used by the 'pocket' operation'.  (Default: 75.0 mm/min)")
+    parser.add_argument("--plunge-feed", type=float, help="The tool feed rate to use for plunging cuts, in mm/minute.  Used by all job types.  (Default: 50.0 mm/min)")
+    parser.add_argument("--z-traverse", type=float, help="The Z level for safe traverses above the work and workholding.  (Default: 10)", default=10)
+    parser.add_argument("--z-approach", type=float, help="The Z level down to which we should rapid, before slowing to the feed rate to approach the work.  (Default: 0.5 mm above z-top-of-material)", default=None)
+    parser.add_argument("--z-top-of-material", type=float, help="The Z level where the cutting starts.  (Default: 0)", default=0)
+    parser.add_argument("--z-cut-depth", type=float, help="The Z level to cut down to.  Must be lower than --z-top-of-material.  (Default: -1)", default=-1.0)
+    parser.add_argument("--debug", action="store_true", help="Generate debugging output on stderr.  Useful for submitting bug reports.")
+    parser.add_argument("--precision", metavar="DISTANCE", type=float, help="Distance threshold for merging operations", default=1e-5)
+    parser.add_argument("--step-length", metavar="DISTANCE", type=float, help="Approximate step length when splitting curves in segments (mm).", default=1.0)
+    args = parser.parse_args()
 
-if args.speed == None:
-    print("WARNING: no --speed argument supplied, using the default 1000 rpm", file=sys.stderr)
-    args.speed = 1000
+    if args.speed == None:
+        print("NOTE: no --speed argument supplied, using the default 1000 rpm", file=sys.stderr)
+        args.speed = 1000
 
-if args.feed == None:
-    print("WARNING: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
-    args.feed = 100.0
+    if args.feed == None:
+        print("NOTE: no --feed argument supplied, using the default 100 mm/min", file=sys.stderr)
+        args.feed = 100.0
 
-if args.shoulder_feed == None:
-    print("WARNING: no --shoulder-feed argument supplied, using the default 90 mm/min", file=sys.stderr)
-    args.shoulder_feed = 90
+    if args.shoulder_feed == None:
+        print("NOTE: no --shoulder-feed argument supplied, using the default 90 mm/min", file=sys.stderr)
+        args.shoulder_feed = 90
 
-if args.slot_feed == None:
-    print("WARNING: no --slot-feed argument supplied, using the default 75 mm/min", file=sys.stderr)
-    args.slot_feed = 75
+    if args.slot_feed == None:
+        print("NOTE: no --slot-feed argument supplied, using the default 75 mm/min", file=sys.stderr)
+        args.slot_feed = 75
 
-if args.plunge_feed == None:
-    print("WARNING: no --plunge-feed argument supplied, using the default 50 mm/min", file=sys.stderr)
-    args.plunge_feed = 50
+    if args.plunge_feed == None:
+        print("NOTE: no --plunge-feed argument supplied, using the default 50 mm/min", file=sys.stderr)
+        args.plunge_feed = 50
 
-if args.z_approach == None:
-    args.z_approach = 0.5 + args.z_top_of_material
+    if args.z_approach == None:
+        args.z_approach = 0.5 + args.z_top_of_material
 
-if args.z_top_of_material <= args.z_cut_depth:
-    raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
+    if args.z_top_of_material <= args.z_cut_depth:
+        raise ValueError("--z-top-of-material (%f) is not above --z-cut-depth (%f)" % (args.z_top_of_material, args.z_cut_depth))
 
-jobs, jobfile_schema = load_job_file(args.JOBFILE)
+    gcoder.precision = args.precision
 
-if args.gcode_origin == 'viewbox-lower-left':
-    gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT
-elif args.gcode_origin == 'svg-origin':
-    gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_SVG_ORIGIN
-svg = gcoder.svg(args.SVG, gcode_origin)
+    if args.step_length <= 0:
+        raise ValueError("--step-length (%f) cannot be null or negative" % args.step_length)
 
-# G-code preamble
-gcoder.metric()
-gcoder.path_blend(tolerance=0.01)
-gcoder.speed(args.speed)
+    jobs, jobfile_schema = load_job_file(args.JOBFILE)
 
-results = []
+    if args.gcode_origin == 'viewbox-lower-left':
+        gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_VIEWBOX_LOWER_LEFT
+    elif args.gcode_origin == 'svg-origin':
+        gcode_origin=gcoder.svg.GCODE_ORIGIN_IS_SVG_ORIGIN
+    svg = gcoder.svg(args.SVG, gcode_origin)
+
+    # G-code preamble
+    gcoder.metric()
+    gcoder.path_blend(tolerance=0.01)
+    gcoder.speed(args.speed)
+
+    results = []
 
 
-# Old-style job files have a single top-level property named "jobs",
-# which is an array of v1 job objects.  Iterate over the paths from the
-# command line, and run all jobs on each.
-if jobfile_schema == 1:
-    if args.path == None:
-        args.path = list(range(0, len(svg.paths)))
-    for path_index in args.path:
+    # Old-style job files have a single top-level property named "jobs",
+    # which is an array of v1 job objects.  Iterate over the paths from the
+    # command line, and run all jobs on each.
+    if jobfile_schema == 1:
+        if args.path == None:
+            args.path = list(range(0, len(svg.paths)))
+        for path_index in args.path:
+            for job in jobs['jobs']:
+                results += v1_handle_path(job, path_index)
+
+    # New-style job files have a single top-level property named "jobs",
+    # which is an array of v2 job objects.
+    elif jobfile_schema == 2:
         for job in jobs['jobs']:
-            results += v1_handle_path(job, path_index)
+            input_paths = None
+            if type(args.path) is list and len(args.path) > 0:
+                input_paths = args.path
+            elif 'paths' in job:
+                input_paths = job['paths']
+            else:
+                input_paths = list(range(0, len(svg.paths)))
+            for path in input_paths:
+                for op in job['operations']:
+                    results += handle_operation(op, path)
 
-# New-style job files have a single top-level property named "jobs",
-# which is an array of v2 job objects.
-elif jobfile_schema == 2:
-    for job in jobs['jobs']:
-        input_paths = None
-        if type(args.path) is list and len(args.path) > 0:
-            input_paths = args.path
-        elif 'paths' in job:
-            input_paths = job['paths']
-        else:
-            input_paths = list(range(0, len(svg.paths)))
-        for path in input_paths:
-            for op in job['operations']:
-                results += handle_operation(op, path)
+    output_paths = []
+    for result in results:
+        result.emit()
+        if type(result) == ResultPath:
+            output_paths += result.path
 
+    if args.debug:
+        print("output paths: %s" % output_paths, file=sys.stderr)
+        if len(output_paths) > 0:
+            svgpathtools.paths2svg.wsvg(paths=output_paths, filename=os.path.join(os.getcwd(), 'disvg_output.svg'))
 
-output_paths = []
-for result in results:
-    result.emit()
-    if type(result) == ResultPath:
-        output_paths += result.path
-
-
-if args.debug:
-    print("output paths: %s" % output_paths, file=sys.stderr)
-    if len(output_paths) > 0:
-        svgpathtools.paths2svg.wsvg(paths=output_paths, filename=os.path.join(os.getcwd(), 'disvg_output.svg'))
-
-# G-code postamble
-gcoder.m2()
+    # G-code postamble
+    gcoder.m2()
